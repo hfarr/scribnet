@@ -1,70 +1,11 @@
 'use strict'
-import crypto from 'crypto';
+// import crypto from 'crypto';
 
 import { graphql, buildSchema } from 'graphql'
 
 import Dataccess from "./datasystem/Dataccess.mjs"
 
 class Scope {
-  constructor() {
-    this.bin = {}
-  }
-  get(identifier) {
-    return this.bin[identifier]
-  }
-  set(identifier, value) {
-    this.bin[identifier] = value
-  }
-  get getter() {
-    return this.get.bind(this)
-  }
-  get setter() {
-    return this.set.bind(this)
-  }
-
-  accept(query) {
-    query.visitScope(this)
-  }
-}
-
-// For scopes- we want the granularity to control the scoping at nested levels. E.g you might be able to access authors["bob"]["published"]
-// but not authors["bob"]["salary"]
-// to that extent, how might we conceptualize limited access? do we supply a "scope schema"? that's a burden on producers/suppliers.
-// Maybe for now.
-const nestedAccess = (list, obj) => list.reduce( (prev, current) => { const { [current]: next={} } = prev; return next } , obj)
-
-// For now, control by scope
-const scopeWrap = scope => {
-
-  // const get = identifier => scope[identifier]
-  // const set = (identifier, value) => scope.identifier = value
-
-  const get = scope.getter
-  const set = scope.setter
-  
-
-}
-
-////
-
-////
-
-class RandomDie {
-  constructor(numSides) {
-    this.numSides = numSides;
-  }
-
-  rollOnce() {
-    return 1 + Math.floor(Math.random() * this.numSides);
-  }
-
-  roll({numRolls}) {
-    var output = [];
-    for (var i = 0; i < numRolls; i++) {
-      output.push(this.rollOnce());
-    }
-    return output;
-  }
 }
 
 const gql = (fragments, ...values) => {
@@ -75,12 +16,7 @@ const gql = (fragments, ...values) => {
   return result
 }
 
-const fakeDB = {
-  messageOfTheDay: "",
-  message: {}
-}
-
-const h = buildSchema(gql`
+const schema = buildSchema(gql`
   type RandomDie {
     numSides: Int!
     rollOnce: Int!
@@ -173,47 +109,6 @@ const rootValue2 = {
     return fakeDB.message[id]
   }
 }
-// an automated schema system could read, for example, the getters/setters of a prototype
-// Other properties are opaque. That is still a burden on the programmer, but less of one
-// and I see that as a compromise between structured data and automating it's use.
-// I'm all set with the unstructured angle, I reckon. For first class API types though I
-// would like to sketch out a system like that.
-// And when (if?) I move to typescript likely there are APIs for reading types which will
-// ease the experience- but simulttaneously typescript has its own burdens.
-// A complement to graphql in the case of unstructured data would be a JSON query 
-// language, a la jq, as a library in javascript. Hmm!!
-/* example
-mutation {
-  createMessage(input: { # parameters to "createMessage"
-    author: "Bill"
-  }) {
-    # Query of the "return"
-    id
-  }
-}
-mutation {
-  updateMessage(id: "7096bb60a7c42dec1dcc", input:{
-    author: "bill"
-    content: "heyo"
-  }) {
-    id
-    author
-    content
-  }
-}
-query {
-  getMessage(id: "7096bb60a7c42dec1dcc") {
-    author
-    content
-  }
-}
-*/
-
-// graphql({
-//   schema, 
-//   source: '{ hello }', 
-//   rootValue
-// }).then( response => console.log(response))
 
 // No scoping for the time being. keeping it simple.
 export default { schema: schema2, rootValue: rootValue2 }
