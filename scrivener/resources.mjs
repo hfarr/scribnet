@@ -180,6 +180,8 @@ const rootValue2 = {
 // would like to sketch out a system like that.
 // And when (if?) I move to typescript likely there are APIs for reading types which will
 // ease the experience- but simulttaneously typescript has its own burdens.
+// A complement to graphql in the case of unstructured data would be a JSON query 
+// language, a la jq, as a library in javascript. Hmm!!
 /* example
 mutation {
   createMessage(input: { # parameters to "createMessage"
