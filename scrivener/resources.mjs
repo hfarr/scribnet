@@ -45,6 +45,28 @@ const scopeWrap = scope => {
 
 }
 
+////
+
+////
+
+class RandomDie {
+  constructor(numSides) {
+    this.numSides = numSides;
+  }
+
+  rollOnce() {
+    return 1 + Math.floor(Math.random() * this.numSides);
+  }
+
+  roll({numRolls}) {
+    var output = [];
+    for (var i = 0; i < numRolls; i++) {
+      output.push(this.rollOnce());
+    }
+    return output;
+  }
+}
+
 const gql = (fragments, ...values) => {
   let result = fragments[0]
   for (let i = 0; i < values.length; i++) {
@@ -54,12 +76,18 @@ const gql = (fragments, ...values) => {
 }
 
 const schema = buildSchema(gql`
+  type RandomDie {
+    numSides: Int!
+    rollOnce: Int!
+    roll(numRolls: Int!): [Int]
+  }
   type Query {
     hello: String
     quoteOfTheDay: String
     random: Float!
     rollThreeDice: [Int]
     rollDice(numDice: Int!, numSides: Int): [Int]
+    getDie(numSides: Int): RandomDie
   }
 `)
 
@@ -79,6 +107,9 @@ const rootValue = {
         yield 1 + Math.floor(Math.random() * max) 
     }
     return [...diceGenerator(numSides)]
+  },
+  getDie({ numSides }) {
+    return new RandomDie(numSides || 6)
   }
 }
 
