@@ -1,9 +1,9 @@
 'use strict'
-
-import Dataccess from "./datasystem/Dataccess.mjs"
+import crypto from 'crypto';
 
 import { graphql, buildSchema } from 'graphql'
 
+import Dataccess from "./datasystem/Dataccess.mjs"
 
 class Scope {
   constructor() {
@@ -76,10 +76,11 @@ const gql = (fragments, ...values) => {
 }
 
 const fakeDB = {
-  messageOfTheDay: ""
+  messageOfTheDay: "",
+  message: {}
 }
 
-const schema = buildSchema(gql`
+const h = buildSchema(gql`
   type RandomDie {
     numSides: Int!
     rollOnce: Int!
@@ -128,11 +129,91 @@ const rootValue = {
   }
 }
 
-graphql({
-  schema, 
-  source: '{ hello }', 
-  rootValue
-}).then( response => console.log(response))
+// some schema building tech would be nice. Deal with the concept at a higher level than a string
+const schema2 = buildSchema(gql`
+  # Input types- as opposed to a standard 'type' declared with the 'type' keyword
+  input MessageInput {  # Fields of an input type can only be basic Scalar types, list types, and other input types: Not object types. It is a convention to use the Input suffix. It is common to have both a Input and Output type that are slightly different (MessageInput, Message)
+    content: String
+    author: String
+  }
+  type Message {
+    id: ID!
+    content: String
+    author: String
+  }
+  type Query {
+    getMessage(id: ID!): Message
+  }
+  type Mutation {
+    createMessage(input: MessageInput): Message
+    updateMessage(id: ID!, input: MessageInput): Message
+  }
+`)
+
+const rootValue2 = {
+  getMessage({ id }) {
+    if (fakeDB.message[id] === undefined) {
+      throw new Error('No message exists with id ' + id)
+    }
+    return fakeDB.message[id]
+  },
+  createMessage({ input: { content, author }}) {
+    const id = crypto.randomBytes(10).toString('hex')
+    fakeDB.message[id] = { id, content, author }
+    return fakeDB.message[id]
+  },
+  updateMessage({ id, input: { content, author }}) {
+    if (fakeDB.message[id] === undefined) {
+      throw new Error('No message exists with id ' + id)
+    }
+    // mandates specifying both fields, when if we only want to update the content we would only want to supply the content :thinking:
+    // for the "unstructured data" this behavior defers to Datable. There I think it (already) persists existing data if the properties
+    // aren't specified as part of the input
+    fakeDB.message[id] = { ...fakeDB.message[id], content, author }
+    return fakeDB.message[id]
+  }
+}
+// an automated schema system could read, for example, the getters/setters of a prototype
+// Other properties are opaque. That is still a burden on the programmer, but less of one
+// and I see that as a compromise between structured data and automating it's use.
+// I'm all set with the unstructured angle, I reckon. For first class API types though I
+// would like to sketch out a system like that.
+// And when (if?) I move to typescript likely there are APIs for reading types which will
+// ease the experience- but simulttaneously typescript has its own burdens.
+/* example
+mutation {
+  createMessage(input: { # parameters to "createMessage"
+    author: "Bill"
+  }) {
+    # Query of the "return"
+    id
+  }
+}
+mutation {
+  updateMessage(id: "7096bb60a7c42dec1dcc", input:{
+    author: "bill"
+    content: "heyo"
+  }) {
+    id
+    author
+    content
+  }
+}
+query {
+  getMessage(id: "7096bb60a7c42dec1dcc") {
+    author
+    content
+  }
+}
+*/
+
+// graphql({
+//   schema, 
+//   source: '{ hello }', 
+//   rootValue
+// }).then( response => console.log(response))
 
 // No scoping for the time being. keeping it simple.
-export default { schema, rootValue }
+export default { schema: schema2, rootValue: rootValue2 }
+
+// export default { schema, rootValue }
