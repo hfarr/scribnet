@@ -75,11 +75,18 @@ const gql = (fragments, ...values) => {
   return result
 }
 
+const fakeDB = {
+  messageOfTheDay: ""
+}
+
 const schema = buildSchema(gql`
   type RandomDie {
     numSides: Int!
     rollOnce: Int!
     roll(numRolls: Int!): [Int]
+  }
+  type Mutation {
+    setMessage(message: String): String
   }
   type Query {
     hello: String
@@ -88,6 +95,7 @@ const schema = buildSchema(gql`
     rollThreeDice: [Int]
     rollDice(numDice: Int!, numSides: Int): [Int]
     getDie(numSides: Int): RandomDie
+    getMessage: String
   }
 `)
 
@@ -110,6 +118,13 @@ const rootValue = {
   },
   getDie({ numSides }) {
     return new RandomDie(numSides || 6)
+  },
+  setMessage({ message }) {
+    fakeDB.messageOfTheDay = message
+    return fakeDB.messageOfTheDay
+  },
+  getMessage() {
+    return fakeDB.messageOfTheDay
   }
 }
 
