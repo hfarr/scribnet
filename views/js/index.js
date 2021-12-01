@@ -1,5 +1,6 @@
 'use strict'
 
+import Center from './components/Center.js'
 import Cluster from './components/Cluster.js'
 import Cover from './components/Cover.js'
 import Sidebar from './components/Sidebar.js'

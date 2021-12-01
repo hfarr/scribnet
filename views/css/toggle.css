@@ -1,0 +1,39 @@
+/*
+Split the toggle from the affected component?
+They'd need to be linked some how, through id probably.
+Like, "if early in the document x.."
+Seems a case for a web comp. Toggle can wrap for simplicity, 
+but also split.
+*/
+
+.toggle {
+  display: none;
+}
+
+/* 
+  Unchecked and checked properties
+  Can change via a props API to become more composable.
+  Can compose "what happens" as other custom components, like a "background-changer" and "hidden->shown" (via max height changing for ex) or other,
+  or maybe a general "transform" like position adjustment
+  this is a linked toggle
+*/
+.toggle ~ * {
+  background-color: var(--hue-cream-dark);
+
+  transition: background-color 0.5s;
+}
+
+.toggle:checked ~ * {
+  background-color: var(--hue-cream-light);
+}
+
+.styling-selector > *{
+  border-width: var(--border-thin);
+  border-color: var(--color-darkish);
+  border-radius: var(--border-thin);
+  padding: var(--s-3);
+}
+
+.context {
+  padding: var(--s1);
+}

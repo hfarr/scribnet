@@ -1,0 +1,19 @@
+---
+layout: root.njk
+---
+
+{% block header %}
+  <link rel="stylesheet" type="text/css" href="/css/toggle.css">
+{% endblock %}
+
+<div class="context">
+  <center-l intrinsic>
+    <label>
+      {# Click me! #}
+      <input type="checkbox" class="toggle">
+        <div class="styling-selector">
+          <p>Affected content</p>
+        </div>
+    </label>
+  </center-l>
+</div>
