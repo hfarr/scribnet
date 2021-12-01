@@ -26,11 +26,9 @@
 }
 
 sidebar-l > :first-child {
-  margin-top: var(--s-1);
-}
-sidebar-l > * {
-  margin-left: var(--s0);
-  margin-right: var(--s0);
+  padding-top: var(--s-1);
+  padding-left: var(--s0);
+  padding-right: var(--s0);
 }
 
 /* Higher-level headers that appear after lower level headers. */
@@ -43,23 +41,3 @@ h2 ~ h1, h3 ~ h2 {
   border-top-color: var(--hue-cream-dark);
 }
 
-/* 
-  Am falling into precipitously bad habits, possibly. Maybe I'm being too concerned
-  and am writing a whole bunch of comments out of habit. Roll with it, change later.
-*/
-/* .note-page > p {
-  font-size: var(--s0)
-} */
-
-/*
-Uncanny things to the sidebars, don't want to compensate for the margin with the item heights.
-Gotta be a better way, gotta think *composition*. This will come with experience, and probably
-rewrites. Like. When I take a look at the design to improve it. The kind of thing to write
-notes about. Don't need perfection right away.
-
-It's like above with the 'cover *remainder of page* thinking. Expressing that as a composition
-of components, working out the right css rules. calc(100vh - <earlier element's height>)
-sidebar-l > * {
-  margin-top: var(--s0);
-}
-*/
