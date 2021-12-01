@@ -4,6 +4,12 @@ They'd need to be linked some how, through id probably.
 Like, "if early in the document x.."
 Seems a case for a web comp. Toggle can wrap for simplicity, 
 but also split.
+"toggle can wrap" meaning embed the input element for the
+"stateful" behavior (the checkbox) inside a label. The
+label and element then don't need any linking attribution
+to function as a pair, those semantics come for free.
+Read about labels here 
+https://developer.mozilla.org/en-US/docs/Web/HTML/Element/label
 */
 
 .toggle {
