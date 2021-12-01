@@ -1,0 +1,107 @@
+/* Stolen from https://every-layout.dev */
+
+/* A "reset" sheet and grounds for layout, but not branding */
+:root {
+  --font-plain:Helvetica Neue,Helvetica,Arial,sans-serif;
+  --font-special:Barlow Condensed,Helvetica,sans-serif;
+  --font-mono:Menlo,Courier,Courier New,Andale Mono,monospace;
+  --color-dark:#050505;
+  --color-darkish:#404040;
+  --color-lightish:#e6e6e6;
+  --color-light:#fafafa;
+  --color-mid:grey;
+
+  /* Need design scheme lingo, and easy way to update (javascript!)*/
+  /* Primarys and accents and derived and all sorts */
+  --hue-cream: #ffd0b0;
+  --hue-cream-dark: #c44f00;
+  --hue-cream-light: #ff964e;
+  --hue-accent: #b0dfff;
+  --ratio:1.2;
+  --s-5:calc(var(--s0)/var(--ratio)/var(--ratio)/var(--ratio)/var(--ratio)/var(--ratio));
+  --s-4:calc(var(--s0)/var(--ratio)/var(--ratio)/var(--ratio)/var(--ratio));
+  --s-3:calc(var(--s0)/var(--ratio)/var(--ratio)/var(--ratio));
+  --s-2:calc(var(--s0)/var(--ratio)/var(--ratio));
+  --s-1:calc(var(--s0)/var(--ratio));
+  --s0:1rem;
+  --s1:calc(var(--s0)*var(--ratio));
+  --s2:calc(var(--s0)*var(--ratio)*var(--ratio));
+  --s3:calc(var(--s0)*var(--ratio)*var(--ratio)*var(--ratio));
+  --s4:calc(var(--s0)*var(--ratio)*var(--ratio)*var(--ratio)*var(--ratio));
+  --s5:calc(var(--s0)*var(--ratio)*var(--ratio)*var(--ratio)*var(--ratio)*var(--ratio));
+  --measure:65ch;
+  --line-height:var(--ratio);
+  --line-height-small:calc(0.8*var(--ratio));
+  /* --border-thin:var(--s-5); */
+  --border-thin:valc(0.3*var(--ratio));
+  --border-thick:var(--s-2);
+  line-height:var(--ratio);
+  font-size:calc(.333vw + 1em);
+  font-family:var(--font-plain);
+  background-color:var(--color-lightish);
+  color:var(--color-dark)
+}
+
+*, ::before, ::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+  font-family: inherit;
+  color: inherit;
+  border: 0 solid;
+  /* border: 1px solid gray; */
+}
+
+/* Semantic element styling */
+
+/* Gosh maybe I should leave it up to the note? *fret* */
+p {
+  font-size: var(--s-1);
+}
+h1 {
+  font-size: var(--s1);
+}
+h2 {
+  font-size: var(--s0);
+}
+h3 {
+  font-size: var(--s-1);
+}
+
+
+/* Component layout styling */
+
+
+cover-l {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  padding: var(--s1);
+}
+
+stack-l {
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+}
+
+stack-l > * + * {
+  margin-top: var(--s1);
+}
+
+cluster-l {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-start;
+  align-items: flex-start;
+}
+
+
+sidebar-l {
+  display: flex;
+  flex-wrap: wrap;
+}
+
+sidebar-l > * {
+  flex-grow: 1;
+}

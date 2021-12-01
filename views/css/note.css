@@ -1,0 +1,108 @@
+
+
+.note-page {
+  background-color: var(--hue-accent);
+}
+
+
+/*
+  The note page caps its height to the viewport.
+  
+  Thoughts for generalizing to a composable component -
+    - Cap max height to 100% of parent height,
+      and obtain by composing with an element that can be no more than max view height?
+      
+      I like the idea of using 100%. By not tying to a viewport, the "scrollable"
+      component can adapt to its container. Following the golden dream ofcontainer
+      queries. That way it can be reused for smaller sections of the screen, like
+      when the scrollable content should be under a menu bar that otherwise sticks
+      to the top of the page. That composes then too with the sidebar layout.
+      A height cap.
+      In such a case I might want a component that consumes the rest of the layout
+      space, using like calc(100vh - (sum of previous siblings heights)), or other
+      means to "take up remaining space". I think that should be achievable with
+      CSS
+
+    - Leave the scroll bar decision to child?
+*/
+.note-content {
+  max-height: 100vh;
+  overflow-y: auto;
+
+  /* background-color: var(--hue-cream); */
+
+  /* filter: invert(); */
+
+  /* I think we want to set the 'base' font to something, then children override it with their own rems and ems. 
+    that is, set font-size to s-1 for the .note-page. Then a child paragraph sizes Relatively to the parent EleMent.*/
+  /* font-size: var(--s-1); Not like this, because it then totally ignores the parent. var(--s-1) doesn't copy/paste 1rem, it slots in the value that resolves to. Best bet is override the variable, or directly use rems in children.*/
+  /* 
+    It's the otherway around ^^^ on rems vs ems by the way. 'em's compound from their parent. 'rem's are relative to :root. I think I like changing the 
+    variable because it will override root, which in turn anchors this element as the "root" for any children that use 'rems' which are every component in every-layout. */
+  /* --s0: var(--s-1); */
+  /* or use the selector like below. Hmm. */
+}
+
+.note-content > * {
+  padding-left: var(--s1); 
+  padding-right: var(--s1);
+  background-color: var(--hue-cream);
+}
+
+.note-content > :first-child {
+  padding-top: var(--s0); 
+  border-top-left-radius: var(--s-2);
+}
+
+.note-content > :last-child {
+  border-bottom-left-radius: var(--s-2);
+}
+
+/* .note-content * { */
+  /* font-size: var(--s0); This in combination with --s0: var(--s-1) in .note-page — I think might be better. Adjust the variable at a child-root element and it updates the scaling for its successors, which is what we want I think. Then again, we can always do that ANYWAY and leave this using s-1. unless I Want to Anchor my design around p size, which oughta be s0? huh*/
+  /* yeah no, it's a unified thing. hm. Updating th variable at the root doesn't seem to cascade because I believe it's not a copy-paste, I'd need to calc, but that's not so bad either. There was an every layout about this too, where you can adjust the size at one place and it cascades down.
+  For our part here I guess it's not worth the disconnect of trying to "reanchor" the size and stict to the global harmonies, we can use 'em' for the local cases. */
+  /* would like to think about this further but we don't have a NOTES SYSTEM YET, DO WE? no, you just spent half your time looking at css on other websites and writing comments hah */
+  /* font-size: var(--s-1); */
+/* } */
+
+/* Would a 'semantic padding element' be too ridiculous for a compositional layout system? Im tempted. Maybe I should think about better selectors first.*/
+/* Semantically, should I be applying padding to the children, or margin to the top? */
+/* The question boils down to ownership. Setting the padding means that the presentaiton of that content, in all contexts, should include padding.
+But that's not quite true, I do want space, but it's a relative property. the stack layout page discusses this and links out to blogs. */
+.buf {
+  padding-top: var(--s-1);
+  padding-left: var(--s0);
+  padding-right: var(--s0);
+}
+
+/* Higher-level headers that appear after lower level headers. */
+/* Thinking about replacing h2 ~ h1 with h1~h1 for just any h1 that appears after an h1 since they probably start new segments anyway */
+h2 ~ h1, h3 ~ h2 {
+  margin-top: var(--s-3);
+  padding-top: var(--s-5);
+
+  border-top-width: var(--border-thin);
+  border-top-color: var(--hue-cream-dark);
+}
+
+/* 
+  Am falling into precipitously bad habits, possibly. Maybe I'm being too concerned
+  and am writing a whole bunch of comments out of habit. Roll with it, change later.
+*/
+/* .note-page > p {
+  font-size: var(--s0)
+} */
+
+/*
+Uncanny things to the sidebars, don't want to compensate for the margin with the item heights.
+Gotta be a better way, gotta think *composition*. This will come with experience, and probably
+rewrites. Like. When I take a look at the design to improve it. The kind of thing to write
+notes about. Don't need perfection right away.
+
+It's like above with the 'cover *remainder of page* thinking. Expressing that as a composition
+of components, working out the right css rules. calc(100vh - <earlier element's height>)
+sidebar-l > * {
+  margin-top: var(--s0);
+}
+*/

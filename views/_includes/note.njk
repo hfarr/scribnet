@@ -1,0 +1,26 @@
+---
+layout: root.njk
+---
+
+{% block header %}
+  <link rel="stylesheet" type="text/css" href="/css/note.css">
+
+  <link rel="stylesheet" type="text/css" href="/css/trix.css">
+  <script type="text/javascript" src="/js/trix.js"></script>
+{% endblock %}
+
+<div class="note-page">
+  <sidebar-l sideWidth="15em" contentMin="50%" noStretch>
+    <stack-l class="buf">
+      <p>Words</p>
+    </stack-l>
+    <main class="note-content">
+      {# Maybe wrap in a center  #}
+      <stack-l space="var(--s-3)">
+        {{ content | safe }}
+      </stack-l>
+      {# Add "scroll back up" at the bottom of the div? "fold in" the corners of the page so it looks like the bottom of something? #}
+      <div style="min-height: 100vh;"></div>
+    </main>
+  </sidebar-l>
+</div>
