@@ -1,6 +1,7 @@
 module.exports = function(eleventyConfig) {
 
-
+  eleventyConfig.addPassthroughCopy("views/css");
+  eleventyConfig.addPassthroughCopy("views/js");
 
   return {
     dir: {
@@ -8,7 +9,7 @@ module.exports = function(eleventyConfig) {
       output: "site"
     },
     templateFormats: [
-      "html", "njk"
+      "html", "njk", "md"
     ]
   }
 }
