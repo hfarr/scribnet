@@ -147,6 +147,21 @@ class EmptySegment extends Segment {
  * no, treat it all the same, hmm.
  */
 
+function appendAt(block) {
+  return function({ character, offset }) {
+    let idx = 0, sum = 0;
+    do  { // work out le or ge
+      sum += block.atoms[0].content.length;
+    } while (sum <= offset);
+    // idx is the index of the atom we're modifying
+
+    // offset into the atom
+    offset -= sum;
+    return `${atom.content.slice(0, offset)}${character}${atom.content.slice(offset)}`;
+
+  }
+}
+
 
 class Document {
 
@@ -154,7 +169,23 @@ class Document {
   // 
   constructor() {
     this.blocks = []
-    this.cursor = { line: 0, offset: 0 };
+    this.cursor = { block: 0, offset: 0 };
+    this.actions = {
+      'typeSingleChar': appendAt,
+    }
+  }
+
+  set activeBlock(idx) {
+    if (0 <= idx && idx < this.blocks.length) {
+      this.cursor.block = idx
+    }
+  }
+
+  get activeBlock() {
+    if (this.blocks.length === 0) {
+      this.blocks.push(new EditBlock('p'))
+    }
+    return this.blocks[this.cursor.block];
   }
 
   fromDOM(children) {
@@ -166,8 +197,26 @@ class Document {
     }
   }
 
+  appendAt (offset, character) {
+    this.activeBlock.appendAt(offset, character)
+
+  }
+
   // A promise, to render
   editCommand(command) {
+    let { action, data } = command
+
+    // may have to do some validation on the command, 
+    // but maybe it can occur when the command is created. it's an interface to
+    // anything that can edit.
+
+    // actions[action](data)
+    switch(action) {
+      case ('typeSingleChar'): this.appendAt(data.offset, data.character);
+    }
+
+
+    // end-edit notifier. Maybe make this async. Can methods be async? I guess so right? or I can have it call an async and return ..?
 
   }
 
@@ -191,17 +240,65 @@ class Atom {
     this.content = content
   }
 
+  // appendAt visitor? :<
+  appendAt(offset, character) {
+    this.content = `${this.content.slice(0, offset)}${character}${this.content.slice(offset)}`;
+
+  }
+
   accept(visitor) {
     return visitor.visitAtom(this);
   }
 }
 
+
 class Block {
   constructor (tagname, ...atoms) {
     this.tag = tagname
     this.atoms = atoms
+
+    if ( this.atoms.length === 0 ) {
+      this.atoms.push(new Atom([], ''))
+    }
   }
 
+  appendAt(offset, character) {
+    let idx = 0, accumulatedLength = 0;
+
+    let atomLength = index => this.atoms[index].content.length;
+
+
+    // 0       1     2        3   4
+    // -------|-----|---*----|---|--------
+    //        7     5        8   3
+    // Append at 15
+    /**
+     * idx  sum
+     * 0    0   (0 + 7  > 15 false)
+     * 1    7   (7 + 5  > 15 false)
+     * 2    12  (12 + 8 > 15 true)
+     * offset into index: 
+     * 15 - 12: 3
+     */
+
+    // while the next index is reachable and the offset is after the accumulated sum and the next, 
+    while (idx + 1 < this.atoms.length && !(accumulatedLength + atomLength(idx + 1) > offset) ) {
+      idx += 1
+      accumulatedLength += atomLength(idx)
+    }
+    // accumulatedLength <= offset < accumulatedLength + next.length
+
+    // offset into the atom
+    offset -= accumulatedLength;
+    
+    // not super efficient, we are doing a full render so even if we picked a data model that
+    // favorite more writes (say, a linked list, inserting at an index)
+    // over doing string concatenation, we'd still be concatenating to render :shrug:
+
+    this.atoms[idx].appendAt(offset, character)
+
+  }
+    
   accept(visitor) {
     return visitor.visitBlock(this)
   }
@@ -252,5 +349,6 @@ class HTMLRenderer {
 }
 
 
-export { Block, HTMLRenderer, Atom }
+export { Block, HTMLRenderer, Atom, appendAt }
+
 export { Segment, Document }
