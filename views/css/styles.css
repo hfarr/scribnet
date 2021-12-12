@@ -17,6 +17,10 @@
   --hue-cream-dark: #c44f00;
   --hue-cream-light: #ff964e;
   --hue-accent: #b0dfff;
+  /* --hue-cream: #1D2951;
+  --hue-cream-dark: #c44f00;
+  --hue-cream-light: #ff964e;
+  --hue-accent: #b0dfff; */
   --ratio:1.2;
   --s-5:calc(var(--s0)/var(--ratio)/var(--ratio)/var(--ratio)/var(--ratio)/var(--ratio));
   --s-4:calc(var(--s0)/var(--ratio)/var(--ratio)/var(--ratio)/var(--ratio));
@@ -43,14 +47,24 @@
 }
 
 *, ::before, ::after {
-  box-sizing: border-box;
-  margin: 0;
-  padding: 0;
+  /* Styling defaults */
   font-family: inherit;
   color: inherit;
   border: 0 solid;
+  outline: var(--color-darkish) none 0; /* specifying inherit for the color makes it ignore the other values, since outline: inherit; is a global value of its own right. I think at least that's why. If want to use inherit for color, probably use outline-color property, and avoid shorthand */
+
+  /* Layout defaults */
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
   /* border: 1px solid gray; */
+  /* max-width: var(--measure); */
 }
+
+/* html, body, div, header, nav, main, footer,
+stack-l, sidebar-l, editor-hf {
+  max-width: none;
+} */
 
 /* Semantic element styling */
 

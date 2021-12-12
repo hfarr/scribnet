@@ -5,8 +5,6 @@ layout: root.njk
 {% block header %}
   <link rel="stylesheet" type="text/css" href="/css/note.css">
 
-  <link rel="stylesheet" type="text/css" href="/css/trix.css">
-  <script type="text/javascript" src="/js/trix.js"></script>
 {% endblock %}
 
 <div class="note-page">
@@ -14,13 +12,23 @@ layout: root.njk
     <stack-l class="buf">
       <p>Words Words Words Words</p>
     </stack-l>
-    <main class="note-content">
-      {# Maybe wrap in a center  #}
-      <stack-l space="var(--s-3)">
-        {{ content | safe }}
+    <div class="note-content">
+      <stack-l splitAfter=1 space="0">
+
+      {# could make the main element the stack. Idk #}
+        <main >
+          {# Maybe wrap in a center  #}
+          <center-l>
+            <stack-l space="var(--s-3)">
+              {{ content | safe }}
+            </stack-l>
+          </center-l>
+        </main>
+        {# Minimum space. Pushed down by stack, so it expands to fill remaining gap
+        if the viewheight accepts. Gives us a certain amount of space to scroll when 
+        editing or reading the note even if no content exists. #}
+        <div style="min-height: 50vh"></div>
       </stack-l>
-      {# Add "scroll back up" at the bottom of the div? "fold in" the corners of the page so it looks like the bottom of something? #}
-      <div style="min-height: 100vh;"></div>
-    </main>
+    </div>
   </sidebar-l>
 </div>

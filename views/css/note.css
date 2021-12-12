@@ -8,12 +8,18 @@
 .note-content {
   max-height: 100vh;
   overflow-y: auto;
+
+  /* border applied to parent means it won't scroll with the overlow which we want */
+  /* border-top-left-radius: var(--s-2);
+  border-bottom-left-radius: var(--s-2); */
+  /* background-color: var(--hue-cream); */
 }
 
 .note-content > * {
-  padding-left: var(--s1); 
-  padding-right: var(--s1);
+  /* padding-left: var(--s1); 
+  padding-right: var(--s1); */
   background-color: var(--hue-cream);
+  min-height: 100vh;
 }
 
 .note-content > :first-child {
@@ -33,11 +39,22 @@ sidebar-l > :first-child {
 
 /* Higher-level headers that appear after lower level headers. */
 /* Thinking about replacing h2 ~ h1 with h1~h1 for just any h1 that appears after an h1 since they probably start new segments anyway */
-h2 ~ h1, h3 ~ h2 {
+/* ^^ to that point we should only have one h1 per page! I may default it to the title in the app */
+/* h2 ~ h1, h3 ~ h2 { */
+/* This choice basically segments content into sections prefixed with an h2.
+  It's fairly opinionated but until I get better customization controls I'll keep it.
+  The above choice only added divisional segments when a higher tier header succeeds
+  a lower tier one, such that sibling headers of the same level wouldn't segment from each other.
+  I may still go with that but for now I'll take this more strongly opinionated style choice. */
+h2 ~ h2 {
   margin-top: var(--s-3);
-  padding-top: var(--s-5);
+  /* padding-top: var(--s-5); */
 
   border-top-width: var(--border-thin);
   border-top-color: var(--hue-cream-dark);
 }
 
+editor-hf {
+  --s0: 1rem;
+  max-width: var(--measure);
+}
