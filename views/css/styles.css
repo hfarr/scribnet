@@ -40,7 +40,9 @@
   --border-thin:valc(0.3*var(--ratio));
   --border-thick:var(--s-2);
   line-height:var(--ratio);
-  font-size:calc(.333vw + 1em);
+  /* scaling size. I like it but maybe not for now? */
+  /* font-size:calc(.333vw + 1em); */ /* the em changes... it'll recalculate even for inehrited right? so <p><div><p>0.25rem</p></div></p> if font-size=0.5em? I forgot how these work precisely */
+  font-size: 1rem;
   font-family:var(--font-plain);
   background-color:var(--color-lightish);
   color:var(--color-dark)
@@ -70,16 +72,16 @@ stack-l, sidebar-l, editor-hf {
 
 /* Gosh maybe I should leave it up to the note? *fret* */
 p {
-  font-size: var(--s-1);
-}
-h1 {
-  font-size: var(--s1);
-}
-h2 {
   font-size: var(--s0);
 }
+h1 {
+  font-size: var(--s3);
+}
+h2 {
+  font-size: var(--s2);
+}
 h3 {
-  font-size: var(--s-1);
+  font-size: var(--s1);
 }
 
 
