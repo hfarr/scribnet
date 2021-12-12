@@ -20,7 +20,7 @@ class Editor extends HTMLElement {
 
     // I'm concerned about overriding attributes, or attributes that 
     // State
-    this.document = new Document()
+    this.editDoc = new Document()
     this.data = { counter: 0 }
 
 
@@ -41,7 +41,7 @@ class Editor extends HTMLElement {
 
   beforeInput(inputEvent) {
     // console.debug('InputEvent', inputEvent)
-    return;
+    // return;
 
     if (window.InputEvent && typeof InputEvent.prototype.getTargetRanges === "function") {
 
@@ -50,8 +50,8 @@ class Editor extends HTMLElement {
       // Start container is the textnode containing the starting caret
       // end container is the textnode containing the end
       if (r0) {
-        console.debug(r0.startContainer === r0.endContainer)
-        // console.log(r0)
+        // console.debug(r0.startContainer === r0.endContainer)
+        console.log(r0)
         // console.log(r0.startContainer)
         // console.log(r0.endContainer)
       }
@@ -68,6 +68,9 @@ class Editor extends HTMLElement {
   }
 
   onClick(mouseEvent) {
+
+    this.editDoc.setActiveBlock(Array.from(this.children).indexOf(mouseEvent.target))
+
   }
 
 
@@ -88,7 +91,7 @@ class Editor extends HTMLElement {
   export(documentExporter) {
     // Inject a dependency. Doc exporter takes a doc and formats it some way. For now this will just be a json dump.
 
-    return JSON.stringify(this.document)
+    return JSON.stringify(this.editDoc)
 
   }
 }
