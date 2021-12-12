@@ -18,8 +18,8 @@
 }
 
 .note-content > * {
-  /* padding-left: var(--s1); 
-  padding-right: var(--s1); */
+  padding-left: var(--s1); 
+  padding-right: var(--s1);
   background-color: var(--hue-cream);
   min-height: 100vh;
 }
