@@ -1,7 +1,28 @@
 
 
 .note-page {
-  background-color: var(--hue-accent);
+
+  /* background-color: var(--hue-accent); */
+  /* background-color: #181818; */
+  /* background-color: #202020; */
+
+  /* I like this blue #00fe67 */
+
+  --hue-cream-dark: #00c44f; /* nice! */
+  --hue-cream-darkish: #b0efc0; /* can't land what I'm going for */
+  --hue-cream: #b0ffd0;
+
+  --bg-main: #202020;
+  --bg-secondary: #181818;
+  --hue-main: #DCDCDC;
+
+  background-color: var(--bg-secondary);
+  color: var(--hue-main); /* See, I was hoping I would just need to over-ride hue-main. But the colors are inheriting from * which got color based on the --hue-main in :root. */
+
+}
+
+.note-page * {
+  background-color: inherit;
 }
 
 /* note that I refactored note-content to be a wrapper around a div that gives the styling we want
@@ -20,7 +41,8 @@
 .note-content > * {
   padding-left: var(--s1); 
   padding-right: var(--s1);
-  background-color: var(--hue-cream);
+  /* background-color: var(--hue-cream); */
+  background-color: var(--bg-main);
   min-height: 100vh;
 }
 
@@ -37,6 +59,9 @@ sidebar-l > :first-child {
   padding-top: var(--s-1);
   padding-left: var(--s0);
   padding-right: var(--s0);
+
+  /* TODO not about the local overrides, but for now. */
+  /* background-color: #0C0C0C; */
 }
 
 /* Higher-level headers that appear after lower level headers. */
@@ -54,6 +79,8 @@ h2 ~ h2 {
 
   border-top-width: var(--border-thin);
   border-top-color: var(--hue-cream-dark);
+
+  /* color: var(--hue-cream-darkish); */
 }
 
 editor-hf {

@@ -11,6 +11,11 @@
   --color-light:#fafafa;
   --color-mid:grey;
 
+  --bg-main: var(--color-lightish);
+  --bg-secondary: var(--color-mid);
+
+  --hue-main: var(--color-dark);
+
   /* Need design scheme lingo, and easy way to update (javascript!)*/
   /* Primarys and accents and derived and all sorts */
   --hue-cream: #ffd0b0;
@@ -44,8 +49,10 @@
   /* font-size:calc(.333vw + 1em); */ /* the em changes... it'll recalculate even for inehrited right? so <p><div><p>0.25rem</p></div></p> if font-size=0.5em? I forgot how these work precisely */
   font-size: 1rem;
   font-family:var(--font-plain);
-  background-color:var(--color-lightish);
-  color:var(--color-dark)
+  /* background-color:var(--color-lightish); */
+  /* color:var(--color-dark); */
+  background-color:var(--bg-main);
+  color:var(--hue-main);
 }
 
 *, ::before, ::after {
@@ -55,6 +62,7 @@
   border: 0 solid;
   outline: var(--color-darkish) none 0; /* specifying inherit for the color makes it ignore the other values, since outline: inherit; is a global value of its own right. I think at least that's why. If want to use inherit for color, probably use outline-color property, and avoid shorthand */
 
+
   /* Layout defaults */
   box-sizing: border-box;
   margin: 0;
@@ -62,6 +70,7 @@
   /* border: 1px solid gray; */
   /* max-width: var(--measure); */
 }
+
 
 /* html, body, div, header, nav, main, footer,
 stack-l, sidebar-l, editor-hf {
