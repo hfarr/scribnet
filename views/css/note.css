@@ -4,9 +4,11 @@
   background-color: var(--hue-accent);
 }
 
-
+/* note that I refactored note-content to be a wrapper around a div that gives the styling we want
+  .note-content itself is just the container for the scrollbar, and sets the height, to get 
+*/
 .note-content {
-  max-height: 100vh;
+  /* max-height: 100vh; */
   overflow-y: auto;
 
   /* border applied to parent means it won't scroll with the overlow which we want */
