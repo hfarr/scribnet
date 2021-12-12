@@ -204,14 +204,12 @@ class Document {
       this.cursor.block = idx
     }
 
-    console.log("Active Block", idx, this.activeBlock)
   }
 
   get activeBlock() {
     if (this.blocks.length === 0) {
       this.blocks.push(new Block('p'))
     }
-    console.log("Get active block", this.cursor, this.blocks)
     return this.blocks[this.cursor.block];
   }
 
@@ -230,6 +228,7 @@ class Document {
   }
 
   // A promise, to render
+  // on update- callbacks? to listeners? or do we force them to call out? push an update, pull? push I imagine, pull can always happen
   editCommand(command) {
     let { action, data } = command
 
@@ -241,7 +240,6 @@ class Document {
     switch(action) {
       case ('typeSingleChar'): this.appendAt(data.offset, data.character);
     }
-
 
     // end-edit notifier. Maybe make this async. Can methods be async? I guess so right? or I can have it call an async and return ..?
 
@@ -357,7 +355,6 @@ class HTMLRenderer {
     let tag = block.tag
     let final = [`<${tag}>`]
     
-    console.log('rendering', block)
     final.push(...block.atoms.map(a => this.render(a)))
     final.push(`</${tag}>`)
 
