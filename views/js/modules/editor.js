@@ -23,6 +23,7 @@ class Editor extends HTMLElement {
     this.editDoc = new Document()
     this.data = { counter: 0 }
 
+    this.listeners = [];
 
     // DOM interaction
     this.title = 'Oh!'  // setAttribute?
@@ -39,6 +40,12 @@ class Editor extends HTMLElement {
     this.addEventListener('keydown', this.keyDown)
   }
 
+  notify() {
+    for (let callback of this.listeners) {
+      callback(this);
+    }
+  }
+
   beforeInput(inputEvent) {
     // console.debug('InputEvent', inputEvent)
     // return;
@@ -50,11 +57,15 @@ class Editor extends HTMLElement {
       // Start container is the textnode containing the starting caret
       // end container is the textnode containing the end
       if (r0) {
-        // console.debug(r0.startContainer === r0.endContainer)
-        console.log(r0)
-        // console.log(r0.startContainer)
-        // console.log(r0.endContainer)
+        console.debug(inputEvent, r0)
+        if (inputEvent.inputType === 'insertText') { 
+          this.editDoc.appendAt(r0.startOffset, inputEvent.data) 
+          inputEvent.preventDefault()
+          this.notify();
+        }
       }
+
+      // something happened, so notify listeners
     }
     
     // inputEvent.preventDefault();  // Cancels the input. Should check event is cancelable before calling. Align to our edit system for this.

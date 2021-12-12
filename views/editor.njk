@@ -64,7 +64,13 @@ Am I building out a full AST?
     console.log(renderedDoc)
     hf.innerHTML = renderedDoc;
 
+    // RENDER DOC ON EDITTT
+    // listener I guess. that's easier yknow?
+
   {# }) #}
   
+  hf.listeners.push(
+    editor => hf.innerHTML = renderer.render(editor.editDoc)
+  )
 
 </script>
