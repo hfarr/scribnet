@@ -1,0 +1,66 @@
+---
+layout: note.njk
+title: Editing
+---
+
+
+<editor-hf>
+</editor-hf>
+
+<!-- Even HTML breaks it down to separate blocks. Which means we can probably leave it
+in the editor, though I'd prefer to.. do better I suppose.
+Am I building out a full AST?
+ -->
+
+<script>
+  let hf = document.querySelector('editor-hf');
+  hf.innerHTML = '<p>Test</p>'
+
+  import("/js/modules/document/document.mjs")
+  .then((module) => {
+    let {Document: EditDocument, Block: EditBlock, Atom, HTMLRenderer } = module
+    console.log(EditBlock)
+
+    let doc = new EditDocument()
+
+    doc.blocks.push(
+      new EditBlock('h1',
+        new Atom([], "Title title title"),
+        new Atom(['italic'], " And now a word from our sponsor")
+      ),
+      new EditBlock('p',
+        new Atom([], "Hi. Here is some"),
+        new Atom(['bold'], "Bold Text! "),
+        new Atom(['bold', 'italic'], "bold and italicized. "),
+        new Atom(['bold'], "back to bold..."),
+        new Atom(['bold', 'italic'], "beHOLD!"),
+        new Atom([], "boring")
+      ),
+      new EditBlock('h2',
+        new Atom([], "subsection"),
+      ),
+      new EditBlock('p', 
+        new Atom([], 'blessed are these &lt;p&gt;')
+      ),
+      new EditBlock('h2',
+        new Atom([], "subsection"),
+      ),
+      new EditBlock('p',
+        new Atom([], "Time to get serious."),
+      ),
+      new EditBlock('p',
+        new Atom([], "Here is a long line. It is an entire paragraph. For sure. It needs to be lonker than 65 characters for me to test out the wrapping we'll get. So here we are. enjoy."),
+      ),
+    )
+
+
+    let renderer = new HTMLRenderer();
+    let renderedDoc = renderer.render(doc)
+    console.log(renderedDoc)
+    hf.innerHTML = renderedDoc;
+
+    console.log(JSON.stringify(doc))
+  })
+  
+
+</script>
