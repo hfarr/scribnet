@@ -12,16 +12,19 @@ in the editor, though I'd prefer to.. do better I suppose.
 Am I building out a full AST?
  -->
 
-<script>
-  let hf = document.querySelector('editor-hf');
-  hf.innerHTML = '<p>Test</p>'
+<script type="module">
+  import { Block as EditBlock, Atom, HTMLRenderer } from "/js/modules/document/document.mjs"
 
-  import("/js/modules/document/document.mjs")
-  .then((module) => {
-    let {Document: EditDocument, Block: EditBlock, Atom, HTMLRenderer } = module
+  let hf = document.querySelector('editor-hf');
+  console.log("Edit doc:", hf.editDoc)
+
+
+  {# import("/js/modules/document/document.mjs")
+  .then((module) => { #}
+    {# let {Block: EditBlock, Atom, HTMLRenderer } = module #}
     console.log(EditBlock)
 
-    let doc = new EditDocument()
+    let doc = hf['editDoc']
 
     doc.blocks.push(
       new EditBlock('h1',
@@ -53,15 +56,15 @@ Am I building out a full AST?
       ),
     )
 
-    doc.appendAt(5, "!aaa!")
+    hf.editDoc.appendAt(5, "!aaa!")
+    console.debug(hf.editDoc)
 
     let renderer = new HTMLRenderer();
-    let renderedDoc = renderer.render(doc)
+    let renderedDoc = renderer.render(hf.editDoc)
     console.log(renderedDoc)
     hf.innerHTML = renderedDoc;
 
-    console.log(JSON.stringify(doc))
-  })
+  {# }) #}
   
 
 </script>
