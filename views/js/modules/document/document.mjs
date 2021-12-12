@@ -162,6 +162,30 @@ function appendAt(block) {
   }
 }
 
+// generic n dim grid
+class OffsetList {
+
+  constructor() {
+    this.length = 0
+    this.sublists = []
+    this.cursor = 0
+    this.offset = 0
+  }
+
+  get list() {
+    return this.offsetLists(this.cursor)
+  }
+
+  setIndex (index) {
+
+    this.cursor = 0
+    this.offset = index
+    while (this.offset - this.subLists[this.cursor] > 0) {
+      this.offset -= this.list.length
+      this.cursor++
+    }
+  }
+}
 
 class Document {
 
@@ -175,16 +199,19 @@ class Document {
     }
   }
 
-  set activeBlock(idx) {
+  setActiveBlock(idx) {
     if (0 <= idx && idx < this.blocks.length) {
       this.cursor.block = idx
     }
+
+    console.log("Active Block", idx, this.activeBlock)
   }
 
   get activeBlock() {
     if (this.blocks.length === 0) {
-      this.blocks.push(new EditBlock('p'))
+      this.blocks.push(new Block('p'))
     }
+    console.log("Get active block", this.cursor, this.blocks)
     return this.blocks[this.cursor.block];
   }
 
