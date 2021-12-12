@@ -17,8 +17,11 @@ layout: root.njk
 
       {# could make the main element the stack. Idk #}
         <main >
-          {# Maybe wrap in a center  #}
-          <center-l>
+          {# Maybe wrap in a center. I'd like a better max-width then just overriding it here,
+          since it's kinda based on the default font size of the editor. So maybe the editor should manage it. 
+          for now since Im making the editor have slightly larger font it'll do okay.
+          #}
+          <center-l max="75ch">
             <stack-l space="var(--s-3)">
               {{ content | safe }}
             </stack-l>

@@ -55,6 +55,7 @@ h2 ~ h2 {
 }
 
 editor-hf {
-  --s0: 1rem;
-  max-width: var(--measure);
+  /* --s0: 1rem; */
+  /* --s0: var(--s2); */
+  /* max-width: var(--measure); */
 }
