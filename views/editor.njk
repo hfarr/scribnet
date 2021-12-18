@@ -57,12 +57,19 @@ Am I building out a full AST?
     )
 
     hf.editDoc.appendAt(5, "!aaa!")
-    console.debug(hf.editDoc)
+    hf.render()
+    {# console.debug(hf.editDoc) #}
 
-    let renderer = new HTMLRenderer();
+    /* 
+      I think, by default, I will have it attach an HTML renderer for the custom element.
+      It does make sense to me that an "editor" has knowledge it needs to render as such.
+      I'm bothered slightly but I can't articulate clearly the reason why, which is no
+      reason at all as far as I am concerned right now.
+      */
+    {# let renderer = new HTMLRenderer();
     let renderedDoc = renderer.render(hf.editDoc)
     console.log(renderedDoc)
-    hf.innerHTML = renderedDoc;
+    hf.innerHTML = renderedDoc; #}
 
     // RENDER DOC ON EDITTT
     // listener I guess. that's easier yknow?
@@ -73,4 +80,7 @@ Am I building out a full AST?
     editor => hf.innerHTML = renderer.render(editor.editDoc)
   )
 
+</script>
+<script>
+  let hf = document.querySelector('editor-hf')
 </script>

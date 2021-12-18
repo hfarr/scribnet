@@ -245,8 +245,8 @@ class Document {
 
   }
 
-  accept(visitor) {
-    return visitor.visitDocument(this)
+  accept(visitor, ...args) {
+    return visitor.visitDocument(this, ...args)
   }
 
 }
@@ -271,8 +271,8 @@ class Atom {
 
   }
 
-  accept(visitor) {
-    return visitor.visitAtom(this);
+  accept(visitor, ...args) {
+    return visitor.visitAtom(this, ...args);
   }
 }
 
@@ -324,11 +324,60 @@ class Block {
 
   }
     
-  accept(visitor) {
-    return visitor.visitBlock(this)
+  accept(visitor, ...args) {
+    return visitor.visitBlock(this, ...args)
   }
 }
 
+/**
+ * Probably doesn't need to be in the same module as the document!
+ */
+class CursorComputer {
+
+  getNodeAndOffset(document) {
+    
+    let results = this.findIt(document, document.cursor);
+    return [results.slice(0, -1), results[results.length - 1]]
+  }
+  
+  // Returns a list of indices that are used to access nested trees.
+  // could maybe flatten the DOM instead? ehhh
+  // last elem is the offset into the node. Has code smell. I'm
+  // choosing to take on the tech debt.
+  findIt(item, {block, offset}) {
+    let indices = item.accept(this, block, offset);
+
+    return indices
+  }
+
+  visitDocument(doc, blockIdx, offset) {
+
+    return [blockIdx, ...this.findIt(doc.blocks[blockIdx], { block: 0, offset } ) ]
+  }
+
+  visitBlock(block, blockIdx, offset) {
+
+    // nice thing is we can just return a 0 for each styling in the Atoms because we know how they're laid out
+    // bit less convenient for when we update this but for right now I'm just trying to get this basic model
+    // working
+
+
+    let accumLen = 0
+    let idx = 0
+    while ( accumLen + block.atoms[idx + 1].content.length <= offset ) {
+      accumLen += block.atoms[idx++].content.length
+    }
+
+    return [idx, ...this.findIt(block.atoms[idx], { block: 0, offset: offset - accumLen } ) ]
+  }
+
+  visitAtom(atom, blockIdx, offset) {
+
+    let indices = atom.styles.map( _ => 0 );
+    console.log("Atom visit", atom, indices, offset)
+    return [...indices, offset]
+  }
+}
 
 // visitor interface
 class HTMLRenderer {
@@ -373,6 +422,6 @@ class HTMLRenderer {
 }
 
 
-export { Block, HTMLRenderer, Atom, appendAt }
+export { Block, HTMLRenderer, Atom, appendAt, CursorComputer }
 
 export { Segment, Document }
