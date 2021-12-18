@@ -86,7 +86,7 @@ export default class Sidebar extends HTMLElement {
   }
 
   static get observedAttributes() {
-    return ['side', 'sideWidth', 'contentMin', 'space', 'noStretch'];
+    return ['side', 'sideWidth', 'contentMin', 'space', 'noStretch'].map(s => s.toLowerCase());
   }
 
   connectedCallback() {
@@ -98,6 +98,7 @@ export default class Sidebar extends HTMLElement {
   }
 
   attributeChangedCallback(name) {
+    console.log("Attr Callback", name);
     this.render();
   }
 }

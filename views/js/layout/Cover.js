@@ -83,7 +83,7 @@ export default class Cover extends HTMLElement {
   }
 
   static get observedAttributes() {
-    return ['centered', 'space', 'minHeight', 'noPad'];
+    return ['centered', 'space', 'minHeight', 'noPad'].map(s => s.toLowerCase());
   }
 
   connectedCallback() {

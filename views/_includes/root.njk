@@ -9,16 +9,13 @@ title: Scribnet
     <title>{{ title }}</title>
 
     <link rel="stylesheet" type="text/css" href="/css/styles.css">
+    <script type="module" src="/js/index.js"></script>
+
     <!-- TODO statically render 'components' into the page based on what uses this layout as parent, an easy interface for passing that info up -->
     {% block header %}
       <!-- Override page-per-page basis -->
     {% endblock %}
 
-    {# {% for sheet in sheets %}
-    <link rel="stylesheet" type="text/css" href="/css/{{ sheet }}">
-    {% endfor %} #}
-
-    <script type="module" src="/js/index.js"></script>
   </head>
   <body>
     {{ content | safe }}

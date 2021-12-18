@@ -61,7 +61,7 @@ export default class Stack extends HTMLElement {
   }
 
   static get observedAttributes() {
-    return ['space', 'recursive', 'splitAfter'];
+    return ['space', 'recursive', 'splitAfter'].map(s => s.toLowerCase());
   }
 
   connectedCallback() {

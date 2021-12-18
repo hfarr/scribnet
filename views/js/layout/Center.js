@@ -78,7 +78,7 @@ export default class Center extends HTMLElement {
   }
 
   static get observedAttributes() {
-    return ['max', 'andText', 'gutters', 'intrinsic'];
+    return ['max', 'andText', 'gutters', 'intrinsic'].map(s => s.toLowerCase());
   }
 
   connectedCallback() {

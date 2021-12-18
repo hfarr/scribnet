@@ -52,7 +52,7 @@ export default class Cluster extends HTMLElement {
   }
 
   static get observedAttributes() {
-    return ['justify', 'align', 'space'];
+    return ['justify', 'align', 'space'].map(s => s.toLowerCase());
   }
 
   connectedCallback() {
