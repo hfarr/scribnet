@@ -98,7 +98,7 @@ export default class Sidebar extends HTMLElement {
   }
 
   attributeChangedCallback(name) {
-    console.log("Attr Callback", name);
+    // console.log("Attr Callback", name);
     this.render();
   }
 }
