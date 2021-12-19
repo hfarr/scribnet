@@ -82,5 +82,26 @@ Am I building out a full AST?
 
 </script>
 <script>
-  let hf = document.querySelector('editor-hf')
+  function scoop(node, childs) {
+    return [{n:node}, childs]
+  }
+  function cat(node, childs) {
+    return [node, ...childs]
+  }
+  function treeFoldr(f, base, tree) {
+    // console.debug('treefoldr', tree, tree.childNodes)
+
+    if (tree.childNodes === undefined || tree.childNodes.length === 0) {
+      return f(tree, base)
+    } 
+
+    const apply = (func, arg) => {
+      console.debug("apply", arg, func)
+      return x => treeFoldr(f, func(arg), x)
+    }
+    const kiddos = [...tree.childNodes]
+    console.debug('Kiddos:', kiddos)
+
+    return kiddos.reduce(apply, x => f(x, base))
+  }
 </script>
