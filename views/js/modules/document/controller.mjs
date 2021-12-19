@@ -59,6 +59,34 @@ export class HTMLController extends Controller {
   }
 
 
+  mapfn() {
+
+  }
+
+
+  // could I guess create Functor type classing
+  treeFoldr(f, base, tree) {
+
+    // right-to-left post order traversal
+    // isLeaf, isInternal
+    /**
+     * Haskell about to jump out
+     * Folding over a tree
+     * 
+     * folder :: (a -> b -> b) b (Tree a)
+     * foldr f base (Leaf contents)                 = f contents, base
+     * foldr f base (Internal contents left right)  = f contents (foldr f (foldr f base right) left)
+     * 
+     * with arbitray children,
+     * foldr f base (Leaf contents)             = f contents, base
+     * foldr f base (Internal contents [x:xs])  = f contents (foldr f (map (\y -> foldr f base y) xs) x)
+     * 
+     */
+
+
+  }
+
+
 
   /**
    * Gets the character (or "atomic") offset of a point from the start of the 
@@ -101,7 +129,7 @@ export class HTMLController extends Controller {
         // // console.debug("length:",length)
         // return length
 
-        // Computes sum of list, + 1 char for each counted space between
+        // Computes sum of lengths of text nodes
         return [...startNode.childNodes]
           .filter(n => n !== 0)
           .map(cn => this.getTextLength(cn, node, nodeOffset))
