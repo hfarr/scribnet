@@ -5,83 +5,119 @@ title: Editing
 
 
 <editor-hf>
+  <h1>Title title title <em>And now, a word from our sponsor</em></h1><p>
+       &nbsp;
+  </p><p>
+
+      
+  </p>
+  <p></p>
+  <p>Uselessly  spaced    out
+
+    maybe even &nbsp; like this
+  </p>
+  <p>Hi. Here is some <strong>Bold text! </strong><strong><em>Bold and italicized!</em> bold </strong>
+    <strong>back to bold...</strong>
+  </p>
+  <h2>section</h2>
+  <p>blessed are these &lt;p&gt;</p>
+  <h2>second section</h2>
+  <p>A serious paragraph</p>
+  <p>A trial of inline <span>&nbsp;</span></p>
+  <p>Space after </p>
+  <p>
+    A long bit of text. 
+    
+    See, it's rather unfortunate that we don't write like this
+    often. The DOM will take this chunk of text. I think it should keep it within
+    the same paragraph. Sometimes it will rearrange HTML for you. It is rather
+    forgiving of the input it accepts, such as mixing tags that would normally
+    be separated into different elements.
+  </p>
+  <p>
+    I could (and probably should) nest my header tags. Accessibility wise I think it
+    reads the same as the "flattened" kind where all these elements are next to each
+    other. My document model might produce html that's nested which will be useful
+    for querying the headers when I eventually make my list element.
+  </p>
+  <h2>Conclusion</h2>
+  <p>
+    Here our sample text adventure comes to an end. I haven't decided whether I want to
+    permit the natural edit events from <span>contentEditable</span> to take their
+    natural course or if I'd prefer to interrupt each event and re-render each time. It
+    is easy to let the browser do the work but I'll have to take interrupts regardless.
+    I want to identify what I'd need to supplement with code.
+  </p>
 </editor-hf>
+
+<div id="toolmark">
+  <p>
+    toolmark
+  </p>
+</div>
 
 <!-- Even HTML breaks it down to separate blocks. Which means we can probably leave it
 in the editor, though I'd prefer to.. do better I suppose.
 Am I building out a full AST?
  -->
 
-<script type="module">
-  import { Block as EditBlock, Atom, HTMLRenderer } from "/js/modules/document/document.mjs"
-
-  let hf = document.querySelector('editor-hf');
-  console.log("Edit doc:", hf.editDoc)
-
-
-  {# import("/js/modules/document/document.mjs")
-  .then((module) => { #}
-    {# let {Block: EditBlock, Atom, HTMLRenderer } = module #}
-    console.log(EditBlock)
-
-    let doc = hf['editDoc']
-
-    doc.blocks.push(
-      new EditBlock('h1',
-        new Atom([], "Title title title"),
-        new Atom(['italic'], " And now a word from our sponsor")
-      ),
-      new EditBlock('p',
-        new Atom([], "Hi. Here is some"),
-        new Atom(['bold'], "Bold Text! "),
-        new Atom(['bold', 'italic'], "bold and italicized. "),
-        new Atom(['bold'], "back to bold..."),
-        new Atom(['bold', 'italic'], "beHOLD!"),
-        new Atom([], "boring")
-      ),
-      new EditBlock('h2',
-        new Atom([], "subsection"),
-      ),
-      new EditBlock('p', 
-        new Atom([], 'blessed are these &lt;p&gt;')
-      ),
-      new EditBlock('h2',
-        new Atom([], "subsection"),
-      ),
-      new EditBlock('p',
-        new Atom([], "Time to get serious."),
-      ),
-      new EditBlock('p',
-        new Atom([], "Here is a long line. It is an entire paragraph. For sure. It needs to be lonker than 65 characters for me to test out the wrapping we'll get. So here we are. enjoy."),
-      ),
-    )
-
-    hf.editDoc.appendAt(5, "!aaa!")
-    hf.render()
-    {# console.debug(hf.editDoc) #}
-
-    /* 
-      I think, by default, I will have it attach an HTML renderer for the custom element.
-      It does make sense to me that an "editor" has knowledge it needs to render as such.
-      I'm bothered slightly but I can't articulate clearly the reason why, which is no
-      reason at all as far as I am concerned right now.
-      */
-    {# let renderer = new HTMLRenderer();
-    let renderedDoc = renderer.render(hf.editDoc)
-    console.log(renderedDoc)
-    hf.innerHTML = renderedDoc; #}
-
-    // RENDER DOC ON EDITTT
-    // listener I guess. that's easier yknow?
-
-  {# }) #}
-  
-  hf.listeners.push(
-    editor => hf.innerHTML = renderer.render(editor.editDoc)
-  )
-
-</script>
 <script>
+  let hf = document.querySelector('editor-hf')
+
+  let toolmark = document.querySelector("#toolmark")
+
+  function label(fragments, ...values) {
+    let result = ""
+    for (let i = 0; i < values.length; i++) {
+      result += `<strong>${fragments[i].trim()}:</strong>&nbsp;${values[i]}<br>`
+    }
+    return result
+  }
+
+  toolmark.children[0].innerHTML = label`Test ${"label"} the best guess is ${'not this one'}`
+
+  // document.addEventListener('selectionchange', (sce) => console.debug(sce) )
+  document.addEventListener('selectionchange', (sce) => {
+    const sel = window.getSelection()
+    // console.log(sel.toString())
+    const re = sel.getRangeAt(0)  // Not handling multi ranges for now
+    // console.debug(re.toString())
+    let docOffset = hf.viewController.computeDocumentRange(re)
+    let docOffset2 = getOffset(hf, re.startContainer, re.startOffset)
+    toolmark.querySelector('p').innerHTML = label`Offset ${docOffset[0]} Length ${docOffset[1]} O2 ${docOffset2}`
+    // console.debug(docOffset)
+  })
+
+  // hf.addEventListener('beforeinput', (e) => console.log('hf pre-input', e))
+  // hf.addEventListener('input', (e) => console.log('hf input', e))
+
+
+  // <script>
+  /**
+    treeFoldr(cat, [], hf)
+      .filter(n=>n.nodeType === Node.TEXT_NODE)
+	    .filter(n=>!(/^\s*$/.test(n.textContent)))
+    */
+
+  function getOffset(editor, node, offset) {
+    let textNodes = treeFoldr(cat, [], editor)    // flatten
+      .filter(n=>n.nodeType === Node.TEXT_NODE)   // just text
+	    .filter(n=>!(/^\s*$/.test(n.textContent)))  // contentful text
+    
+    // though losing all information about the spaces, its not essential for learning offsets
+    // we also don't yet handle line breaks between block elements, or collapsing spaces between
+    // adjacent inlines
+
+    let texts = textNodes.map(n => n.textContent)
+      .map(s => s.replaceAll(/\s+/g, ' '))
+    
+    console.debug(textNodes)
+    console.debug(texts)
+    return texts.slice(0, textNodes.indexOf(node)).reduce((p,c)=> p + c.length, 0) + offset
+
+  }
+
+
   function scoop(node, childs) {
     return [{n:node}, childs]
   }
