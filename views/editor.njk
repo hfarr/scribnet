@@ -8,6 +8,8 @@ title: Editing
   <h1>Title title title <em>And now, a word from our sponsor</em></h1><p>
        &nbsp;
   </p><p>
+&nbsp;
+  </p><p>
 
       
   </p>
@@ -21,6 +23,9 @@ title: Editing
   </p>
   <h2>section</h2>
   <p>blessed are these &lt;p&gt;</p>
+  <p>Hey! edge case <span> more like—edge SPACE</span></p>
+  <p><span>want to see even edgier space? </span><span> yeah you do you-</span></p>
+  <p><span>WATCH OUT CURVE</span><span> ball</span></p>
   <h2>second section</h2>
   <p>A serious paragraph</p>
   <p>A trial of inline <span>&nbsp;</span></p>
@@ -99,9 +104,44 @@ Am I building out a full AST?
 	    .filter(n=>!(/^\s*$/.test(n.textContent)))
     */
 
+  function htmlElementFun(editor, node, offset) {
+
+    let hte = treeFoldr(cat, [], editor).filter(n => n.nodeType === Node.ELEMENT_NODE);
+    
+      
+  }
+  
+  const NBSP = '\u{00A0}' 
+  // compared to \u{0020} which is a normal space ' '. we want 'whitespace' to exclude this. Then we don't need to
+  // be concerned with trying to map innerHTML representations to text nodes.
+  // another way to compute would be to compute lengths recursively, using innerText, adding it back to the whole.
+  // Then, defined recursively, an element e has "textual space" that is e.innerText.length - (children elem lengths).
+  // text nodes are 0 because they do not have innerText. That will be a nice, elegant way to compute html-awareness
+  // for lengths! oooh Im into this now. would like to avoid regexp processing, because how many other characters should
+  // I be handling, exactly? innerText already does the work I need, so I'd like to lean on that if I can
+
+  // I'd love to use 'innerText' to compute the offset. I think that is more useful for going the other direction,
+  // from a Doc-internal offset into the DOM selection, because then I can do the offset computation (which is 
+  // kinda like an integral in a way) to compute.
+  // yeah, weird, but I guess an "offset" is an expression of area. Of some dimension. And going between node,offset
+  // to linear offset is swapping between 2d and 1d space. Like when you have a fixed-width grid you can compute
+  // x,y coords from a single offset ( x,y = (n % width, floor(n / width)) ). The alternate computation is to
+  // repeatedly add widths until adding one more goes beyond n, the amount of widths you added is y. then subtract
+  // that amount from n to get x. For a variable width "grid" we have to use this second method.
+  // The multiplcation/division method only works if we know the area function (so if it were e.g a triangular "grid"
+  // we could still use a method derived from the derivative of the area to take advantage of multiplication.)
+  // fun! math parallels.
   function getOffset(editor, node, offset) {
+    let preserve = new WeakMap()
     let textNodes = treeFoldr(cat, [], editor)    // flatten
       .filter(n=>n.nodeType === Node.TEXT_NODE)   // just text
+      .map(e => { 
+        // console.debug(e)
+        if ('innerHTML' in e && /&nbsp;/.test(e.innerHTML)) {
+          preserve.set(e, "ha"); 
+        }
+        return e;
+      })  // cheeky.
 	    .filter(n=>!(/^\s*$/.test(n.textContent)))  // contentful text
     
     // though losing all information about the spaces, its not essential for learning offsets
@@ -111,12 +151,120 @@ Am I building out a full AST?
     let texts = textNodes.map(n => n.textContent)
       .map(s => s.replaceAll(/\s+/g, ' '))
     
-    console.debug(textNodes)
-    console.debug(texts)
-    return texts.slice(0, textNodes.indexOf(node)).reduce((p,c)=> p + c.length, 0) + offset
+    // console.debug(textNodes)
+    // console.debug(texts)
+    return texts.slice(0, textNodes.indexOf(node)).reduce((p,c) => p + c.length, 0) + offset
 
   }
 
+  // e.innerText.length === treeFoldr(length, 0, e)
+
+  let _hf_length = treeFoldr(length, 0, hf)
+  let _hf__length = treeFoldr(_length, 0, hf)
+  let _hf_nodes = treeFoldr(cat, [], hf)
+  let _length_check = _hf_nodes.map(n => [n, length(n), 'innerText' in n ? n.innerText.length : 0])
+  // let _hf_margins = treeFoldr((n, [p=0, ...ps]) => [length(n, p), p, ...ps], [])
+  let _hf_len_margins = treeFoldr((n, prev) => [length(n, prev[0]), ...prev], [], hf) // this is basically cat! but also a map! catmap!
+  // ^ not actually margins oop
+
+  let _hf_margins_fold = treeFold(lengthTreeFold, 0, hf)
+  let _hf_margins_rec = margins(hf)
+  let _hf_margins = treeFoldr(cat, [], hf).map(t => treeFold(lengthTreeFold, 0, t))
+                      //  treeFoldr((n,p) => cat(treeFold(lengthTreeFold, 0, n), p), [], hf)  // its equivalent Im pretty sure
+  let _hf_margins_check = _hf_nodes.map(n => [n, margins(n), treeFold(lengthTreeFold, 0, n)])
+                                    .filter(([_, n, __]) => n !== 0)
+  // almost...
+  // _hf_margins_check.reduce((n,p) => n+p, 0)  === 1417
+  // 100 more than _hf_length
+  // the outermost should wrap with 0 extra characters, I wonder where they're coming from. Does the outer context
+  // somehow include more characters from innerText?
+
+  // more checks
+  let cns = [...hf.childNodes]
+    .filter(n=>n.nodeType === Node.ELEMENT_NODE)
+    .map(e=>e.innerText)
+    .reduce((acc,cur)=>cur.length + acc, 0)
+  // ~1289 which is closer to the margin's I was expecting (1317 - 1289 = 28)
+  // Off by 80, which is nice and round
+  // couldn't be some weird code point/code unit shenanigans could it
+  // ...could it
+
+  // let all_children = []
+
+  // I worked it out
+  // Every block element carries an implicit +1 to the marginal addition of the parent even if it doesn't directly 
+  // contribute anything
+  // Two of the paragraphs render empty text. But they still get newlines. so I can work out the 28 difference as -
+  let justcns = [...hf.childNodes].filter(n=>n.nodeType === Node.ELEMENT_NODE)
+  // note that Im not reducing to innertext, which implicitly ignores any child element that has no rendered text (e.g a paragraph composed of raw whitespace that arent nbsp). That was part
+  // of the confusion albeit unnoticed. 
+  // But the parent renders a newline for block elements, *even ones that don't have any height*
+  // ... !!! which tells me I should filter them out! if a paragraph is entered by a user for spacing text it has to have
+  //    some thing within it. looking at what content-editable does, apparently inserts a <br>, wrapped in a paragraph..
+  //    I guess in my computation a <br> should count as a leaf with margin 1. good to know! actually, it works out fine without
+  //    special handling because the <p> should report the correct innerText. Looking at it, and it does, it reports a "\n". Nice
+  // TAKEAWAY - PREPROCESS by filtering out "native" html elements with empty text. might revisit in the future if we add semantics
+  //    to 'empty' content. could also shove in line breaks so it renders.
+
+  let mgn = (justcns.length - 1   // subtract one because linebreaks are only rendered *between* block elements, not after the last one
+    - 2)                          // surprise! subtract another two. There are 2 empty <p> tags which contribute nothing to the sum for the child elements, they get overlooked in the margin computation. This adjustment accounts for that. Otherwise we'd be over-counting the margin.
+    * 2                           // the browser copies over a bonus linebreak between block elements
+      // we would not make the adjustment for empty <p> if they had even one character rendered, because that would by nature be counted in the 'lengths'.
+      // in a normal circumstance we could compute margin by summing up innerText from direct children and subtracting from the total
+      // and equivalently compute by summing up the padding linebreaks, which we know are two per adjacent pair of block elements, of which directChildren.length - 1 exist
+      // since the adjustment is a little unnatural it makes senes to me that we filter them out as part of pre-processing.
+      // Okay! it only took all night to identify the relationship between child elements, margins of innertext,
+      // yeah! okay we're onto *something*
+      // helped by the fact that... innertext exists at all. Holy cow.
+      // Im ~70% confident I could have found a way to work out 'innerText' from just textContent given I finally realized how
+      // to identify &nbsp; (its \u{00A0}, so we can filter out \other\ whitespace). But it's complicated becaused then it's on us
+      // to compute space squashing.
+      // I might even have to do that anyway! A span embedded in a p, or two adjacent span, if the boundary characters are spaces...
+      // will one have innerText with the space and the other not? if this isnt the case then Im kinda fuckled still, but I could
+      // also just pre-process that I Think.
+      // okay - thankfully the <p>chars <span> note the spaces..</span></p> case is fine, the span innertext negates the space so
+      // the <p> computes the correct margin. Adjacent spans though - the margin might be *negative*
+        // :sob: merciful web working group
+        // it works the exact way I needed
+        // the rule seems to be: collapse spaces at the left of a span. Collapse to a single space at the right.
+        // this rule elegantly works for any nonsense case where extraneous spaces pad in each span
+        // wondering though, what if no spaces pad the right side of the left span, but we have spaces on the left of the right
+        // span? <s>ABRUPT</s><s> ...golly</s>
+        // by the rule, it should render ABRUPT...golly
+        // lets see..
+        // ha! wow they are kind to me tonight. This is my reward for faithfulness.
+        // the kind folks who made firefox at least seem to have a rule for consistency.
+        // If a space is rendered between inline elements, or between parent and inline 
+        // (which I supposed amounts to a textNode and an inline element, with the text
+        // node having at least one rendered character) then it will report that one of
+        // the two has the boundary space, even if it collapses the spaces down.
+        // this is convenient and basically the way I need it to work 
+
+  // nested header blocks would exhibit the same marginal behaviours I believe
+
+  function margins(node) {
+    if (! ('innerText' in node) ) {
+      return 0
+    }
+    return node.innerText.length - ([...node.childNodes].reduce( (acc,cur) => margins(cur) + acc, 0))
+  }
+
+  function length(node, previous = 0) {
+    
+    if (node.nodeType === Node.TEXT_NODE) {
+      // I know, weird, right? I was thinking, maybe return previous, then it's threaded through, which I think might yield what we want
+      return 0;
+    }
+
+    return node.innerText.length - previous
+  }
+
+  function _length(node, previous = 0) {
+    if (node.nodeType === Node.TEXT_NODE) {
+      return previous; // nah, I dont think so
+    }
+    return node.innerText.length - previous
+  }
 
   function scoop(node, childs) {
     return [{n:node}, childs]
@@ -127,6 +275,21 @@ Am I building out a full AST?
   function cannat(node, childs) {
     return [node, childs]
   }
+
+  // function fixText(node, childs) {
+  //   if (node.childNodes.length === 0) {
+  //     node.replaceAll()
+  //   }
+  //   return node
+  // }
+
+  // wonder if the 'base' case should be to return the base?
+  // in a more general treeFoldr I'd say yes, it gives the 
+  // users of the function a bit more control over what
+  // happens at the end, like they don't have to be Aware of
+  // handling the base differently. as I think I'll have to
+  // do with this implementation.
+  // maybe if this wasn't explicitly computing a function application.
   function treeFoldr(f, base, tree) {
     // console.debug('treefoldr', tree, tree.childNodes)
 
@@ -148,5 +311,107 @@ Am I building out a full AST?
 
     // return f(tree, kiddos.reduce(apply, x => f(x, base)))
     return f(tree, listapply(kiddos))
+  }
+
+  function treeFoldrPost(f, base, tree) {
+    if (tree.childNodes.length === 0) { // leaf
+      return base
+    }
+    
+  }
+
+  // compare/contrast with the above, the base case handling. I think it's awkward since we combine foldr with
+  // with the tree foldr, but they *each handle base differently*
+  // like, the reduceRight doesn't use f(tree, base)! it spits back 'base'! hm! well, that makes sense
+  // in a way because that 'base' never revers to a leaf node, it refers to the computed result of the
+  // next right most sibling. Gets me thinking.
+  // can I make a visualization for this? like a node-line graph svg that gets colored in as the computation
+  // occurs
+  function _treeFoldr(f, base, tree) {
+
+    if (tree.childNodes.length === 0) {
+      return base
+    } 
+
+    const listapply = (treeList) => {
+      return treeList.reduceRight( (res, item) => treeFoldr(f, res, item), base )
+    }
+    return f(tree, listapply([...tree.childNodes]))
+  }
+
+  function lengthTreeFold(node, children) {
+    if (node.childNodes.length === 0) {
+      // I could remove this check by specifying 0 as the base value,
+      // in liew of node.innerText.length, as node would not have
+      // an innerText in this case. As much as that would make me smile
+      // we didn't really get node in a form that's easy to check for 
+      // that without an unfun comparison check anyway, unless I abstracted
+      // out to arbitrary trees and had like an interface function that knew
+      // details. Sigh
+      return 0;
+    }
+    // foldl, fold *left*
+    // subtracts the sum of the recursive result from the innerText length reported by the parent, to see the marginal additions
+    // I think - here's a thought. When a component renders spaces, and its nested component does too, and it's inline,
+    // or maybe even adjacent—the parent view is that they collapse to 1 space. But each individually would report 0 spaces.
+    // e.x <div><p>Hi </p><p> there</p></div>
+    // div would report 2 + 1 + 5, but p:first-child would report 2 and p:last-child would report 5!
+    // we lose one
+    // so in OUR example we are somehow losing 108? Im dubious
+
+    return children.reduce((accum, current) => accum - current, node.innerText.length)
+  }
+
+  // fold the tree without flattening it
+  function treeFold(f, base, tree) {
+    if (tree.childNodes.length === 0) {
+      return f(tree, base)
+    }
+    // let processedChildren = [...tree.childNodes]
+    //   .map()
+    // possibly, could reduce the list in this func too, but 'f' can take that responsibility. A bit of flexibility. So 'f' operates on tree and a list
+    return f(tree, [...tree.childNodes].map(subTree => treeFold(f, base, subTree)))
+  }
+  // gosh, it's still so similar to treeFoldr. Isnt there a way to define treeFoldr in terms of treeFold? 
+  // from a functional perspective? I seem to remember that. It seems that crucial difference is treeFold
+  // takes a function that operates on tree, and a list of result type. It traverses the tree pre-order.
+  // treeFoldr "flattens" the tree to a list, and performs the operation with right-associativity
+  // I think-- yes. This is a salient observation. treeFoldr is much more like foldr on a list.
+  // In fact I believe it is just straight equivalent to first producing a pre order traversal then applying
+  // foldr. It's more sophisticated to wrap those two steps into one function on trees, which is what I
+  // skipped right to since that's what I wanted to produce for hf. But a typical fold on a tree obeys
+  // more familiar tree semantics.
+  // Another way to view the difference is the way that the fold is recursively called. In treeFold it's
+  // mapped over the children trees, and in tree foldr it is still a kind of map, but the 'base' becomes the
+  // next-right tree, plumbing the computation through the leaves. Ironically the right associativity makes
+  // it a post-order traversal (in the imperative sense, lazy eval sense maybe it makes no difference) since
+  // the bottom-"right" most leaf is the first one seen by the computation, but when the plumbing function is 
+  // 'collapsed' at the end it becomes more like a list traversal and the evaluation proceeds as a pre-order.
+  // 
+  // visualized
+  /*
+  (* is a leaf)
+      1
+    2   5
+   3 4 6 7
+   * * * *
+  tree fold 
+  f(1, [f(2, [f(3, []), f(4, [])]), f(5, [f(6,[]), f(7, [])])])
+
+  tree foldr
+  f(1, f(2, f(3, f(4, f(5, f(6, f(7, [])))))))
+
+  note how the base case only appears once in foldr vs for every leaf in fold
+
+
+  ready for something cool and sexy?
+  treeFold(cat, [], hf).flat(h) === treeFoldr(cat, [], hf)
+    where h is the height of the tree (might need a +1 there)
+
+  
+  */
+
+  function treeOrder(f, tree) {
+
   }
 </script>
