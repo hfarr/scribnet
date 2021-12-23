@@ -1,7 +1,15 @@
 'use strict';
 
-import { CursorComputer } from './document/document.mjs';
-import { Document, HTMLRenderer } from './document/document.mjs'
+import { Document } from './document/document.mjs'
+import { HTMLController } from './document/controller.mjs';
+
+class Parser {
+
+  parse(node) {
+
+  }
+
+}
 
 // Thinking the editor maybe doesn't directly implement HTMLElement and instead acts as a composeable piece of functionality
 // Can play around with that later
@@ -22,60 +30,39 @@ class Editor extends HTMLElement {
   constructor() {
     super()
 
-    // I'm concerned about overriding attributes, or attributes that 
-    // State
-    this.editDoc = new Document()
+    // I'm concerned about overriding attributes. It's fragile. unfortunately I don't know if there's any handy piece
+    // of state I can repurpose, like a global WeakMap :S
     this.data = { counter: 0 }
-    this.renderer = new HTMLRenderer();
-    this.activeNode = null;
-    this.activeNodePath = [];
-    this.activeOffset = null;
 
-    this.listeners = [];
+    this.editDoc = new Document()
+    this.viewController = new HTMLController(this)
+    // parse and re-render immediately
+    // this.parse
+    // this.render
+    // console.log(this.innerHTML)
+    // this.viewController.parse(this.innerHTML)
 
     // DOM interaction
     this.title = 'Oh!'  // setAttribute?
+
+    this.normalize();
 
     // this.contentEditable = true // being more explicit. Not trying to store data on the object, but DOM interaction.
     // Maybe extend another class that has the state? a mix in? Then it can't interfere with the DOM accidentally
     this.setAttribute('contentEditable', true)
 
-    this.addEventListener('click', this.onClick)
-    this.addEventListener('onkeypress', this.keyPress)
-
-    this.addEventListener('beforeinput', this.beforeInput)
-    this.addEventListener('input', this.afterInput)
-    this.addEventListener('keydown', this.keyDown)
   }
 
-  // notify() {
-  //   for (let callback of this.listeners) {
-  //     callback(this);
-  //   }
-  // }
 
-  updateCursor() {
-    // let cursor = this.editDoc.getCursor;
-    let [startNode, startOffset, endNode, endOffset] = [this.activeNode, this.activeOffset, this.activeNode, this.activeOffset];
-
-    // let cc = new CursorComputer();
-    // let [nodes, offset] = cc.getNodeAndOffset(this.editDoc)
-    // console.log(nodes, offset)
-    // ... todo
-    // probably have to listen to mutations on the window. to set the doc cursor.
-    console.debug(startNode, startOffset)
-    window.getSelection().setBaseAndExtent(startNode, startOffset, endNode, endOffset)
-  }
 
   render() {
 
+    this.innerHTML = this.viewController.export()
+    this.viewController.updateWindowSelection()
     // Offsets into the doc that yield the Node and offset
-    this.innerHTML = this.renderer.render(this.editDoc);
   }
 
   beforeInput(inputEvent) {
-    // console.debug('InputEvent', inputEvent)
-    // return;
 
     if (window.InputEvent && typeof InputEvent.prototype.getTargetRanges === "function") {
 
@@ -108,29 +95,6 @@ class Editor extends HTMLElement {
 
   onClick(mouseEvent) {
 
-    console.debug(mouseEvent)
-    this.editDoc.setActiveBlock(Array.from(this.children).indexOf(mouseEvent.target))
-    this.activeNode = window.getSelection().anchorNode;
-
-    // compute relative to the root :S
-    let cur = this.activeNode;
-    this.activeNodePath = []
-    do {
-      // :smile_with_tear
-      this.activeNodePath.unshift(Array.from(cur.parentNode.childNodes).indexOf(cur))
-      cur = cur.parentNode;
-    } while (cur !== this)
-    console.debug(this.activeNodePath)
-    // the active node no longer exists because we re-write the html. like totally, so it no longer exists
-    // we could compute the offsets from the "start" and from the "end" (considered as pre and reverse pre order traversals)
-    // and select the active node using those offsets, but after the edit - 
-    // or maybe update the Nodes in the tree rather than blanket smooshing out HTML. But I like blanket smooshing out HTML,
-    // it feels more portablel. Like the HTMLRenderer doesn't need to know about the DOM.
-    // We could also build a separate visitor that knows what's up
-
-    // ah shoot. there is a bug because click events fire on the elements. they don't target nodes. so if a paragraph is broken into
-    // pieces that are other nodes, <p>Text <other></other> text12</p> we can't distinguish between clicking on "Text " or " text12"
-    // but we need to because. well. The simple solution. Don't take the target of the mouse event. Get the window selection.
   }
 
 
@@ -139,6 +103,12 @@ class Editor extends HTMLElement {
     /* all editor inputs like this will be processed elsewhere, but I think we can get away with a few */
     // console.log(keyPressEvent)
   }
+
+  get observedAttributes() {
+    return [ 'data' ]
+  }
+
+
 
   connectedCallback() {
     console.debug("Editor added to DOM");
