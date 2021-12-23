@@ -112,6 +112,7 @@ Am I building out a full AST?
     console.log(document.caretPositionFromPoint(clientX, clientY))
   })
 
+
   // what we might call 'breaking' white space
   // considered as *all* unicode whitespace
   const collapsible = /[^\P{White_Space}\u{00A0}]/u
@@ -346,11 +347,10 @@ Am I building out a full AST?
       return ""
     }
     if (!node.hasChildNodes()) {
+      // "" for childless elements, text for text nodes
       return node.textContent
     }
 
-    // const whitespace = /[^\P{White_Space}\u{00A0}]/u
-    // const whitespaceClass = `[^\P{White_Space}\u{00A0}]`
     const oneOrMoreWhitespace = /[^\P{White_Space}\u{00A0}]+/u
 
     function zip(l1, l2, f=(a,b)=>[a,b]) {
@@ -378,14 +378,15 @@ Am I building out a full AST?
       // this doesn't work for new lines
       return /^[^\P{White_Space}\u{00A0}]*$/u.test(string)
     }
-    function collapseSpace(string) {
-      [
-        [/^[^\P{White_Space}\u{00A0}]/gu,   ''],
-        [/[^\P{White_Space}\u{00A0}]+$/gu,  ''],
-        [/[^\P{White_Space}\u{00A0}]+/gu,   ' '],
-      ].forEach( patRep => string = string.replaceAll(...patRep))
 
-      return string
+    function collapseInternalBreaking(string) {
+      return string.replaceAll(/[^\P{White_Space}\u{00A0}]+/gu,   ' ')
+    }
+    function trimLeading(string) {
+      return string.replace(/^[^\P{White_Space}\u{00A0}]/u, '')
+    }
+    function trimTrailing(string) {
+      return string.replace(/[^\P{White_Space}\u{00A0}]+$/u,  '')
     }
 
     // can abstract the "process by type" (context-wise) pattern to 
@@ -394,49 +395,19 @@ Am I building out a full AST?
     // for each context.
 
     // The zip is "eager", it will fill in undefineds for remaining resources
-    let together = zip(children, childrenNodes)
-    let betweenskies = zip([["", undefined], ...together], together).map(betwixt)
-    // betweenskies.push('')
-    let contextRender = zip(betweenskies, children.map(collapseSpace), (s1, s2) => `${s1}${s2}`)
+    let adjacent = zip(children, childrenNodes)
 
+    let paddingBetween = zip([["", undefined], ...adjacent], adjacent).map(betwixt)
 
-    console.log('together|btwxt', zip(together, together.slice(1)), betweenskies)
-    console.log('ctxRender', contextRender)
+    let collapsed = children.map(collapseInternalBreaking)
+      .map((s,i) => i > 0 ? trimLeading(s) : s)
+      .map((s,i) => i < children.length-1 ? trimTrailing(s) : s)
 
-    if (!blockNodes.test(node.tagName)) {
-      console.log(children[0],/^[^\P{White_Space}\u{00A0}]/u.test(children[0]))
-      if (/^[^\P{White_Space}\u{00A0}]/u.test(children[0])) {
-        contextRender.unshift(' ')
-      }
-      if (/[^\P{White_Space}\u{00A0}]$/u.test(children[children.length-1])) {
-        contextRender.push(' ')
-      }
-    }
-
-    console.log('ctxRender', contextRender)
+    let contextRender = zip(paddingBetween, collapsed, (s1, s2) => `${s1}${s2}`)
 
     let textRender = contextRender.join('')
-    console.log('textRender', textRender,'\n')
 
     return textRender;
-
-    let length = 0;
-    for (let prev = null, i = 1; i < children.length; prev = children[i++]) {
-      if (allWhiteSpace(children[i])) {
-
-      }
-    }
-
-    // const margins = node.tagName.toUpperCase() in blockSet ? 2 : 0;
-    let margins = 0
-    if (node.tagName.toUpperCase() in blockSet) {
-      margins += 2
-    }
-
-
-    // if (node.tagName.toUpperCase() in blockNodes) {
-      // processBlockChildren(children)
-    // }
 
   }
 
@@ -771,5 +742,6 @@ Am I building out a full AST?
   */
 
   
+  console.log("!", treeTraverse(process, hf).trim() === hf.innerText, "!")
 
 </script>
