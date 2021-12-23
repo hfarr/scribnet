@@ -364,7 +364,7 @@ Am I building out a full AST?
       if (allWhiteSpace(c1Text)) {
         return "";
       }
-      if (blockNodes.test(c1Node.tagName)) {
+      if (blockNodes.test(c1Node?.tagName)) {
         return "\n\n";
       }
       if (oneOrMoreWhitespace.test(c1Text.slice(-1)) || oneOrMoreWhitespace.test(c2Text.slice(0,1))) {
@@ -395,22 +395,22 @@ Am I building out a full AST?
 
     // The zip is "eager", it will fill in undefineds for remaining resources
     let together = zip(children, childrenNodes)
-    // console.log('together zip', zip(together, together.slice(1)))
-    let betweenskies = zip(together, together.slice(1)).map(betwixt)
-    betweenskies.push('')
-    // console.log('betweenskies', betweenskies)
+    let betweenskies = zip([["", undefined], ...together], together).map(betwixt)
+    // betweenskies.push('')
+    let contextRender = zip(betweenskies, children.map(collapseSpace), (s1, s2) => `${s1}${s2}`)
+
+
     console.log('together|btwxt', zip(together, together.slice(1)), betweenskies)
-    let contextRender = zip(children.map(collapseSpace), betweenskies, (s1, s2) => `${s1}${s2}`)
     console.log('ctxRender', contextRender)
 
-
-    console.log(children[0],/^[^\P{White_Space}\u{00A0}]/u.test(children[0]))
-    if (/^[^\P{White_Space}\u{00A0}]/u.test(children[0])) {
-      console.log('monobrow')
-      contextRender.unshift(' ')
-    }
-    if (/[^\P{White_Space}\u{00A0}]$/u.test(children[children.length-1])) {
-      contextRender.push(' ')
+    if (!blockNodes.test(node.tagName)) {
+      console.log(children[0],/^[^\P{White_Space}\u{00A0}]/u.test(children[0]))
+      if (/^[^\P{White_Space}\u{00A0}]/u.test(children[0])) {
+        contextRender.unshift(' ')
+      }
+      if (/[^\P{White_Space}\u{00A0}]$/u.test(children[children.length-1])) {
+        contextRender.push(' ')
+      }
     }
 
     console.log('ctxRender', contextRender)
