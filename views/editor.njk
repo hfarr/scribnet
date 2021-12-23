@@ -97,20 +97,23 @@ Am I building out a full AST?
     // console.log(sel.toString())
     // console.debug(re.toString())
 
+    console.log(re.startContainer, re.startOffset)
+
+
     let docOffset = hf.viewController.computeDocumentRange(re)
     // let docOffset2 = getOffset(hf, re.startContainer, re.startOffset)
     // let docOffset2 = _getOffset(hf, re.startContainer, re.startOffset)
     // let docOffset2 = __getOffset(hf, re.startContainer, re.startOffset)
-    let docOffset2 = 0;
+    let docOffset2 = textOffset(hf, re.startContainer).length + re.startOffset;
     toolmark.querySelector('p').innerHTML = label`Offset ${docOffset[0]} Length ${docOffset[1]} O2 ${docOffset2}`
     // console.debug(docOffset)
   })
 
-  hf.addEventListener('click', (clickEvent) => {
-    // console.log('Click:',clickEvent)
-    let { clientX, clientY } = clickEvent
-    console.log(document.caretPositionFromPoint(clientX, clientY))
-  })
+  // hf.addEventListener('click', (clickEvent) => {
+  //   // console.log('Click:',clickEvent)
+  //   let { clientX, clientY } = clickEvent
+  //   console.log(document.caretPositionFromPoint(clientX, clientY))
+  // })
 
 
   // what we might call 'breaking' white space
@@ -118,21 +121,72 @@ Am I building out a full AST?
   const collapsible = /[^\P{White_Space}\u{00A0}]/u
 
   function textOffset(rootElement, node) {
-    
-  }
 
-  // a state machine expressed in functional programming, you love 2 see it
 
-  function processingBlock(child) {
+    // walk the nodes up to the target node 
+    // compute those lengths
+    // I think this should be feasible with one call to treeTraverse
+    // (not doing pre-work with treeFoldr) but I will start this way
 
-  }
+    // const nodesInRange = new Set()
+    // _treeFoldr(cloncExcusive(x=>x===node, cat, []),[],rootElement).forEach(x=>nodesInRange.add(x))
 
-  function processNode() {
-    if (node.nodeType === Node.ELEMENT_NODE) {
+    let pruned = pruneDown(rootElement, node)
+    let finalChildren
+    function procWrap(f, children, nodes) {
 
+      let result = process(f,children, nodes)
+      finalChildren = children;
+
+      return result //[process(f,children), children]
     }
+    // const res = treeTraverse(process, pruned)
+    const res = treeTraverse(procWrap, pruned)
+    console.debug('res',res,res.length)
+    console.debug(finalChildren.at(-1))
+    console.debug(res.slice(0, -node.textContent.length))
+    // return res
+    return res.slice(0, -node.textContent.length)
+
+    // const res = treeTraverse( (t, ...args) => {
+    //   if ( nodesInRange.has(t) ) {
+    //     return process(t, ...args)
+    //   }
+    //   return ""
+    // }, rootElement)
+
+    // return res.trim()
+
+    
+    // treeTraverse( (t, children)=>{
+    //   const clone = t.cloneNode()
+    //   // if (children.length > 0) {
+    //     // console.log(t,children)
+    //   // }
+    //   for (const child of children) {
+    //     clone.appendChild(child)
+    //   }
+    //   // children.forEach(clone.appendChild)
+    //   return clone
+    // }, rootElement)
+
+
+    // treeTraverse(process, rootElement).trim()
 
   }
+
+  // side note to join the billions of other side notes,
+  // I don't know if treeTraverse can be used to 'filter'
+  // with the way I have it now—I think I need to revisit
+  // traversables in my notes. Brush up on the knowledge.
+  // I believe it should be doable. Like implementing
+  // 'filter' in terms of 'map', in fact that's about the
+  // approach I would use. treeTraverse doesn't expose
+  // how it preserves tree structure. But I think it can
+  // be done? going for a simpler approach now 
+
+  // a state machine expressed in functional programming, you (would) love 2 see it
+
 
   // hf.addEventListener('beforeinput', (e) => console.log('hf pre-input', e))
   // hf.addEventListener('input', (e) => console.log('hf input', e))
@@ -266,14 +320,29 @@ Am I building out a full AST?
 
   // return the nodes of the tree that occur between root and target, inclusive, preserving structure
   function pruneDown(root, target) {
-    console.log(treeFoldr(clonc( x => x === target, treeTraverseClone(), []), [], root)[0])
+    // console.log(treeFoldr(_clonc( x => x === target, treeTraverseClone(), []), [], root)[0])
+    // console.log(treeFoldr(clonc( x => x === target, treeTraverseClone(), []), [], root)[0])
 
-    return treeFoldr(clonc( x => x === target, treeTraverseClone(), []), [], root)[0]
+    return treeFoldr(_clonc( x => x === target, treeTraverseClone(), []), [], root)[0]
+    // return treeFoldr(clonc( x => x === target, treeTraverseClone(), []), [], root)[0]
   }
 
-  function textOffset(root, node) {
+  function _textOffset(root, node) {
     return pruneDown(root, node).innerText.length
   }
+
+  function _clonc(predicate, f, base) {
+    
+    return function ( n, prev ) {
+      if (predicate(n)) {
+        // return base
+        // return x => f(x, base)
+        return f(n, base)
+      }
+      return f(n, prev)
+    }
+  }
+
 
   // returns a function that attaches children to a tree unless the tree is the
   // searchNode, which just hands back the search node (resetting, in a sense, the tree)
@@ -665,6 +734,7 @@ Am I building out a full AST?
 
     const listapply = (treeList) => {
       return treeList.reduceRight( (res, item) => treeFoldr(f, res, item), base )
+      return treeList.reduceRight( (res, item) => _treeFoldr(f, res, item), base )
     }
     return f(tree, listapply([...tree.childNodes]))
   }
