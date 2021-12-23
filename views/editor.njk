@@ -26,6 +26,7 @@ title: Editing
   <p>Hey! edge case <span> more like—edge SPACE</span></p>
   <p><span>want to see even edgier space? </span><span> yeah you do you-</span></p>
   <p><span>WATCH OUT CURVE</span><span> ball</span></p>
+  <p><span>egads.</span>   <span>ball</span></p>
   <p>Seems we've &nbsp;&nbsp;  &nbsp; no choice</p>
   <h2>second section</h2>
   <p>A serious paragraph</p>
@@ -39,7 +40,12 @@ title: Editing
     the same paragraph. Sometimes it will rearrange HTML for you. It is rather
     forgiving of the input it accepts, such as mixing tags that would normally
     be separated into different elements.
+
   </p>
+  <!-- <pre> -->
+    <!-- mehumbra     5 -->
+    <!-- <em>bla   h!</em> -->
+  <!-- </pre> -->
   <p>
     I could (and probably should) nest my header tags. Accessibility wise I think it
     reads the same as the "flattened" kind where all these elements are next to each
@@ -70,6 +76,8 @@ Am I building out a full AST?
 <script>
   let hf = document.querySelector('editor-hf')
 
+  let testElem = hf.children[6]
+
   let toolmark = document.querySelector("#toolmark")
 
   function label(fragments, ...values) {
@@ -93,7 +101,7 @@ Am I building out a full AST?
     // let docOffset2 = getOffset(hf, re.startContainer, re.startOffset)
     // let docOffset2 = _getOffset(hf, re.startContainer, re.startOffset)
     // let docOffset2 = __getOffset(hf, re.startContainer, re.startOffset)
-    let docOffset2 = imtiredandneedtogo(hf, re.startContainer, re.startOffset)
+    let docOffset2 = 0;
     toolmark.querySelector('p').innerHTML = label`Offset ${docOffset[0]} Length ${docOffset[1]} O2 ${docOffset2}`
     // console.debug(docOffset)
   })
@@ -103,6 +111,27 @@ Am I building out a full AST?
     let { clientX, clientY } = clickEvent
     console.log(document.caretPositionFromPoint(clientX, clientY))
   })
+
+  // what we might call 'breaking' white space
+  // considered as *all* unicode whitespace
+  const collapsible = /[^\P{White_Space}\u{00A0}]/u
+
+  function textOffset(rootElement, node) {
+    
+  }
+
+  // a state machine expressed in functional programming, you love 2 see it
+
+  function processingBlock(child) {
+
+  }
+
+  function processNode() {
+    if (node.nodeType === Node.ELEMENT_NODE) {
+
+    }
+
+  }
 
   // hf.addEventListener('beforeinput', (e) => console.log('hf pre-input', e))
   // hf.addEventListener('input', (e) => console.log('hf input', e))
@@ -227,32 +256,18 @@ Am I building out a full AST?
     'br': 1,
   }
 
+
+
   function quash(text) {
     const breakingWhitespace = /[^\P{White_Space}\u{00A0}]/u
     return adjacentWhitespace.test(text)
   }
 
-  function imtiredandneedtogo(editor, node, offset) {
-    let flat = treeFoldr(cloncExclusive(x => x === node, treeTraverse(), []), [], editor)[0]
-    // damn rather than cloncExclusive could have just sliced the end
-    // ah but issue. how compute? 
-    // we use cloncExclusive because we don't (yet) have a 'slice' analog for traversable trees (i.e select first or last node in a pre order traversal)
-    // could code one with treeFoldr... no! you ahve a movie to go to!
-    console.log(flat)
-    console.log(treeFoldr(cat, [], flat))
-    console.log(flat.innerText)
-    
-    return flat.innerText.length + offset
-    // or... do 'sibling recursion'. Sum lengths of siblings. But when a node contains the target, send off to different case to handle the recursion?
-    // hm! 
-
-  }
-
   // return the nodes of the tree that occur between root and target, inclusive, preserving structure
   function pruneDown(root, target) {
-    console.log(treeFoldr(clonc( x => x === target, treeTraverse(), []), [], root)[0])
+    console.log(treeFoldr(clonc( x => x === target, treeTraverseClone(), []), [], root)[0])
 
-    return treeFoldr(clonc( x => x === target, treeTraverse(), []), [], root)[0]
+    return treeFoldr(clonc( x => x === target, treeTraverseClone(), []), [], root)[0]
   }
 
   function textOffset(root, node) {
@@ -288,7 +303,7 @@ Am I building out a full AST?
     }
   }
 
-  function treeTraverse(tMap = x => x) {  //default just clones the tree. okay can't think right now how to approach creating a structure-preserving tree map with a fold-right. I Think it should be do-able
+  function treeTraverseClone(tMap = x => x) {  //default just clones the tree. okay can't think right now how to approach creating a structure-preserving tree map with a fold-right. I Think it should be do-able
     const parentMap = new WeakMap()
 
     function _treeID(node, previous) {
@@ -312,9 +327,170 @@ Am I building out a full AST?
     return _treeID
   }
 
+
+
+  function processBlockChildren() {
+    const breakingWhitespace = /[^\P{White_Space}\u{00A0}]/u
+    if (node.nodeType === Node.COMMENT_NODE || []) {}
+
+  }
+
+  // yeah I know I know. Im feeling lazy at the moment
+  const blockNodes = /^(p(re)?|h[1-6])$/i
+  const blockSet = new Set(
+    ["p", "h1", "h2", "h3", "div", "pre", "editor-hf"]
+  )
+  function process(node, children, childrenNodes) {
+
+    if (node.nodeType === Node.COMMENT_NODE) {
+      return ""
+    }
+    if (!node.hasChildNodes()) {
+      return node.textContent
+    }
+
+    // const whitespace = /[^\P{White_Space}\u{00A0}]/u
+    // const whitespaceClass = `[^\P{White_Space}\u{00A0}]`
+    const oneOrMoreWhitespace = /[^\P{White_Space}\u{00A0}]+/u
+
+    function zip(l1, l2, f=(a,b)=>[a,b]) {
+      const res = []
+      for (let i = 0; i < l1.length || i < l2.length; i++) {
+        res.push(f(l1[i], l2[i]))
+      }
+      return res
+    }
+    function betwixt([[ c1Text, c1Node ], [ c2Text, c2Node ]=["", undefined]]) {
+      if (allWhiteSpace(c1Text)) {
+        return "";
+      }
+      if (blockNodes.test(c1Node.tagName)) {
+        return "\n\n";
+      }
+      if (oneOrMoreWhitespace.test(c1Text.slice(-1)) || oneOrMoreWhitespace.test(c2Text.slice(0,1))) {
+        return " "
+      }
+      return ""
+    }
+    function allWhiteSpace(string) {
+      
+      // string consists of all whitespace that aren't &nbsp;
+      // this doesn't work for new lines
+      return /^[^\P{White_Space}\u{00A0}]*$/u.test(string)
+    }
+    function collapseSpace(string) {
+      [
+        [/^[^\P{White_Space}\u{00A0}]/gu,   ''],
+        [/[^\P{White_Space}\u{00A0}]+$/gu,  ''],
+        [/[^\P{White_Space}\u{00A0}]+/gu,   ' '],
+      ].forEach( patRep => string = string.replaceAll(...patRep))
+
+      return string
+    }
+
+    // can abstract the "process by type" (context-wise) pattern to 
+    // parameterize the action it performs based on type. the 
+    // interface picks which functions to use and we supply functions 
+    // for each context.
+
+    // The zip is "eager", it will fill in undefineds for remaining resources
+    let together = zip(children, childrenNodes)
+    // console.log('together zip', zip(together, together.slice(1)))
+    let betweenskies = zip(together, together.slice(1)).map(betwixt)
+    // console.log('betweenskies', betweenskies)
+    console.log('together|btwxt', zip(together, together.slice(1)), betweenskies)
+    let contextRender = zip(children.map(collapseSpace), betweenskies, (s1, s2) => `${s1}${s2 ?? ''}`)
+    console.log('ctxRender', contextRender)
+
+    let textRender = contextRender.join('')
+    console.log('textRender', textRender,'\n')
+
+    return textRender;
+
+    let length = 0;
+    for (let prev = null, i = 1; i < children.length; prev = children[i++]) {
+      if (allWhiteSpace(children[i])) {
+
+      }
+    }
+
+    // const margins = node.tagName.toUpperCase() in blockSet ? 2 : 0;
+    let margins = 0
+    if (node.tagName.toUpperCase() in blockSet) {
+      margins += 2
+    }
+
+
+    // if (node.tagName.toUpperCase() in blockNodes) {
+      // processBlockChildren(children)
+    // }
+
+  }
+
+  // Using process, we could offload work to sub functions.
+  // an idea I like is returning context-functions, like
+  // a state machine, so at each step it returns a function
+  // that processes with the state. Like it would produce a
+  // list and stepping through the list transitions to different
+  // processing states, based on the functions that are returned.
+  // would not actually need to be a statemachine.
+  // a very powerful concept here is closures, because we can also
+  // manage some state in the function itself, and I in fact make
+  // use of that in treeTraverse (it captures tree in the closure
+  // but variations like the treeTraverseClone capture the parent
+  // information). In treeTraverse I also capture parent information
+  // by way of passing the original data as the 'result', then
+  // callbacks can include the information. Same principle but
+  // implicitly handled
+
+
+  // ex:
+  // treeTraverse( (n, c) => n.hasChildNodes() ? `${n.tagName}:[${c}],` : `${n.textContent}`, <ROOT>)
+  function treeTraverse(f, tree) {
+    // tree traverse folds over the tree by applying functions that do an
+    // in order traversal. It is built on using treeFoldr, but the difference
+    // is the input function operates on the tree and its children that have
+    // been recursively operated on.
+    // treeFoldr only considers the tree and the record of processing the 
+    // children recursively at that point in time. Semantically it's more like
+    // traversing over a list.
+    // Another way to imagine the difference is treeTraverse maps the recursion
+    // onto its children, before applying the function to the parent and the
+    // result of the map. A nice bonus is context from processing the right-er
+    // elements of the tree is passed to the left-er parts of the tree because
+    // its build on treeFoldr. In fact it is this bonus feature that enables
+    // this to work at all.
+
+    // const parentMap = new WeakMap()
+
+    // function unwrapSnd( pairs ) {
+    //   return pairs.map( ([_, x]) => x )
+    // }
+
+    function unzip( pairs ) {
+      return pairs.reduce( ([accFst, accSnd], [fst, snd]) => [[...accFst, fst], [...accSnd, snd]], [[],[]])
+    }
+
+    function _combine(node, prev) {
+
+      let numChildren = prev.reduce( (acc, [n,_]) => acc + (n.parentElement === node ? 1 : 0), 0 )
+      let [childNodes, children] = unzip(prev.slice(0, numChildren))
+      // callback is handed the original nodes too
+      return [ [node, f(node, children, childNodes)], ...prev.slice(numChildren) ]
+
+    }
+
+    // could do the folding here, but I'm yielding the function to compose it
+    // return _combine
+    // or.
+    return unzip(_treeFoldr(_combine, [], tree))[1][0]
+    // return unzip(_treeFoldr(_combine, [], tree))
+
+  }
+
   // e.innerText.length === treeFoldr(length, 0, e)
 
-  let _hf_length = treeFoldr(length, 0, hf)
+  let _hf_length = treeFoldr(length, 0, hf) // broken since a change made a time ago
   let _hf__length = treeFoldr(_length, 0, hf)
   let _hf_nodes = treeFoldr(cat, [], hf)
   let _length_check = _hf_nodes.map(n => [n, length(n), 'innerText' in n ? n.innerText.length : 0])
@@ -406,7 +582,8 @@ Am I building out a full AST?
 
   function length(node, previous = 0) {
     
-    if (node.nodeType === Node.TEXT_NODE) {
+    if (!('innerText' in node)) { // comment or text node, e.g
+    // if (node.nodeType === Node.TEXT_NODE) {
       // I know, weird, right? I was thinking, maybe return previous, then it's threaded through, which I think might yield what we want
       return 0;
     }
@@ -415,7 +592,8 @@ Am I building out a full AST?
   }
 
   function _length(node, previous = 0) {
-    if (node.nodeType === Node.TEXT_NODE) {
+    if (!('innerText' in node)) { // comment or text node, e.g
+    // if (node.nodeType === Node.TEXT_NODE) {
       return previous; // nah, I dont think so
     }
     return node.innerText.length - previous
