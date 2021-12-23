@@ -76,7 +76,7 @@ Am I building out a full AST?
 <script>
   let hf = document.querySelector('editor-hf')
 
-  let testElem = hf.children[6]
+  let testElem = hf.children[11]
 
   let toolmark = document.querySelector("#toolmark")
 
@@ -355,12 +355,12 @@ Am I building out a full AST?
 
     function zip(l1, l2, f=(a,b)=>[a,b]) {
       const res = []
-      for (let i = 0; i < l1.length || i < l2.length; i++) {
+      for (let i = 0; i < l1.length && i < l2.length; i++) {
         res.push(f(l1[i], l2[i]))
       }
       return res
     }
-    function betwixt([[ c1Text, c1Node ], [ c2Text, c2Node ]=["", undefined]]) {
+    function betwixt([[ c1Text, c1Node ], [ c2Text, c2Node ]]) {
       if (allWhiteSpace(c1Text)) {
         return "";
       }
@@ -397,9 +397,22 @@ Am I building out a full AST?
     let together = zip(children, childrenNodes)
     // console.log('together zip', zip(together, together.slice(1)))
     let betweenskies = zip(together, together.slice(1)).map(betwixt)
+    betweenskies.push('')
     // console.log('betweenskies', betweenskies)
     console.log('together|btwxt', zip(together, together.slice(1)), betweenskies)
-    let contextRender = zip(children.map(collapseSpace), betweenskies, (s1, s2) => `${s1}${s2 ?? ''}`)
+    let contextRender = zip(children.map(collapseSpace), betweenskies, (s1, s2) => `${s1}${s2}`)
+    console.log('ctxRender', contextRender)
+
+
+    console.log(children[0],/^[^\P{White_Space}\u{00A0}]/u.test(children[0]))
+    if (/^[^\P{White_Space}\u{00A0}]/u.test(children[0])) {
+      console.log('monobrow')
+      contextRender.unshift(' ')
+    }
+    if (/[^\P{White_Space}\u{00A0}]$/u.test(children[children.length-1])) {
+      contextRender.push(' ')
+    }
+
     console.log('ctxRender', contextRender)
 
     let textRender = contextRender.join('')
