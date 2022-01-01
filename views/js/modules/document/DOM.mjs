@@ -32,6 +32,9 @@ function trimBreaking(string) {
   return trimLeading(trimTrailing(string))
 }
 
+function collapseBreaking(string) {
+  return string.replaceAll(/[^\P{White_Space}\u{00A0}]+/gu, ' ')
+}
 /**
  * Determine if the node is empty (no visible content)
  * 
@@ -120,6 +123,10 @@ export function formatDocument(documentRoot) {
         // Okay learned my lesson. The browser is ALL too happy to add in <br>s
         // At least fire fox is. Meh!
       }
+
+      if (maybeNode?.nodeType === Node.TEXT_NODE) {
+        maybeNode.textContent = collapseBreaking(maybeNode.textContent)
+      }
     }
 
     return maybeNode
@@ -127,19 +134,19 @@ export function formatDocument(documentRoot) {
 
   let res = document.createElement('div')
 
-  // Rather than send documentRoot through, or 'res' after copying children
-  // we map over the children and perform post processing on the first children.
-  // There are some difficulties with using the documentRoot as the base element
-  // such as cloning it causes it's constructor to run- which calls 
-  // formatDocument. But we want access to un-copied nodes, direct from the DOM,
-  // so that we have access to 'rendered' attributes, namely innerText.
-  // If we copy children into res first and then use that as the root innerText
-  // is empty because it hasn't been flowed over the document, and we aren't
-  // keen to do that either.
-  ;[...documentRoot.childNodes].filter(x => x?.nodeType === Node.ELEMENT_NODE)
-    .map(cn => treeTraverse(cull, cn))
-    .filter(Boolean)
-    .forEach(child => res.appendChild(child))
+    // Rather than send documentRoot through, or 'res' after copying children
+    // we map over the children and perform post processing on the first children.
+    // There are some difficulties with using the documentRoot as the base element
+    // such as cloning it causes it's constructor to run- which calls
+    // formatDocument. But we want access to un-copied nodes, direct from the DOM,
+    // so that we have access to 'rendered' attributes, namely innerText.
+    // If we copy children into res first and then use that as the root innerText
+    // is empty because it hasn't been flowed over the document, and we aren't
+    // keen to do that either.
+    ;[...documentRoot.childNodes].filter(x => x?.nodeType === Node.ELEMENT_NODE)
+      .map(cn => treeTraverse(cull, cn))
+      .filter(Boolean)
+      .forEach(child => res.appendChild(child))
 
   return res
 
