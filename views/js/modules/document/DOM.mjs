@@ -70,7 +70,7 @@ const blockSet = new Set(
  * @param childrenNodes Original child nodes
  * @returns 
  */
-function process(node, children, childrenNodes) {
+function processText(node, children, childrenNodes) {
 
   // TODO develop abstractions to manage the details of particular nodes, etc.
 
@@ -130,7 +130,7 @@ function process(node, children, childrenNodes) {
     return string.replaceAll(/[^\P{White_Space}\u{00A0}]+/gu, ' ')
   }
   function trimLeading(string) {
-    return string.replace(/^[^\P{White_Space}\u{00A0}]/u, '')
+    return string.replace(/^[^\P{White_Space}\u{00A0}]+/u, '')
   }
   function trimTrailing(string) {
     return string.replace(/[^\P{White_Space}\u{00A0}]+$/u, '')
@@ -158,115 +158,20 @@ function process(node, children, childrenNodes) {
  * Notionally this is equivalent to using reduceRight on a pre-order traversal of the tree.
  * 
  * @param f Function to combine the accumulated values with the current value. Arguments are ordered current, accumulated
- * @param base Base element. In practice there a no "empty trees", rather, 
- *             a single base element attached to the "right" most leaf. This supports using treeFoldr
- *             as if the tree were a list. That is to say inputting an "empty tree" won't return the
- *             base value, instead the results are not well defined. For now this is intended but
- *             subject to revision in the future.
+ * @param base Base element. Although its natural to assume the base would apply to leaves of the tree
+ *             treeFoldr effectively operates like reduceRight on a pre-order traversal of the tree.
+ *             There is only one base, which combines only with the last node in a pre-order traversal
+ *             much like how the last element in a list would combine.
  * @param tree Tree on which to operate.
- * @returns 
+ * @returns The accumulated result of folding f over a pre-order traversal of tree (right associative)
  */
 function treeFoldr(f, base, tree) {
-
-  // if (tree.childNodes.length === 0) {
-  // it probably *should* return base -- this impacts like. All of the clients are impacted.
-  // Nevertheless. It's tricky, this was developed for 'node' specifically, and the leafs of
-  // DOM nodes are textNodes generally. It's not always clear what to do for a child case.
-  // That is a bit of an excuse.
-  // TODO upddate this to return base, as one would generally expect, or put thought into
-  // why it should apply 'tree' to base instead.
-  // User responsbility to work out what the 'base' case is, as otherwise it should just be
-  // empty lists most of the time, for treeFoldr.
-  // Whats hard is if the node has no children usually you want it processed the same way,
-  // or rather, unlike lists where the base case is the empty list, we don't support a concept
-  // of an "Empty tree" as this was defined with Nodes in mind. But we can rework it to support
-  // a 'leaf' notion as something without a value, then it can handle e.g text nodes fine.
-  // Another thought, in a tree, there can be many bases, but in a list there is only one base,
-  // which disrupts our notion of how to handle that. It seems to make the most sense to use
-  // a function to combine the current value with whatever the "base" is, which allows us
-  // to preserve the notion of a "single base" and maintain the idea that this is effectively
-  // a reduceRight on an array. Except the array is specified by a DOM tree.
-  // return base
-  // return f(tree, base)
-  // }
 
   const listapply = (treeList) => {
     return treeList.reduceRight((res, item) => treeFoldr(f, res, item), base)
   }
 
   return f(tree, listapply([...tree.childNodes]))
-}
-
-
-function _clonc(predicate, f, base) {
-
-  return function (n, prev) {
-    if (predicate(n)) {
-      return f(n, base)
-    }
-    return f(n, prev)
-  }
-}
-
-function pruneDown(root, target) {
-  // console.log(treeFoldr(_clonc( x => x === target, treeTraverseClone(), []), [], root)[0])
-  // console.log(treeFoldr(clonc( x => x === target, treeTraverseClone(), []), [], root)[0])
-
-  return treeFoldr(_clonc(x => x === target, treeTraverseClone(), []), [], root)[0]
-  // return treeFoldr(clonc( x => x === target, treeTraverseClone(), []), [], root)[0]
-}
-
-function treeTraverseClone() {  //default just clones the tree. okay can't think right now how to approach creating a structure-preserving tree map with a fold-right. I Think it should be do-able
-  const parentMap = new WeakMap()
-
-  function _treeID(node, previous) {
-    // b/c of visit order, the children of the node make up the prefix to the list.
-    // so we don't have to do anything else to preserve the structure other than filter for them
-    // we have the following invariant: if i < j then nodes[i] appears before nodes[j] in the document
-
-    const clone = node.cloneNode()
-    parentMap.set(clone, node.parentElement)
-    // const numChildren = previous.filter( p => p.parentElem === node).length
-    // previous.slice(0, numChildren)
-    // .forEach(n => clone.appendChild(n) )
-
-    // a partition sort of function
-    const [kids, siblings] = previous.reduce(([c, s], n) => (parentMap.get(n) === node ? [[...c, n], s] : [c, [...s, n]]), [[], []]) // has functional programming gone TOO FARR? some would say: not nearly enough!
-
-    kids.forEach(n => clone.appendChild(n))
-
-    return [clone, ...siblings]
-  }
-  return _treeID
-}
-
-function takeWhile(predicate) {
-  // takes the first sublist that consists of nodes that fulfill the predicate
-
-  function filter(node, previous) {
-    if (predicate(node)) {
-      return [node, ...previous]
-    } else {
-      // return previous
-      // not going to pretend this isn't a list, for a traversable it should theoretically work the same, or. 
-      // well. Maybe in the case of takewhile it is essential to know the '0' type, or, for traversables,
-      // we have mempty, could return that. eh.
-      // return []
-      return previous
-    }
-  }
-  return filter
-}
-
-function pruneTo(node) {
-  return nodeOther => {
-    if (nodeOther === node) return true;
-    return node.compareDocumentPosition(nodeOther) & (Node.DOCUMENT_POSITION_PRECEDING | Node.DOCUMENT_POSITION_CONTAINS)
-  }
-  // return takeWhile(nodeOther => {
-  //   if (nodeOther === node) return true;
-  //   return node.compareDocumentPosition(nodeOther) & (Node.DOCUMENT_POSITION_PRECEDING | Node.DOCUMENT_POSITION_CONTAINS)
-  // })
 }
 
 /**
@@ -311,6 +216,18 @@ function treeTraverse(f, tree) {
 
 }
 
+/**
+ * Recursively traverse a tree, applying the wrapped function
+ * only if the predicate holds. Filters out nodes for which
+ * it doesn't. Effectively, since the traversal is pre-order,
+ * this is analogous to "takeWhile" where only the *prefix*
+ * of nodes in the tree accepted by the predicate will be
+ * available in the final computation.
+ * 
+ * @param predicate Function that filters nodes
+ * @param f Function to apply if the predicate holds
+ * @returns The value of the function if the predicate holds, undefined otherwise
+ */
 function traversePrune(predicate, f) {
 
   return (node, children, childrenNodes) => {
@@ -324,14 +241,18 @@ function traversePrune(predicate, f) {
   }
 }
 
-export { takeWhile, treeTraverse, treeFoldr, pruneTo }
-// console.debug(treeFoldr(takeWhile((_,__)=>true), [], hf))
+export { treeTraverse, treeFoldr }
 
 // Public
 
-export function renderedText(rootElement, selectedNode) {
+export function renderedText(rootElement, node) {
 
-  const renderedText = traversePrune(pruneTo(selectedNode), process)
+  const upToAndIncludingNode = nodeOther => {
+    if (nodeOther === node) return true;
+    return node.compareDocumentPosition(nodeOther) & (Node.DOCUMENT_POSITION_PRECEDING | Node.DOCUMENT_POSITION_CONTAINS)
+  }
+
+  const renderedText = traversePrune(upToAndIncludingNode, processText)
 
   return treeTraverse(renderedText, rootElement)
 }
