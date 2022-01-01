@@ -2,6 +2,7 @@
 
 import { Document } from './document/document.mjs'
 import { HTMLController } from './document/controller.mjs';
+import { formatDocument } from './document/DOM.mjs';
 
 class Parser {
 
@@ -36,6 +37,12 @@ class Editor extends HTMLElement {
 
     this.editDoc = new Document()
     this.viewController = new HTMLController(this)
+
+    let reformatted = formatDocument(this)
+
+    if (reformatted) {
+      this.innerHTML = reformatted.innerHTML
+    }
     // parse and re-render immediately
     // this.parse
     // this.render
@@ -111,12 +118,12 @@ class Editor extends HTMLElement {
 
 
   connectedCallback() {
-    console.debug("Editor added to DOM");
+    // console.debug("Editor added to DOM");
     // this.render();
 
   }
   disconnectedCallback() {
-    console.debug("Editor removed from DOM");
+    // console.debug("Editor removed from DOM");
   }
 
   export(documentExporter) {
