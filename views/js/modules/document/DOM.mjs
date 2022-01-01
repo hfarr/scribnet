@@ -126,22 +126,12 @@ function processText(node, children, childrenNodes) {
     return /^[^\P{White_Space}\u{00A0}]*$/u.test(string)
   }
 
-  function collapseInternalBreaking(string) {
-    return string.replaceAll(/[^\P{White_Space}\u{00A0}]+/gu, ' ')
-  }
-  function trimLeading(string) {
-    return string.replace(/^[^\P{White_Space}\u{00A0}]+/u, '')
-  }
-  function trimTrailing(string) {
-    return string.replace(/[^\P{White_Space}\u{00A0}]+$/u, '')
-  }
-
   // The zip is "eager", it will fill in undefineds for remaining resources
   let adjacent = zip(children, childrenNodes)
 
   let paddingBetween = zip([["", undefined], ...adjacent], adjacent).map(betwixt)
 
-  let collapsed = children.map(collapseInternalBreaking)
+  let collapsed = children.map(collapseBreaking)
     .map((s, i) => i > 0 ? trimLeading(s) : s)
     .map((s, i) => i < children.length - 1 ? trimTrailing(s) : s)
 
