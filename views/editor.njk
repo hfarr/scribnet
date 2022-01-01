@@ -97,16 +97,17 @@ Am I building out a full AST?
     // console.log(sel.toString())
     // console.debug(re.toString())
 
-    console.log(re.startContainer, re.startOffset)
+    // console.log(re.startContainer, re.startOffset)
 
-
-    let docOffset = hf.viewController.computeDocumentRange(re)
+    // let docOffset = hf.viewController.computeDocumentRange(re)
     // let docOffset2 = getOffset(hf, re.startContainer, re.startOffset)
     // let docOffset2 = _getOffset(hf, re.startContainer, re.startOffset)
     // let docOffset2 = __getOffset(hf, re.startContainer, re.startOffset)
-    let docOffset2 = textOffset(hf, re.startContainer).length + re.startOffset;
-    toolmark.querySelector('p').innerHTML = label`Offset ${docOffset[0]} Length ${docOffset[1]} O2 ${docOffset2}`
-    // console.debug(docOffset)
+    let docOffset = textOffset(hf, re.startContainer).length + re.startOffset;
+    let endOffset = textOffset(hf, re.endContainer).length + re.endOffset;
+    let focusOffset = textOffset(hf, sel.focusNode, sel.focusOffset).length + sel.focusOffset;
+    toolmark.querySelector('p').innerHTML = label`Offset ${focusOffset} Length ${endOffset - docOffset}`
+
   })
 
   // hf.addEventListener('click', (clickEvent) => {
@@ -128,50 +129,25 @@ Am I building out a full AST?
     // I think this should be feasible with one call to treeTraverse
     // (not doing pre-work with treeFoldr) but I will start this way
 
-    // const nodesInRange = new Set()
-    // _treeFoldr(cloncExcusive(x=>x===node, cat, []),[],rootElement).forEach(x=>nodesInRange.add(x))
-
     let pruned = pruneDown(rootElement, node)
     let finalChildren
-    function procWrap(f, children, nodes) {
+    function procWrap(node, children, nodes) {
 
-      let result = process(f,children, nodes)
+      let result = process(node, children, nodes)
       finalChildren = children;
 
       return result //[process(f,children), children]
     }
-    // const res = treeTraverse(process, pruned)
+
     const res = treeTraverse(procWrap, pruned)
-    console.debug('res',res,res.length)
-    console.debug(finalChildren.at(-1))
-    console.debug(res.slice(0, -node.textContent.length))
+    // console.debug('res',res,res.length)
+    // console.debug(finalChildren.at(-1))
+    // console.debug(res.slice(0, -node.textContent.length))
     // return res
     return res.slice(0, -node.textContent.length)
-
-    // const res = treeTraverse( (t, ...args) => {
-    //   if ( nodesInRange.has(t) ) {
-    //     return process(t, ...args)
-    //   }
-    //   return ""
-    // }, rootElement)
-
-    // return res.trim()
-
-    
-    // treeTraverse( (t, children)=>{
-    //   const clone = t.cloneNode()
-    //   // if (children.length > 0) {
-    //     // console.log(t,children)
-    //   // }
-    //   for (const child of children) {
-    //     clone.appendChild(child)
-    //   }
-    //   // children.forEach(clone.appendChild)
-    //   return clone
-    // }, rootElement)
-
-
-    // treeTraverse(process, rootElement).trim()
+    // console.debug(finalChildren, node.textContent, nodeOffset)
+    // return res.slice(0, -finalChildren.at(-1).length)
+    // We don't need final children any more
 
   }
 
@@ -216,13 +192,6 @@ Am I building out a full AST?
     }
     return offsetAccum
   }
-
-  // <script>
-  /**
-    treeFoldr(cat, [], hf)
-      .filter(n=>n.nodeType === Node.TEXT_NODE)
-	    .filter(n=>!(/^\s*$/.test(n.textContent)))
-    */
 
   function htmlElementFun(editor, node, offset) {
 
@@ -429,11 +398,37 @@ Am I building out a full AST?
       }
       return res
     }
+    // here is where we have room to improve. We want to focus on converting
+    // from browser representation to internal document. Right now this
+    // relies on expectations about browser behavior or even the kinds of HTML
+    // we'll munch on. Might be better served parsing the raw for internal use
+    // so it's independent. That and we don't always need to compute selection
+    // lengths, it's relevant for user operations when something is selected
+    // yes but for many cases its not. We could for example re-build the document
+    // internally on a cut or paste rather than try to mirror actions. 
+    // Im rambling, I would like to stick to using the browser as a controller
+    // and not the source of truth.
     function betwixt([[ c1Text, c1Node ], [ c2Text, c2Node ]]) {
       if (allWhiteSpace(c1Text)) {
         return "";
       }
+        
+      // Browser renders two line breaks for paragraphs
+      // But funny note about differences between copying text, and *innerText*.
+      // innerText renders spaces after each heading. so, I think I may stick to that.
+      // if (c2Node?.tagName === 'P') {
+      //   return "\n\n"
+      // } else if (blockNodes.test(c1Node?.tagName)) {
+      //   // Not all elements punch in the extra line break. Headings for example.
+      //   return "\n";
+      // }
+
       if (blockNodes.test(c1Node?.tagName)) {
+        // innerText shows block elements with two spaces. Probably should test the space "between" block elements,
+        // which I think would entail testing c2 and not c1. Or, maybe it doesn't matter since it gets cut?
+        // ehhhh I need to break this up into an abstraction to finesse the details with ease (ironic, I suppose)
+        // In this case the counting is equivalent, but notionally I'm not operating in a "between" sense even
+        // (rather an "after" sense) though that's the context this function, ostensibly, operates under
         return "\n\n";
       }
       if (oneOrMoreWhitespace.test(c1Text.slice(-1)) || oneOrMoreWhitespace.test(c2Text.slice(0,1))) {
@@ -452,7 +447,7 @@ Am I building out a full AST?
       return string.replaceAll(/[^\P{White_Space}\u{00A0}]+/gu,   ' ')
     }
     function trimLeading(string) {
-      return string.replace(/^[^\P{White_Space}\u{00A0}]/u, '')
+      return string.replace(/^[^\P{White_Space}\u{00A0}]+/u, '')
     }
     function trimTrailing(string) {
       return string.replace(/[^\P{White_Space}\u{00A0}]+$/u,  '')
@@ -734,7 +729,7 @@ Am I building out a full AST?
 
     const listapply = (treeList) => {
       return treeList.reduceRight( (res, item) => treeFoldr(f, res, item), base )
-      return treeList.reduceRight( (res, item) => _treeFoldr(f, res, item), base )
+      // return treeList.reduceRight( (res, item) => _treeFoldr(f, res, item), base )
     }
     return f(tree, listapply([...tree.childNodes]))
   }
