@@ -80,8 +80,6 @@ Am I building out a full AST?
 <script>
   const hf = document.querySelector('editor-hf')
   const toolmark = document.querySelector("#toolmark")
-  // let mo = await import("/js/modules/document/DOM.mjs")
-  const tgt = hf.querySelector('h2')
 
   function label(fragments, ...values) {
     let result = ""
@@ -140,6 +138,7 @@ Am I building out a full AST?
       }
     }
 
+    const tgt = hf.querySelector('h2')
     let pred = pruneTo(tgt.firstChild)
     // console.debug(treeFoldr((cur, prev) => pred(cur) ? [cur,...prev] : prev, [], hf))
 
