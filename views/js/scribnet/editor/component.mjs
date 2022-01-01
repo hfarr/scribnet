@@ -1,8 +1,7 @@
 'use strict';
 
-import { Document } from './document/document.mjs'
-import { HTMLController } from './document/controller.mjs';
-import { formatDocument } from './document/DOM.mjs';
+import { HTMLController } from '../document/controller.mjs';
+import { Editor } from './editor.mjs'
 
 // Thinking the editor maybe doesn't directly implement HTMLElement and instead acts as a composeable piece of functionality
 // Can play around with that later
@@ -18,7 +17,7 @@ import { formatDocument } from './document/DOM.mjs';
 // multiclass the renderer? Hm, no. That might make it into a separate custom component someday
 // since I plan to have more components that render based on the Document.
 // Maybe the renderer should attach to the Document? Probably not right now
-class Editor extends HTMLElement {
+class EditorComponent extends HTMLElement {
 
   constructor() {
     super()
@@ -30,11 +29,6 @@ class Editor extends HTMLElement {
     this.editor = new Editor(this);
     this.viewController = new HTMLController(this)
 
-    let reformatted = formatDocument(this)
-
-    if (reformatted) {
-      this.innerHTML = reformatted.innerHTML
-    }
     // parse and re-render immediately
     // this.parse
     // this.render
@@ -44,7 +38,8 @@ class Editor extends HTMLElement {
     // DOM interaction
     this.title = 'Oh!'  // setAttribute?
 
-    this.normalize();
+    // this.normalize();
+    this.editor.reformat()
 
     // this.contentEditable = true // being more explicit. Not trying to store data on the object, but DOM interaction.
     // Maybe extend another class that has the state? a mix in? Then it can't interfere with the DOM accidentally
@@ -128,7 +123,7 @@ class Editor extends HTMLElement {
 
 if ('customElements' in window) {
 
-  customElements.define('editor-hf', Editor);
+  customElements.define('editor-hf', EditorComponent);
 }
 
-export default Editor;
+export default EditorComponent;
