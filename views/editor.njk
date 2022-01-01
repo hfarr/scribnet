@@ -115,10 +115,17 @@ Am I building out a full AST?
 
     return m
   }).then( m=>{
-    let { takeWhile, treeTraverse, treeFoldr, pruneTo } = m
+    let { treeTraverse, treeFoldr } = m
+
+    function pruneTo(node) {
+      return nodeOther => {
+        if (nodeOther === node) return true;
+        return node.compareDocumentPosition(nodeOther) & (Node.DOCUMENT_POSITION_PRECEDING | Node.DOCUMENT_POSITION_CONTAINS)
+      }
+    }
 
     let pred = pruneTo(tgt.firstChild)
-    console.debug(treeFoldr(takeWhile(pruneTo(tgt.firstChild)), [], hf))
+    console.debug(treeFoldr((cur, prev) => pred(cur) ? [cur,...prev] : prev, [], hf))
 
     const f = (node, children) => {
       if (node.tagName) {
