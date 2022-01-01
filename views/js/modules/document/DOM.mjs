@@ -49,6 +49,12 @@ function empty(node) {
   return false
 }
 
+
+const blockNodes = /^(p(re)?|h[1-6])$/i
+const blockSet = new Set(
+  ["p", "h1", "h2", "h3", "div", "pre", "editor-hf"]
+)
+
 /**
  * Recursive function to walk a node and compute the "user rendered"
  * string. The key objective is to compute the text that would be rendered
@@ -234,6 +240,35 @@ function treeTraverseClone() {  //default just clones the tree. okay can't think
   return _treeID
 }
 
+function takeWhile(predicate) {
+  // takes the first sublist that consists of nodes that fulfill the predicate
+
+  function filter(node, previous) {
+    if (predicate(node)) {
+      return [node, ...previous]
+    } else {
+      // return previous
+      // not going to pretend this isn't a list, for a traversable it should theoretically work the same, or. 
+      // well. Maybe in the case of takewhile it is essential to know the '0' type, or, for traversables,
+      // we have mempty, could return that. eh.
+      // return []
+      return previous
+    }
+  }
+  return filter
+}
+
+function pruneTo(node) {
+  return nodeOther => {
+    if (nodeOther === node) return true;
+    return node.compareDocumentPosition(nodeOther) & (Node.DOCUMENT_POSITION_PRECEDING | Node.DOCUMENT_POSITION_CONTAINS)
+  }
+  // return takeWhile(nodeOther => {
+  //   if (nodeOther === node) return true;
+  //   return node.compareDocumentPosition(nodeOther) & (Node.DOCUMENT_POSITION_PRECEDING | Node.DOCUMENT_POSITION_CONTAINS)
+  // })
+}
+
 /**
  * treeTraverse folds over the tree by applying functions that do an
  * in order traversal. It is built on using treeFoldr, but the difference
@@ -276,23 +311,29 @@ function treeTraverse(f, tree) {
 
 }
 
+function traversePrune(predicate, f) {
+
+  return (node, children, childrenNodes) => {
+
+    if (predicate(node)) {
+      children = children.filter(Boolean)
+
+      return f(node, children, childrenNodes)
+    }
+    return undefined
+  }
+}
+
+export { takeWhile, treeTraverse, treeFoldr, pruneTo }
+// console.debug(treeFoldr(takeWhile((_,__)=>true), [], hf))
+
 // Public
 
 export function renderedText(rootElement, selectedNode) {
-  let pruned = pruneDown(rootElement, selectedNode)
-  // let finalChildren
-  // function procWrap(node, children, nodes) {
-  //   // Light wrapper to extract the final result of the children before they're
-  //   // concatenated in the result.
-  //   let result = process(node, children, nodes)
-  //   finalChildren = children;
 
-  //   return result
-  // }
+  const renderedText = traversePrune(pruneTo(selectedNode), process)
 
-  // const res = treeTraverse(procWrap, pruned)
-  // return res.slice(0, -selectedNode.textContent.length)
-  return treeTraverse(process, pruned)
+  return treeTraverse(renderedText, rootElement)
 }
 
 /**
