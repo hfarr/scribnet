@@ -73,6 +73,7 @@ in the editor, though I'd prefer to.. do better I suppose.
 Am I building out a full AST?
  -->
 
+<!-- <script type="module" src="js/modules/document/DOM.mjs"></script> -->
 <script>
   let hf = document.querySelector('editor-hf')
 
@@ -90,24 +91,36 @@ Am I building out a full AST?
 
   toolmark.children[0].innerHTML = label`Test ${"label"} the best guess is ${'not this one'}`
 
+  function lazyEscape(string) {
+
+  }
+
   // document.addEventListener('selectionchange', (sce) => console.debug(sce) )
-  document.addEventListener('selectionchange', (sce) => {
-    const sel = window.getSelection()
-    const re = sel.getRangeAt(0)  // Not handling multi ranges for now
-    // console.log(sel.toString())
-    // console.debug(re.toString())
+  import("/js/modules/document/DOM.mjs").then( m=> {
+    let { renderedText } = m
+    document.addEventListener('selectionchange', (sce) => {
+      const sel = window.getSelection()
+      const re = sel.getRangeAt(0)  // Not handling multi ranges for now
 
-    // console.log(re.startContainer, re.startOffset)
+      // let startOffset = textOffset(hf, re.startContainer).length + re.startOffset;
+      // let endOffset = textOffset(hf, re.endContainer).length + re.endOffset;
+      // let focusOffset = textOffset(hf, sel.focusNode).length + sel.focusOffset// - sel.focusNode.textContent.length;
+      let startOffset = renderedText(hf, re.startContainer).length + re.startOffset - re.startContainer.textContent.length;
+      let endOffset = renderedText(hf, re.endContainer).length + re.endOffset - re.endContainer.textContent.length;
+      let focusOffset = renderedText(hf, sel.focusNode).length + sel.focusOffset - sel.focusNode.textContent.length;
+      let charUnderCursor = hf.innerText.codePointAt(focusOffset)
+      // let selectedText = [...hf.innerText].slice(startOffset, endOffset)
+      // need to html escape
+      let selectedText = hf.innerText.slice(startOffset, endOffset)
+      if (selectedText.length == 0) {
+        selectedText = charUnderCursor ? String.fromCodePoint(charUnderCursor) : '-'
+      }
 
-    // let docOffset = hf.viewController.computeDocumentRange(re)
-    // let docOffset2 = getOffset(hf, re.startContainer, re.startOffset)
-    // let docOffset2 = _getOffset(hf, re.startContainer, re.startOffset)
-    // let docOffset2 = __getOffset(hf, re.startContainer, re.startOffset)
-    let docOffset = textOffset(hf, re.startContainer).length + re.startOffset;
-    let endOffset = textOffset(hf, re.endContainer).length + re.endOffset;
-    let focusOffset = textOffset(hf, sel.focusNode, sel.focusOffset).length + sel.focusOffset;
-    toolmark.querySelector('p').innerHTML = label`Offset ${focusOffset} Length ${endOffset - docOffset}`
+      // TODO get an html escaper for selectedText if we want to spit it out 'raw'. Maybe.. an "escape" component
+      // TODO work out a way to handle ctrl-a. I think it 'selects' hf-editor which breaks the tree traversal (yields undefined)
+      toolmark.querySelector('p').innerHTML = label`Offset ${focusOffset} Length ${endOffset - startOffset} Character ${selectedText}`
 
+    })
   })
 
   // hf.addEventListener('click', (clickEvent) => {
