@@ -22,7 +22,7 @@ function allCollapsibleWhiteSpace(string) {
  * @returns 
  */
 function trimLeading(string) {
-  return string.replace(/^[^\P{White_Space}\u{00A0}]/u, '')
+  return string.replace(/^[^\P{White_Space}\u{00A0}]+/u, '')
 }
 function trimTrailing(string) {
   return string.replace(/[^\P{White_Space}\u{00A0}]+$/u, '')
