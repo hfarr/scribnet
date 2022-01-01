@@ -231,11 +231,21 @@ function traversePrune(predicate, f) {
   }
 }
 
+// Temp (yeah... "temp") until I figure out tests (yeah... until I "figure out tests") 
 export { treeTraverse, treeFoldr }
+
 
 // Public
 
-export function renderedText(rootElement, node) {
+/**
+ * Returns the text rendered in the DOM from the root element up to and including the 
+ * text in the specificed node contained by the parent.
+ * 
+ * @param rootElement Parent element that contains the node. Where the text 'starts'
+ * @param node End range of the 
+ * @returns User rendered text 
+ */
+export function renderedText(rootElement, node) { // TODO handle Ranges?
 
   const upToAndIncludingNode = nodeOther => {
     if (nodeOther === node) return true;
@@ -312,3 +322,4 @@ export function formatDocument(documentRoot) {
 }
 
 
+export { treeFoldr as foldrDOM }
