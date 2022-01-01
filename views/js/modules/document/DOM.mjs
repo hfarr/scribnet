@@ -40,8 +40,8 @@ function trimBreaking(string) {
 function empty(node) {
 
   if (node?.tagName === 'P') {
+    // console.debug(node.innerText === '', `<|${node.innerText}|>`, `<|${node.innerHTML}|>` )
     return node.innerText === ''
-    // return allCollapsibleWhiteSpace(node.innerText)
   }
   return false
 }
@@ -100,9 +100,6 @@ export function formatDocument(documentRoot) {
 
     if (!empty(node)) {
       maybeNode = node.cloneNode()
-      if (documentRoot === node) {
-        children = children.filter(x => x?.nodeType === Node.ELEMENT_NODE)
-      }
       children.filter(Boolean)
         .forEach((childNode) => {
           maybeNode.appendChild(childNode);
@@ -128,14 +125,22 @@ export function formatDocument(documentRoot) {
     return maybeNode
   }
 
-  let rootContainer = document.createElement('div')
-  rootContainer.innerHTML = documentRoot.innerHTML
-  let res = treeTraverse(cull, rootContainer)
+  let res = document.createElement('div')
 
-  // TODO don't clone the root. It's constructor calls this function,
-  // and thankfully doesn't 
-  // let res = treeTraverse(cull, documentRoot)
-  // res?.normalize();
+  // Rather than send documentRoot through, or 'res' after copying children
+  // we map over the children and perform post processing on the first children.
+  // There are some difficulties with using the documentRoot as the base element
+  // such as cloning it causes it's constructor to run- which calls 
+  // formatDocument. But we want access to un-copied nodes, direct from the DOM,
+  // so that we have access to 'rendered' attributes, namely innerText.
+  // If we copy children into res first and then use that as the root innerText
+  // is empty because it hasn't been flowed over the document, and we aren't
+  // keen to do that either.
+  ;[...documentRoot.childNodes].filter(x => x?.nodeType === Node.ELEMENT_NODE)
+    .map(cn => treeTraverse(cull, cn))
+    .filter(Boolean)
+    .forEach(child => res.appendChild(child))
+
   return res
 
 }
