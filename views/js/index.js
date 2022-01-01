@@ -7,5 +7,6 @@ import Sidebar from './layout/Sidebar.js'
 import Stack from './layout/Stack.js'
 import Editor from './modules/editor.js'
 
-console.log("When modules are imported, they aren't invoked. But if the only thing in an imported module is imports of other modules, then it doesn't even show up in the browser sources!");
+// that's enough of that
+// console.log("When modules are imported, they aren't invoked. But if the only thing in an imported module is imports of other modules, then it doesn't even show up in the browser sources!");
 
