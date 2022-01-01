@@ -4,14 +4,6 @@ import { Document } from './document/document.mjs'
 import { HTMLController } from './document/controller.mjs';
 import { formatDocument } from './document/DOM.mjs';
 
-class Parser {
-
-  parse(node) {
-
-  }
-
-}
-
 // Thinking the editor maybe doesn't directly implement HTMLElement and instead acts as a composeable piece of functionality
 // Can play around with that later
 
@@ -35,7 +27,7 @@ class Editor extends HTMLElement {
     // of state I can repurpose, like a global WeakMap :S
     this.data = { counter: 0 }
 
-    this.editDoc = new Document()
+    this.editor = new Editor(this);
     this.viewController = new HTMLController(this)
 
     let reformatted = formatDocument(this)
