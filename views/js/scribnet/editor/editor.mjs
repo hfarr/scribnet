@@ -109,6 +109,13 @@ export class Editor {
     return text.slice(0, text.length + adjustment)
   }
 
+  containsWindowSelection() {
+    const sel = window.getSelection()
+    const containsFocus = Boolean(this.component.compareDocumentPosition(sel.focusNode) & (Node.DOCUMENT_POSITION_CONTAINED_BY))
+    const containsAnchor = Boolean(this.component.compareDocumentPosition(sel.anchorNode) & (Node.DOCUMENT_POSITION_CONTAINED_BY))
+    return containsAnchor && containsFocus
+  }
+
   /**
    * Called on selection change
    * @param selectionChangeEvent 
@@ -117,6 +124,11 @@ export class Editor {
     // TODO extract to Event handler module
 
     const sel = window.getSelection()
+
+    if (!this.containsWindowSelection()) {
+      return
+    }
+
     const re = sel.getRangeAt(0)  // Not handling multi ranges for now
 
     const textUpToStart = this.textUpTo(re.startContainer, re.startOffset)
