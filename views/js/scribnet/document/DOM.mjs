@@ -233,6 +233,25 @@ function traverseTokens(node, children) {
   // Gosh I might have to prune <br>s.
   // This feels like a browser bug to me.
 
+  // I know what's up now - when using down arrow to select, it selected the paragraph
+  // *element* and not the last text node contained within that element. THat's not a 
+  // possibility I handled because I didn't think there was a way for the user to select
+  // an element (or, I was pushing handling of such down the road...).
+  // I didn't realize what was happening when I made the comment above.
+  // In other words, the behavior of the browser is fine. I might even think to go back
+  // to 'normal' whitespace handling. It would be cool to handle that without putting
+  // the style directly in the editor-hf attribute.
+  // Alright cool, we can handle this by using text node innerText length instead of 
+  // node text offset, if its an element.
+  // Then we have the choice to go back to the former whitespace handling (which! I'll
+  // admit! Is a pain. Even though I've developed an effective strategy for mitigating
+  // browser idiosyncracies (more or less) I feel it's more elegant to keep whitespace
+  // as typed. Then the markup is a little closer to the rendered outcome.
+  // I'd like to get to a point where I can arbitrarily choose. Either way, the behavior
+  // is the same.
+  // A part of me that enjoys struggling does make me like strategizing around the 
+  // whitespace, it is an enjoyable, if frustrating, project.
+
 
   const token = Token.tokenize(node)
   const result = [token, ...children.flat(1)]
