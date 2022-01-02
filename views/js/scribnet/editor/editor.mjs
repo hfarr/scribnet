@@ -16,6 +16,10 @@ export class Editor {
     this.component = component
     this.internalNode = undefined
 
+    this.cursor = 0
+    this.selectedText = ""
+    this.characterAtCursor = ""
+
     this.editDocument = new Document()
     this.listeners = {}
     this.listeners[Editor.EVENT_SELECTION_CHANGE] = []
@@ -109,7 +113,7 @@ export class Editor {
    * Called on selection change
    * @param selectionChangeEvent 
    */
-  onSelectionChange(selectionChangeEvent) {
+  async onSelectionChange(selectionChangeEvent) {
     // TODO extract to Event handler module
 
     const sel = window.getSelection()
@@ -123,12 +127,15 @@ export class Editor {
     // I guess it is useful for selectedText at least. Not that we don't get that 
     // information anyway when it is sent through an event.
 
-    let charUnderCursor = this.component.innerText.codePointAt(cursorOffset)
     let selectedText = textUpToEnd.slice(textUpToStart.length)
-    if (selectedText.length == 0) {
-      selectedText = charUnderCursor ? String.fromCodePoint(charUnderCursor) : '-'
+    const codePoint = this.component.innerText.codePointAt(cursorOffset)
+    this.characterAtCursor = ''
+    if (codePoint) {
+      this.characterAtCursor = String.fromCodePoint(codePoint)
     }
-    console.debug(cursorOffset)
+
+    this.cursor = cursorOffset
+    this.selectedText = selectedText
 
     this.notify('selectionchange')
 
