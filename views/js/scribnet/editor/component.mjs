@@ -1,6 +1,5 @@
 'use strict';
 
-import { HTMLController } from '../document/controller.mjs';
 import { Editor } from './editor.mjs'
 
 // Thinking the editor maybe doesn't directly implement HTMLElement and instead acts as a composeable piece of functionality
@@ -27,7 +26,7 @@ class EditorComponent extends HTMLElement {
     this.data = { counter: 0 }
 
     this.editor = new Editor(this);
-    this.viewController = new HTMLController(this)
+    // this.viewController = new HTMLController(this)
 
     // parse and re-render immediately
     // this.parse
