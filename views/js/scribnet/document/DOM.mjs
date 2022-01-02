@@ -218,40 +218,6 @@ function traversePrune(predicate, f) {
 
 
 function traverseTokens(node, children) {
-  // Cool cool
-  // unexpected behaviour in window selection. AKA what the browser does for whitespace.
-  // For one, with a <br> following a paragraph the carat can be positioned so that it
-  // is on the newline character rendered by <br> (which gets turned into a normal 
-  // space). It can mess up the window's idea of the offset (by reporting an offset of 
-  // one). This can be re-created by having the carat positioned at the second to last
-  // line of a para|graph (as rendered) positioned over whitespace and pressing the down 
-  // arrow key. 
-  // 
-  // Example, if if the carat were positioned where the | is in the above paragraph.
-  // Seems to happen when a BR is present. Not sure how to detect. If offset 1, paragraph
-  // selected?
-  // Gosh I might have to prune <br>s.
-  // This feels like a browser bug to me.
-
-  // I know what's up now - when using down arrow to select, it selected the paragraph
-  // *element* and not the last text node contained within that element. THat's not a 
-  // possibility I handled because I didn't think there was a way for the user to select
-  // an element (or, I was pushing handling of such down the road...).
-  // I didn't realize what was happening when I made the comment above.
-  // In other words, the behavior of the browser is fine. I might even think to go back
-  // to 'normal' whitespace handling. It would be cool to handle that without putting
-  // the style directly in the editor-hf attribute.
-  // Alright cool, we can handle this by using text node innerText length instead of 
-  // node text offset, if its an element.
-  // Then we have the choice to go back to the former whitespace handling (which! I'll
-  // admit! Is a pain. Even though I've developed an effective strategy for mitigating
-  // browser idiosyncracies (more or less) I feel it's more elegant to keep whitespace
-  // as typed. Then the markup is a little closer to the rendered outcome.
-  // I'd like to get to a point where I can arbitrarily choose. Either way, the behavior
-  // is the same.
-  // A part of me that enjoys struggling does make me like strategizing around the 
-  // whitespace, it is an enjoyable, if frustrating, project.
-
 
   const token = Token.tokenize(node)
   const result = [token, ...children.flat(1)]
@@ -267,6 +233,26 @@ function traverseTokens(node, children) {
 export { treeTraverse, treeFoldr }
 // Public
 
+export function offsetToDOM(rootElement, offset) {
+  const tokens = Token.collapseTokens(treeFoldr((c,p) => [Token.tokenize(c), ...p], [], rootElement))
+  // TODO we need a function to map from *code point offsets* of an internal document
+  // model to the DOM. This can stay for now but we need to focus on the capabilities
+  // of the editor document.
+  
+  for (const token of tokens) {
+
+    if (offset <= token.string.length) {
+      if (token.type === Token.TOKEN_BLOCK) {
+        offset -= 1
+        continue;
+      }
+      return [ token.node, offset ]
+    }
+    offset -= token.string.length
+  }
+  return [ undefined, undefined ]
+}
+
 /**
  * Returns the text rendered in the DOM from the root element up to and including the 
  * text in the specificed node contained by the parent.
@@ -275,7 +261,7 @@ export { treeTraverse, treeFoldr }
  * @param node End range of the 
  * @returns User rendered text 
  */
-export function renderedText(rootElement, node) { // TODO handle Ranges?
+function renderedText(rootElement, node) {
 
   const upToAndIncludingNode = nodeOther => {
     if (nodeOther === node) return true;
@@ -289,6 +275,8 @@ export function renderedText(rootElement, node) { // TODO handle Ranges?
 
 
 export function renderTextFold(rootElement, node) {
+  // TODO map text offset to internal document model, not DOM. Or, construct a function
+  // for internal DOC in addition to keeping this one for DOM
 
   const upToAndIncludingNode = nodeOther => {
     if (nodeOther === node) return true;

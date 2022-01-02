@@ -105,91 +105,68 @@ export class Token {
     return token
   }
 
-static tokenize(node) {
-  if (node.nodeType === Node.TEXT_NODE) {
-    return Token.tokenText(node, node.textContent)
-  }
-
-  switch (node?.tagName) {
-    case 'BR': return Token.tokenLinebreak(node)
-    case 'H1':
-    case 'H2':
-    case 'H3':
-    case 'P': {
-      // return [Token.tokenBlock(), ...children, Token.tokenBlock()]
-      return Token.tokenBlock(node)
+  static tokenize(node) {
+    if (node.nodeType === Node.TEXT_NODE) {
+      return Token.tokenText(node, node.textContent)
     }
-    case 'STRONG':
-    case 'EM':
-    case 'SPAN': {
-      return Token.tokenInline(node)
-    }
-    default: return Token.tokenEmpty(node)
-  }
-}
 
-static joinTokens(tokenList) {
-
-  // if (tokenList.at(-1).node.nextElementSibling?.tagName === 'BR') {
-    // console.debug(tokenList.at(-1).node)
-    // tokenList.push(Token.tokenLinebreak(tokenList.at(-1).node.nextElementSibling))
-  // }
-
-  let previous = undefined
-  const result = []
-  for (const token of tokenList) {
-    const idx = tokenList.indexOf(token)
-    switch (token.type) {
-      case Token.TOKEN_LINEBREAK: /*{
-        if (previous.type === this.TOKEN_BLOCK && previous.hasTrailingWhitespace()) {
-          // result.push(Token.tokenInline())
-          token.text="  "
-        }
-        result.push(token);
-        previous = token;
-        break;
-      }*/
-      case Token.TOKEN_TEXT: {
-        if (previous) {
-          // if (previous.type === Token.TOKEN_INLINE && token.hasLeadingWhitespace()) {
-          //   previous.text = " "
-          // }
-
-          result.push(token)
-          previous = token;
-        }
-
-        break;
+    switch (node?.tagName) {
+      case 'BR': return Token.tokenLinebreak(node)
+      case 'H1':
+      case 'H2':
+      case 'H3':
+      case 'P': {
+        // return [Token.tokenBlock(), ...children, Token.tokenBlock()]
+        return Token.tokenBlock(node)
       }
-      case Token.TOKEN_BLOCK: {
-
-        if (!previous) {
-          token.text = ""
-          result.push(token)
-          previous = token
-
-        } else if (previous.type !== Token.TOKEN_BLOCK) {
-          result.push(token)
-          previous = token
-        }
-
-        break;
+      case 'STRONG':
+      case 'EM':
+      case 'SPAN': {
+        return Token.tokenInline(node)
       }
-      // case Token.TOKEN_INLINE: {
-      //   if (previous?.type !== Token.TOKEN_INLINE) {
-      //     if (previous.hasTrailingWhitespace() && !allCollapsible(previous.text)) {
-      //       token.text = " "
-      //     }
-      //     result.push(token)
-      //     previous = token
-      //   }
-
-      //   break;
-      // }
-      default: {}
+      default: return Token.tokenEmpty(node)
     }
   }
 
-  return result.map(token => token.string).join('')
-}
+  static collapseTokens(tokenList) {
+    let previous = undefined
+    const result = []
+    for (const token of tokenList) {
+      const idx = tokenList.indexOf(token)
+      switch (token.type) {
+        case Token.TOKEN_LINEBREAK:
+        case Token.TOKEN_TEXT: {
+          if (previous) {
+            result.push(token)
+            previous = token;
+          }
+
+          break;
+        }
+        case Token.TOKEN_BLOCK: {
+
+          if (!previous) {
+            token.text = ""
+            result.push(token)
+            previous = token
+
+          } else if (previous.type !== Token.TOKEN_BLOCK) {
+            result.push(token)
+            previous = token
+          }
+
+          break;
+        }
+        default: { }
+      }
+    }
+    return result
+  }
+
+  static joinTokens(tokenList) {
+
+    const result = Token.collapseTokens(tokenList)
+
+    return result.map(token => token.string).join('')
+  }
 }

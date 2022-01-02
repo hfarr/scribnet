@@ -116,6 +116,30 @@ export class Editor {
     return containsAnchor && containsFocus
   }
 
+  updateDOMSelection() {
+
+  }
+
+  //------------------------
+
+  setSelection(start, end) {
+    // const editorNodes = treeFoldr((cur,prev) => [cur,...prev], [], this.component)
+    // let startNode, endNode, startOffset, endOffset, previous
+    // for (const node of editorNodes) {
+    //   let textDifference = 0
+    //   if (node.nodeType === Node.TEXT_NODE) {
+    //     textDifference = node.textContent.length
+    //   } else {
+    //     if (node.tag)
+    //   }
+    // }
+    const [ startNode=this.component, startOffset=0 ] = offsetToDOM(this.component, start)
+    const [ endNode=this.component, endOffset=1 ] = offsetToDOM(this.component, end)
+    window.getSelection().setBaseAndExtent(startNode, startOffset, endNode, endOffset)
+
+    console.debug(startNode, startOffset)
+  }
+
   /**
    * Called on selection change
    * @param selectionChangeEvent 
