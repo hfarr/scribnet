@@ -32,7 +32,8 @@ class EditorComponent extends HTMLElement {
     // Maybe extend another class that has the state? a mix in? Then it can't interfere with the DOM accidentally
     this.setAttribute('contentEditable', true)
 
-    document.addEventListener('selectionchange', async (e) => this.editor.onSelectionChange(e))
+    // document.addEventListener('selectionchange', async (e) => this.editor.onSelectionChange(e))
+    this.editor.evtSelChg = async (e) => this.editor.onSelectionChange(e)
 
   }
 
@@ -48,13 +49,10 @@ class EditorComponent extends HTMLElement {
         console.debug(inputEvent, r0)
         if (inputEvent.inputType === 'insertText') { 
           this.editDoc.appendAt(r0.startOffset, inputEvent.data) 
-          this.activeOffset = r0.startOffset + inputEvent.data.length; // covers pasting in and inserting just one character
+          this.activeOffset = r0.startOffset + inputEvent.data.length;
           inputEvent.preventDefault()
           this.render();
           this.updateCursor();
-          // if you use an element as a node, it has a width of 1. Text has a variable widht. that's why offsets were either 0 or one, in bound or out
-          // this.notify();
-          // window.getSelection().setPosition(r0.startContainer, r0.startOffset + 1)
         }
       }
     }
@@ -62,8 +60,6 @@ class EditorComponent extends HTMLElement {
 
 
   afterInput(inputEvent) {
-    // console.log(`Input data: ${inputEvent.data}`)
-    // console.log(`Input type: ${inputEvent.inputType}`)
 
   }
 
@@ -73,9 +69,6 @@ class EditorComponent extends HTMLElement {
 
 
   keyDown(keyPressEvent) {
-    /* e.g ctrl-b: wrap or unwrap text in <strong></strong> */
-    /* all editor inputs like this will be processed elsewhere, but I think we can get away with a few */
-    // console.log(keyPressEvent)
   }
 
   get observedAttributes() {
@@ -85,12 +78,13 @@ class EditorComponent extends HTMLElement {
   connectedCallback() {
     // console.debug("Editor added to DOM");
     this.editor.reformat()
-    // console.debug(this.innerHTML)
-    // this.render();
+    
+    document.addEventListener('selectionchange', this.editor.evtSelChg)
 
   }
   disconnectedCallback() {
-    // console.debug("Editor removed from DOM");
+    
+    document.removeEventListener('selectionchange', this.editor.evtSelChg)
   }
 
   export(documentExporter) {
