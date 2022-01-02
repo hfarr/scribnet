@@ -1,6 +1,6 @@
 'use strict'
 
-import { renderedText, foldrDOM } from '../document/DOM.mjs';
+import { renderTextFold, foldrDOM } from '../document/DOM.mjs';
 import { Document } from '../document/document.mjs'
 
 import { formatDocument } from '../document/DOM.mjs';
@@ -30,12 +30,16 @@ export class Editor {
   textDOM() {
     let rightmostChild = foldrDOM((cur, prev) => {
       if (prev) return prev;
-      if (/\S/.test(cur.textContent)) {
+      if (cur.nodeType === Node.ELEMENT_NODE) {
+        return cur
+      }
+      if (cur.nodeType === Node.TEXT_NODE && /\S/.test(cur.textContent)) {
         return cur
       }
       return undefined
     }, undefined, hf)
-    return renderedText(hf, rightmostChild);
+    // return renderedText(hf, rightmostChild);
+    return renderTextFold(hf, rightmostChild);
   }
 
   /**

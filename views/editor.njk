@@ -4,7 +4,7 @@ title: Editing
 ---
 
 
-<editor-hf>
+<editor-hf style="white-space: pre-wrap;">
   <h1>Title title title <em>And now, a word from our sponsor</em></h1><p>
        &nbsp;
   </p><p>
@@ -52,6 +52,7 @@ title: Editing
     other. My document model might produce html that's nested which will be useful
     for querying the headers when I eventually make my list element.
   </p>
+  <p>Now for sauce <br> </p>
   <h2>Conclusion</h2>
   <p>
     Hello, 🌐!
@@ -89,8 +90,8 @@ Am I building out a full AST?
     return result
   }
 
-  import("/js/modules/document/DOM.mjs").then( m=> {
-    let { renderedText } = m
+  import("/js/scribnet/document/DOM.mjs").then( m=> {
+    let { /* renderedText, */ renderTextFold: renderedText } = m
     document.addEventListener('selectionchange', (sce) => {
       const sel = window.getSelection()
       const re = sel.getRangeAt(0)  // Not handling multi ranges for now

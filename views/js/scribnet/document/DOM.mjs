@@ -1,19 +1,4 @@
-
-/**
- * Test a string to see if it is entirely "collapsible" whitespace.
- * Collapsible whitespace is whitespace that, when adjacent to other
- * collapsible whitespace, reduces to one piece of whitespace at 
- * render time.
- * 
- * @param string String to test
- * @returns True if the string consists of 'breaking' spaces
- */
-function allCollapsibleWhiteSpace(string) {
-
-  // string consists of all whitespace that aren't &nbsp;
-  // this doesn't work for new lines
-  return /^[^\P{White_Space}\u{00A0}]*$/u.test(string)
-}
+import { Token } from './Token.mjs'
 
 
 /**
@@ -231,10 +216,36 @@ function traversePrune(predicate, f) {
   }
 }
 
+
+function traverseTokens(node, children) {
+  // Cool cool
+  // unexpected behaviour in window selection. AKA what the browser does for whitespace.
+  // For one, with a <br> following a paragraph the carat can be positioned so that it
+  // is on the newline character rendered by <br> (which gets turned into a normal 
+  // space). It can mess up the window's idea of the offset (by reporting an offset of 
+  // one). This can be re-created by having the carat positioned at the second to last
+  // line of a para|graph (as rendered) positioned over whitespace and pressing the down 
+  // arrow key. 
+  // 
+  // Example, if if the carat were positioned where the | is in the above paragraph.
+  // Seems to happen when a BR is present. Not sure how to detect. If offset 1, paragraph
+  // selected?
+  // Gosh I might have to prune <br>s.
+  // This feels like a browser bug to me.
+
+
+  const token = Token.tokenize(node)
+  const result = [token, ...children.flat(1)]
+
+  if (token.type === Token.TOKEN_INLINE) {
+    result.push(Token.tokenInline())
+  }
+  return result
+}
+
+
 // Temp (yeah... "temp") until I figure out tests (yeah... until I "figure out tests") 
 export { treeTraverse, treeFoldr }
-
-
 // Public
 
 /**
@@ -252,10 +263,26 @@ export function renderedText(rootElement, node) { // TODO handle Ranges?
     return node.compareDocumentPosition(nodeOther) & (Node.DOCUMENT_POSITION_PRECEDING | Node.DOCUMENT_POSITION_CONTAINS)
   }
 
-  const renderedText = traversePrune(upToAndIncludingNode, processText)
+  const pruneProcess = traversePrune(upToAndIncludingNode, processText)
 
-  return treeTraverse(renderedText, rootElement)
+  return treeTraverse(pruneProcess, rootElement)
 }
+
+
+export function renderTextFold(rootElement, node) {
+
+  const upToAndIncludingNode = nodeOther => {
+    if (nodeOther === node) return true;
+    return node.compareDocumentPosition(nodeOther) & (Node.DOCUMENT_POSITION_PRECEDING | Node.DOCUMENT_POSITION_CONTAINS)
+  }
+
+  const traversePrunedTokens = traversePrune(upToAndIncludingNode, traverseTokens)
+  const tokens = treeTraverse(traversePrunedTokens, rootElement)
+  const result = Token.joinTokens(tokens)
+
+  return result
+}
+
 
 /**
  * Normalizes HTML
