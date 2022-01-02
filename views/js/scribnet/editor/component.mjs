@@ -22,37 +22,18 @@ class EditorComponent extends HTMLElement {
     super()
 
     // I'm concerned about overriding attributes. It's fragile. unfortunately I don't know if there's any handy piece
-    // of state I can repurpose, like a global WeakMap :S
+    // of state I can repurpose, like a global WeakMap
     this.data = { counter: 0 }
 
     this.editor = new Editor(this);
-    // this.viewController = new HTMLController(this)
-
-    // parse and re-render immediately
-    // this.parse
-    // this.render
-    // console.log(this.innerHTML)
-    // this.viewController.parse(this.innerHTML)
-
-    // DOM interaction
-    this.title = 'Oh!'  // setAttribute?
-
-    // this.normalize();
     this.editor.reformat()
 
     // this.contentEditable = true // being more explicit. Not trying to store data on the object, but DOM interaction.
     // Maybe extend another class that has the state? a mix in? Then it can't interfere with the DOM accidentally
     this.setAttribute('contentEditable', true)
 
-  }
+    document.addEventListener('selectionchange', async (e) => this.editor.onSelectionChange(e))
 
-
-
-  render() {
-
-    this.innerHTML = this.viewController.export()
-    this.viewController.updateWindowSelection()
-    // Offsets into the doc that yield the Node and offset
   }
 
   beforeInput(inputEvent) {
