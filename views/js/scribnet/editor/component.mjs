@@ -82,10 +82,10 @@ class EditorComponent extends HTMLElement {
     return [ 'data' ]
   }
 
-
-
   connectedCallback() {
     // console.debug("Editor added to DOM");
+    this.editor.reformat()
+    // console.debug(this.innerHTML)
     // this.render();
 
   }
