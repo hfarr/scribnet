@@ -130,10 +130,10 @@ static tokenize(node) {
 
 static joinTokens(tokenList) {
 
-  if (tokenList.at(-1).node.nextElementSibling?.tagName === 'BR') {
+  // if (tokenList.at(-1).node.nextElementSibling?.tagName === 'BR') {
     // console.debug(tokenList.at(-1).node)
-    tokenList.push(Token.tokenLinebreak(tokenList.at(-1).node.nextElementSibling))
-  }
+    // tokenList.push(Token.tokenLinebreak(tokenList.at(-1).node.nextElementSibling))
+  // }
 
   let previous = undefined
   const result = []
