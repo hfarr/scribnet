@@ -67,9 +67,7 @@ title: Editing
 </editor-hf>
 
 <div id="toolmark">
-  <p>
-    toolmark
-  </p>
+  <p></p>
 </div>
 
 <!-- Even HTML breaks it down to separate blocks. Which means we can probably leave it
@@ -79,82 +77,46 @@ Am I building out a full AST?
 
 <!-- <script type="module" src="js/modules/document/DOM.mjs"></script> -->
 <script>
-  const hf = document.querySelector('editor-hf')
-  const toolmark = document.querySelector("#toolmark")
+const hf = document.querySelector('editor-hf')
+const toolmark = document.querySelector("#toolmark")
 
-  import("/js/scribnet/document/DOM.mjs").then( m=> {
-    let { treeFoldr } = m
-    const processText = async () => {
-      let rightmostChild = treeFoldr((cur, prev) => {
-        if (prev) return prev;
-        if (/\S/.test(cur.textContent)) {
-          return cur
-        }
-        return undefined
-      }, undefined, hf)
-      return renderedText(hf, rightmostChild);
-    }
-    document.addEventListener('DOMContentLoaded', async (event) => {
-      let text = await processText()
-      console.debug("!", text === hf.innerText, "!")
-    })
-  })
-
-  function label(fragments, ...values) {
-    let result = ""
-    for (let i = 0; i < values.length; i++) {
-      result += `<strong>${fragments[i].trim()}:</strong>&nbsp;${values[i]}<br>`
-    }
-    return result
-  }
-
-  window.addEventListener('load', async (event) => {
-    import("/js/scribnet/document/DOM.mjs").then(async (m) => {
-      let { /* renderedText, */ renderTextFold: renderedText } = m
-
-      hf.editor.addListener('selectionchange', (editor) => {
-        const cursor = editor.cursor
-        const selection = editor.selectedText.length > 0 ? editor.selectedText : editor.characterAtCursor
-        toolmark.querySelector('p').innerHTML = label`Offset ${cursor} Length ${selection.length} Selection ${selection}`
-      })
-
-      // document.addEventListener('selectionchange', (sce) => {
-      //   const sel = window.getSelection()
-      //   const re = sel.getRangeAt(0)  // Not handling multi ranges for now
-
-      //   let startOffset = renderedText(hf, re.startContainer).length + re.startOffset - re.startContainer.textContent.length;
-      //   let endOffset = renderedText(hf, re.endContainer).length + re.endOffset - re.endContainer.textContent.length;
-      //   let focusOffset = renderedText(hf, sel.focusNode).length + sel.focusOffset - sel.focusNode.textContent.length;
-      //   let charUnderCursor = hf.innerText.codePointAt(focusOffset)
-      //   let selectedText = hf.innerText.slice(startOffset, endOffset)
-      //   if (selectedText.length == 0) {
-      //     selectedText = charUnderCursor ? String.fromCodePoint(charUnderCursor) : '-'
-      //   }
-
-      //   // TODO get an html escaper for selectedText if we want to spit it out 'raw'. Maybe.. an "escape" component
-      //   // TODO work out a way to handle ctrl-a. I think it 'selects' hf-editor which breaks the tree traversal (yields undefined)
-      //   toolmark.querySelector('p').innerHTML = label`Offset ${focusOffset} Length ${endOffset - startOffset} Character ${selectedText}`
-
-      // })
-
-      let { treeFoldr } = m
-      const processText = async () => {
-        let rightmostChild = treeFoldr((cur, prev) => {
-          if (prev) return prev;
-          if (/\S/.test(cur.textContent)) {
-            return cur
-          }
-          return undefined
-        }, undefined, hf)
-        return renderedText(hf, rightmostChild);
+import("/js/scribnet/document/DOM.mjs").then(m => {
+  let { treeFoldr, renderTextFold } = m
+  const processText = async () => {
+    let rightmostChild = treeFoldr((cur, prev) => {
+      if (prev) return prev;
+      if (/\S/.test(cur.textContent)) {
+        return cur
       }
-
-      let text = await processText()
-      console.debug("!", text === hf.innerText, "!")
-
-      return m
-    })
+      return undefined
+    }, undefined, hf)
+    return renderTextFold(hf, rightmostChild);
+  }
+  document.addEventListener('DOMContentLoaded', async (event) => {
+    let text = await processText()
+    console.debug("!", text === hf.innerText, "!")
   })
+})
+
+function label(fragments, ...values) {
+  let result = ""
+  for (let i = 0; i < values.length; i++) {
+    result += `<strong>${fragments[i].trim()}:</strong>&nbsp;${values[i]}<br>`
+  }
+  return result
+}
+
+document.addEventListener('DOMContentLoaded', (dce) => {
+  console.debug("DOM COntent loaded")
+})
+
+window.addEventListener('load', async (event) => {
+  hf.editor.addListener('selectionchange', (editor) => {
+    const cursor = editor.cursor
+    const selection = editor.selectedText.length > 0 ? editor.selectedText : editor.characterAtCursor
+    toolmark.querySelector('p').innerHTML = label`Offset ${cursor} Length ${selection.length} Selection ${selection}`
+  })
+})
 
 
 </script>
