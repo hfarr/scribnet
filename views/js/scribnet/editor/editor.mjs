@@ -1,7 +1,7 @@
 'use strict'
 
 import { renderTextFold, foldrDOM } from '../document/DOM.mjs';
-import { Document } from '../document/Document.mjs'
+import EditDocument from '../document/Document.mjs'
 
 import { formatDocument, offsetToDOM } from '../document/DOM.mjs';
 import { treeFoldr } from '../document/DOM.mjs';
@@ -21,7 +21,7 @@ export class Editor {
     this.selectedText = ""
     this.characterAtCursor = ""
 
-    this.editDocument = Document.newDocument()
+    this.editDocument = EditDocument.newDocument()
     this.listeners = {}
     this.listeners[Editor.EVENT_SELECTION_CHANGE] = []
   }
