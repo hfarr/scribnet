@@ -32,6 +32,7 @@ title: Editing
   <p>A serious paragraph</p>
   <p>A trial of inline <span>&nbsp;</span></p>
   <p>Space after </p>
+  Naked text is eliminated. Should it be wrapped? Should we have a more permissive reformatting strategy?
   <p>
     A long bit of text. 
     
@@ -96,6 +97,15 @@ import("/js/scribnet/document/DOM.mjs").then(m => {
   document.addEventListener('DOMContentLoaded', async (event) => {
     let text = await processText()
     console.debug("!", text === hf.innerText, "!")
+
+    import('/js/scribnet/document/Document.mjs').then(m=>{
+      // console.log(m)
+      const { default: EditDocument, loadHTML } = m
+      const hfDoc = loadHTML(hf)
+      console.log(hfDoc)
+      console.log(hfDoc.length)
+    })
+
   })
 })
 
