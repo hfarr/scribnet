@@ -43,13 +43,14 @@ export class Token {
   }
 
   get string() {
-    switch (this.type) {
-      case Token.TOKEN_TEXT: {
-        // console.debug(this.token)
-        return trimBreaking(collapseBreaking(this.text))
-      }
-      default: return this.text
-    }
+    return this.text
+    // switch (this.type) {
+    //   case Token.TOKEN_TEXT: {
+    //     // console.debug(this.token)
+    //     return trimBreaking(collapseBreaking(this.text))
+    //   }
+    //   default: return this.text
+    // }
   }
 
   hasTrailingWhitespace() {
@@ -139,7 +140,7 @@ static joinTokens(tokenList) {
   for (const token of tokenList) {
     const idx = tokenList.indexOf(token)
     switch (token.type) {
-      case Token.TOKEN_LINEBREAK: {
+      case Token.TOKEN_LINEBREAK: /*{
         if (previous.type === this.TOKEN_BLOCK && previous.hasTrailingWhitespace()) {
           // result.push(Token.tokenInline())
           token.text="  "
@@ -147,12 +148,12 @@ static joinTokens(tokenList) {
         result.push(token);
         previous = token;
         break;
-      }
+      }*/
       case Token.TOKEN_TEXT: {
         if (previous) {
-          if (previous.type === Token.TOKEN_INLINE && token.hasLeadingWhitespace()) {
-            previous.text = " "
-          }
+          // if (previous.type === Token.TOKEN_INLINE && token.hasLeadingWhitespace()) {
+          //   previous.text = " "
+          // }
 
           result.push(token)
           previous = token;
@@ -174,17 +175,18 @@ static joinTokens(tokenList) {
 
         break;
       }
-      case Token.TOKEN_INLINE: {
-        if (previous?.type !== Token.TOKEN_INLINE) {
-          if (previous.hasTrailingWhitespace() && !allCollapsible(previous.text)) {
-            token.text = " "
-          }
-          result.push(token)
-          previous = token
-        }
+      // case Token.TOKEN_INLINE: {
+      //   if (previous?.type !== Token.TOKEN_INLINE) {
+      //     if (previous.hasTrailingWhitespace() && !allCollapsible(previous.text)) {
+      //       token.text = " "
+      //     }
+      //     result.push(token)
+      //     previous = token
+      //   }
 
-        break;
-      }
+      //   break;
+      // }
+      default: {}
     }
   }
 
