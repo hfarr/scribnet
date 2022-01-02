@@ -78,6 +78,7 @@ Am I building out a full AST?
 <!-- <script type="module" src="js/modules/document/DOM.mjs"></script> -->
 <script>
 const hf = document.querySelector('editor-hf')
+let editor
 const toolmark = document.querySelector("#toolmark")
 
 import("/js/scribnet/document/DOM.mjs").then(m => {
@@ -111,6 +112,7 @@ document.addEventListener('DOMContentLoaded', (dce) => {
 })
 
 window.addEventListener('load', async (event) => {
+  editor = hf.editor
   hf.editor.addListener('selectionchange', (editor) => {
     const cursor = editor.cursor
     const selection = editor.selectedText.length > 0 ? editor.selectedText : editor.characterAtCursor
