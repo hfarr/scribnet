@@ -234,11 +234,11 @@ export { treeTraverse, treeFoldr }
 // Public
 
 export function offsetToDOM(rootElement, offset) {
-  const tokens = Token.collapseTokens(treeFoldr((c,p) => [Token.tokenize(c), ...p], [], rootElement))
+  const tokens = Token.collapseTokens(treeFoldr((c, p) => [Token.tokenize(c), ...p], [], rootElement))
   // TODO we need a function to map from *code point offsets* of an internal document
   // model to the DOM. This can stay for now but we need to focus on the capabilities
   // of the editor document.
-  
+
   for (const token of tokens) {
 
     if (offset <= token.string.length) {
@@ -246,11 +246,11 @@ export function offsetToDOM(rootElement, offset) {
         offset -= 1
         continue;
       }
-      return [ token.node, offset ]
+      return [token.node, offset]
     }
     offset -= token.string.length
   }
-  return [ undefined, undefined ]
+  return [undefined, undefined]
 }
 
 /**
@@ -335,21 +335,21 @@ export function formatDocument(documentRoot) {
     return maybeNode
   }
 
-  let res = document.createElement('div')
+  let res = document.createElement('div');  // we need the semi colon since the next statement starts with a open bracket
 
-    // Rather than send documentRoot through, or 'res' after copying children
-    // we map over the children and perform post processing on the first children.
-    // There are some difficulties with using the documentRoot as the base element
-    // such as cloning it causes it's constructor to run- which calls
-    // formatDocument. But we want access to un-copied nodes, direct from the DOM,
-    // so that we have access to 'rendered' attributes, namely innerText.
-    // If we copy children into res first and then use that as the root innerText
-    // is empty because it hasn't been flowed over the document, and we aren't
-    // keen to do that either.
-    ;[...documentRoot.childNodes].filter(x => x?.nodeType === Node.ELEMENT_NODE)
-      .map(cn => treeTraverse(cull, cn))
-      .filter(Boolean)
-      .forEach(child => res.appendChild(child))
+  // Rather than send documentRoot through, or 'res' after copying children
+  // we map over the children and perform post processing on the first children.
+  // There are some difficulties with using the documentRoot as the base element
+  // such as cloning it causes it's constructor to run- which calls
+  // formatDocument. But we want access to un-copied nodes, direct from the DOM,
+  // so that we have access to 'rendered' attributes, namely innerText.
+  // If we copy children into res first and then use that as the root innerText
+  // is empty because it hasn't been flowed over the document, and we aren't
+  // keen to do that either.
+  [...documentRoot.childNodes].filter(x => x?.nodeType === Node.ELEMENT_NODE)
+    .map(cn => treeTraverse(cull, cn))
+    .filter(Boolean)
+    .forEach(child => res.appendChild(child))
 
   return res
 
