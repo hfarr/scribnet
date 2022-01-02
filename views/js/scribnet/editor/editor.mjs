@@ -3,7 +3,8 @@
 import { renderTextFold, foldrDOM } from '../document/DOM.mjs';
 import { Document } from '../document/Document.mjs'
 
-import { formatDocument } from '../document/DOM.mjs';
+import { formatDocument, offsetToDOM } from '../document/DOM.mjs';
+import { treeFoldr } from '../document/DOM.mjs';
 
 /**
  * Interface to programmatically access the editor component
@@ -20,7 +21,7 @@ export class Editor {
     this.selectedText = ""
     this.characterAtCursor = ""
 
-    this.editDocument = new Document()
+    this.editDocument = Document.newDocument()
     this.listeners = {}
     this.listeners[Editor.EVENT_SELECTION_CHANGE] = []
   }
