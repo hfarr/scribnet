@@ -1,7 +1,7 @@
 'use strict'
 
 import { renderTextFold, foldrDOM } from '../document/DOM.mjs';
-import { Document } from '../document/document.mjs'
+import { Document } from '../document/Document.mjs'
 
 import { formatDocument } from '../document/DOM.mjs';
 
