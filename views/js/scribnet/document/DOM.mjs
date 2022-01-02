@@ -292,7 +292,7 @@ export function renderTextFold(rootElement, node) {
 
   const upToAndIncludingNode = nodeOther => {
     if (nodeOther === node) return true;
-    return node.compareDocumentPosition(nodeOther) & (Node.DOCUMENT_POSITION_PRECEDING | Node.DOCUMENT_POSITION_CONTAINS)
+    return node.compareDocumentPosition(nodeOther) & (Node.DOCUMENT_POSITION_PRECEDING | Node.DOCUMENT_POSITION_CONTAINS | Node.DOCUMENT_POSITION_CONTAINED_BY)
   }
 
   const traversePrunedTokens = traversePrune(upToAndIncludingNode, traverseTokens)
