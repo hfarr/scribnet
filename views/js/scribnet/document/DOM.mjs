@@ -166,6 +166,8 @@ function treeFoldr(f, base, tree) {
  * 
  * @param f function whose parameters are the current node, the processed 
  *          results of that nodes children, and the original children nodes
+ * @param tree Tree over which to traverse
+ * @returns A value of type returned by f
  */
 function treeTraverse(f, tree) {
   // TODO should work on trees generally, and write an extension for Node
@@ -187,6 +189,8 @@ function treeTraverse(f, tree) {
 
   }
 
+  // TODO we we used "mTraversable" we could specify mempty as the base case.
+  // Type interfaces! Type polymorphism! That would, I think, yield the flexibility we seek
   return unzip(treeFoldr(_combine, [], tree))[1][0]
 
 }
