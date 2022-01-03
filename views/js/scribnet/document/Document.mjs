@@ -1,3 +1,4 @@
+'use strict'
 
 import { treeTraverse, treeFoldr } from './DOM.mjs'
 
