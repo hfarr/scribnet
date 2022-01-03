@@ -32,7 +32,7 @@ class OffsetList {
     return this.offsetLists(this.cursor)
   }
 
-  setIndex (index) {
+  setIndex(index) {
 
     this.cursor = 0
     this.offset = index
@@ -73,7 +73,7 @@ const apply = (tag) => wrapped => wrapped.apply(tag)
 function segmentate(node, segments) {
 
   if (node.nodeType === Node.TEXT_NODE) {
-    return [ wrapText(node.textContent) ]
+    return [wrapText(node.textContent)]
   }
 
   if (node.nodeType !== Node.ELEMENT_NODE) {
@@ -96,7 +96,7 @@ function loadHTML(rootElement) {
 
 function html(tag) {
   return (fragments, ...values) => {
-    result=`<${tag}>`
+    result = `<${tag}>`
     for (let i = 0; i < values.length; i++) {
       result += `${fragments[i]}${values[i]}`
     }
@@ -109,7 +109,7 @@ function md(tag) {
 
 }
 
-export { loadHTML }
+export { loadHTML, renderHTML }
 
 // =============================================
 
@@ -118,6 +118,29 @@ export { loadHTML }
  * Might wish to layer a tree on top of that. But I'm thinking
  * linearly about these documents so I suspect they should be
  * modelled linearly.
+ * "EditList" concept (as an idea for changing it up, borrowed from
+ * a haskell assignment)
+ * - EditList are composed of EditList
+ * - Data type 'mutation' actions produce new lists
+ * - adding text in the middle of an EditList, for example. Creates
+ *   three new edit lists, one for the prefix, one for the new text,
+ *   one for the postfix. Prefix and post fix are essentially 
+ *   indices of the original. 
+ * - Mutation is fast and cheap. Projecting back to a string is expensive.
+ * - Theory is that amortized (?) over the life of the list constantly
+ *   applying string operations will have a higher cost especially for
+ *   larger documents. 
+ * - There isn't a need to maintain an internal copy of a string and
+ *   keep it updated when it isn't needed all the time
+ * - Browser automatically displays edits that a user performs so we 
+ *   aren't called to update the view which is key.
+ * 
+ * - In a different scenario we might want to maintain the "projection"
+ *   onto a string if the edits performed are visible to the viewer and
+ *   not made elsewhere. In such a circumstance we might like to do both.
+ *   Update both. 
+ * - Spitballing here, but have a homogeneous mapping (hem hem) applied
+ *   to edits as the come in to complicate and decomplicate.
  */
 class Segment {
   constructor(tag, ...characters) {
@@ -139,7 +162,18 @@ class Segment {
     this.characters.splice(idx, 0, ...characters)
     return characters.length
   }
-  
+
+  // at(...segmentCoords) {
+  //   const [ segment, offset ] = segmentCoords.flat()
+  //   return 
+  // }
+  at(offset) {
+    // if (offset < 0) {
+    //   offset = this.length - offset
+    // }
+    return this.characters.at(offset)
+  }
+
   render() {
     return this.templateFn(tag)`${this.characters}`
   }
@@ -173,17 +207,41 @@ export default class EditDocument {
   }
 
   get length() {
-    return this.segments.reduce((accum,seg)=>accum + seg.length, 0)
+    return this.segments.reduce((accum, seg) => accum + seg.length, 0)
   }
 
-  at(characterIndex) {
+  // Maybe 'at()' always return what's currently under the cursor (or the 'focus' end of it)
+  // then to get the same 'at' you'd select(charIndex), then at()
+  // Maybe all these functions only support a character index to obscure the internals. In fact... yeah.
+  // ha. Move over, at()
+  // or not, we can let at still index. Maybe default it grabs what's under cursor.
 
-    let segmentIndex = 0
-    while (characterIndex > this.segments[segmentIndex].length) {
-      characterIndex -= this.segments[segmentIndex].length
+  computeSegmentCoordinates(characterIndex) {
+    let segmentIndex = 0, offset = characterIndex
+    while (offset > this.segments[segmentIndex].length) {
+      offset -= this.segments[segmentIndex].length
       segmentIndex++;
     }
-    return this.segments[segmentIndex][characterIndex]
+    return segmentIndex, characterIndex
+  }
+
+  selectSegCoords(segmentIndex, offset) {
+    // Might not expose this particular piece of info. At least, only to
+    // package-internal or. It should be used by render/loaders.
+    // At present I'm overthinking the design.
+    this.writeHead = [ segmentIndex, offset ]
+  }
+
+  select(characterIndex) {
+    this.writeHead = this.computeSegmentCoordinates(characterIndex)
+  }
+
+  at(characterIndex=undefined) {
+    let [ segmentIndex, offset ] = this.writeHead
+    if (characterIndex) {
+      ([ segmentIndex, offset ] = this.computeSegmentCoordinates(characterIndex))
+    }
+    return this.segments[segmentIndex].at(offset)
   }
 
   write(string) {
