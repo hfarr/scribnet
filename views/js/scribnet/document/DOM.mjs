@@ -128,6 +128,9 @@ function processText(node, children, childrenNodes) {
 
 }
 
+// ============================================
+// Functional tooling
+
 /**
  * Perform a right-associative reduction of a DOM node.
  * Notionally this is equivalent to using reduceRight on a pre-order traversal of the tree.
@@ -148,6 +151,8 @@ function treeFoldr(f, base, tree) {
 
   return f(tree, listapply([...tree.childNodes]))
 }
+
+const cat = (current, previous) => [current, ...previous]
 
 /**
  * treeTraverse folds over the tree by applying functions that do an
@@ -232,9 +237,45 @@ function traverseTokens(node, children) {
   return result
 }
 
+// =====================================
+// Applications (capabilities .u.)
+
+/**
+ * Collect children elements of given rootElement in pre-order traversal
+ * @param rootElement Element whose children are collected
+ */
+function foldElements(rootElement) {
+  // treeFoldr((cur, prev) => {
+  //   if (cur.nodeType === Node.ELEMENT_NODE) {
+  //     return [cur, ...prev]
+  //   }
+  // })
+
+  return treeFoldr(cat, [], rootElement)
+    .filter(n => n.nodeType === Node.ELEMENT_NODE)
+
+}
+
+function foldNodes(rootElement) {
+  return treeFoldr(cat, [], rootElement)
+}
+
+/**
+ * Determine the index of the given node on a pre-order traversal of the
+ * rootElement's children
+ * @param rootElement Root element from which to start search
+ * @param node Node to look for
+ */
+function foldIndexOf(rootElement, node) {
+  // hmmmmmmm
+  // It's. well. AN overspecified functionality when I want to think in terms of
+  // capabilities. Maybe I'm obsessed with that word but I think that's merited.
+  // Putting the kibosh on for now
+
+}
 
 // Temp (yeah... "temp") until I figure out tests (yeah... until I "figure out tests") 
-export { treeTraverse, treeFoldr }
+export { treeTraverse, treeFoldr, foldElements, foldNodes }
 // Public
 
 export function offsetToDOM(rootElement, offset) {
