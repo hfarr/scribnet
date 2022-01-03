@@ -1,10 +1,12 @@
 'use strict'
 
 import { renderTextFold, foldrDOM } from '../document/DOM.mjs';
-import EditDocument from '../document/Document.mjs'
 
 import { formatDocument, offsetToDOM } from '../document/DOM.mjs';
-import { treeFoldr } from '../document/DOM.mjs';
+import { treeFoldr, foldElements } from '../document/DOM.mjs';
+
+import EditDocument from '../document/Document.mjs'
+import { loadHTML, renderHTML } from '../document/Document.mjs'
 
 /**
  * Interface to programmatically access the editor component
@@ -22,6 +24,7 @@ export class Editor {
     this.characterAtCursor = ""
 
     this.editDocument = EditDocument.newDocument()
+    // this.editDocument = loadHTML(this.component)
     this.listeners = {}
     this.listeners[Editor.EVENT_SELECTION_CHANGE] = []
   }
@@ -142,6 +145,54 @@ export class Editor {
   }
 
   /**
+   * Update the cursor in the document
+   * @param segmentIndex Segment index
+   * @param offset Offset into segment
+   */
+  selectInDoc(segmentIndex, offset) {
+    // this.editDocument.
+  }
+  
+
+  // Another feature that makes me ask, should I abstract *now*? I don't feel I need it yet, I won't,
+  // yet it should be done at some point.
+
+  // Update methods pull info from DOM and mutate the Document
+  // Set methods do the opposite
+  // Editor is the interface hooking them together and those features
+  // should be re-expressed as capabilities we can extract out into
+  // dedicated abstractions
+
+  /**
+   * Update the position of the cursor in the internal EditDocument
+   */
+  updateCursor() {
+    if (!this.containsWindowSelection) {
+      return
+    }
+    const sel = window.getSelection()
+    const elements = foldElements(this.component)
+
+    // is this function too involved in knowledge of EditDocument's internals?
+    // We're in the era of taking on a bit of tech debt, to sift out interfaces
+    // later
+
+
+    if (sel.isCollapsed) {
+      const parent = sel.focusNode.parentElement
+      // traverse index much?
+      const segmentIndex = elements.indexOf(parent) + [...parent.childNodes].indexOf(sel.focusNode) - 1
+      // const [ idx, offset ] = [ elements.indexOf(sel.focusNode.parentElement), sel.focusOffset ]
+      // yeah, long term the editor isn't going to know how to translate DOM selection to doc
+      // In the interim it's okay to use this strategy, Editor assumes all EditDocs are rendering as HTML
+      // and takes the responsibility.
+      // idx less one because the collapsed list includes the editor element
+      this.editDocument.selectSegCoords(segmentIndex, sel.focusOffset)
+    }
+      
+  }
+
+  /**
    * Called on selection change
    * @param selectionChangeEvent 
    */
@@ -153,6 +204,8 @@ export class Editor {
     if (!this.containsWindowSelection()) {
       return
     }
+    this.updateCursor()
+    console.debug(this.editDocument.at())
 
     const re = sel.getRangeAt(0)  // Not handling multi ranges for now
 
