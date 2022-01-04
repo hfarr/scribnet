@@ -6,7 +6,28 @@ import { formatDocument, offsetToDOM } from '../document/DOM.mjs';
 import { treeFoldr, foldElements } from '../document/DOM.mjs';
 
 import EditDocument from '../document/Document.mjs'
-import { loadHTML, renderHTML } from '../document/Document.mjs'
+import { domFunctions } from '../document/Document.mjs'
+
+class DocHistory {
+
+  constructor(firstDocument) {
+    this.lengthLimit = 100
+    this.history = [ ]
+    this.add(firstDocument)
+
+  }
+
+  get current() {
+    return this.history.at(-1)
+  }
+
+  add(newDoc) {
+    this.history.push(newDoc)
+    if (this.history.length > this.lengthLimit) {
+      this.history.shift()
+    }
+  }
+}
 
 /**
  * Interface to programmatically access the editor component
@@ -23,10 +44,14 @@ export class Editor {
     this.selectedText = ""
     this.characterAtCursor = ""
 
-    this.editDocument = EditDocument.newDocument()
+    this.docHistory = new DocHistory(EditDocument.newDocument())
     // this.editDocument = loadHTML(this.component)
     this.listeners = {}
     this.listeners[Editor.EVENT_SELECTION_CHANGE] = []
+  }
+
+  get currentDocument() {
+    return this.docHistory.current
   }
 
   /**
@@ -59,8 +84,15 @@ export class Editor {
    * DOC structure
    */
   readDOM() {
-    // use DOM tools to traverse & grep in text. i.e what renderedText does now, but owned by Editor instead
 
+    // newDoc = loadHTML(this.component)
+    this.docHistory.add(domFunctions.loadHTML(this.component))
+
+
+
+
+    // -------------
+    // use DOM tools to traverse & grep in text. i.e what renderedText does now, but owned by Editor instead
     // Right now, reads doc and stuffs the formatted HTML into a div to convey html
     const formatNode = formatDocument(this.component)
     // would create a new Document here... for now manipulating just the editor
@@ -72,6 +104,9 @@ export class Editor {
    */
   render() {
 
+    this.component.innerHTML = domFunctions.renderHTML(this.currentDocument)
+
+    // ------------------ Currently renders from an HTML node, will render from document
     if (this.internalNode) {
       this.component.innerHTML = this.internalNode.innerHTML
     }
@@ -177,8 +212,17 @@ export class Editor {
     // We're in the era of taking on a bit of tech debt, to sift out interfaces
     // later
 
+    const domFocusOffset = domFunctions.charOffset(this.component, sel.focusNode, sel.focusOffset)
+    // console.debug("Computed offset", domFocusOffset)
+    // console.debug("character", this.currentDocument.at(domFocusOffset))
+    this.currentDocument.select(domFocusOffset)
+    return
 
     if (sel.isCollapsed) {
+
+      const domAnchorOffset = domFunctions.charOffset(this.component, sel.anchorNode, sel.anchorOffset)
+
+
       const parent = sel.focusNode.parentElement
       // traverse index much?
       const segmentIndex = elements.indexOf(parent) + [...parent.childNodes].indexOf(sel.focusNode) - 1
@@ -187,7 +231,7 @@ export class Editor {
       // In the interim it's okay to use this strategy, Editor assumes all EditDocs are rendering as HTML
       // and takes the responsibility.
       // idx less one because the collapsed list includes the editor element
-      this.editDocument.selectSegCoords(segmentIndex, sel.focusOffset)
+      this.currentDocument.selectSegCoords(segmentIndex, sel.focusOffset)
     }
       
   }
@@ -205,7 +249,11 @@ export class Editor {
       return
     }
     this.updateCursor()
-    console.debug(this.editDocument.at())
+    console.debug(this.currentDocument.at())
+
+
+
+    // --------------------------------------------------------------
 
     const re = sel.getRangeAt(0)  // Not handling multi ranges for now
 

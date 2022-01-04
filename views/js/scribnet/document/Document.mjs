@@ -1,6 +1,7 @@
 'use strict'
 
-import { treeTraverse, treeFoldr } from './DOM.mjs'
+import { treeTraverse, traversePruneTokens, treeFoldr } from './DOM.mjs'
+import { TokenVisitor } from './Token.mjs'
 
 // atoms and ranges. an atom could be a string or element
 
@@ -45,31 +46,77 @@ class OffsetList {
 
 
 // =============================================
+
+const fnConst = v => _ => v
+
+// this fella maps a selected character in the editor to an edit document
+// assuming the editor is showing an HTML view
+class MapToHTMLEditDocIdx extends TokenVisitor {
+  visitLinebreak = fnConst(1)
+  visitBlock = fnConst(1)
+  // the problem child of the 0th order Token kinds
+  visitInline = fnConst(0)
+  visitText(token) {
+    return token.string.length
+  }
+}
+const htmlMapper = new MapToHTMLEditDocIdx()
+
+function charOffset(rootElement, node, nodeOffset) {
+  
+  const tokens = treeTraverse(traversePruneTokens(node), rootElement)
+  console.debug(tokens)
+  
+  // return htmlMapper.visitList(tokens).slice(2).reduce((p,c)=>c+p,0) + nodeOffset - node.textContent.length
+  return htmlMapper.visitList(tokens).reduce((p,c)=>c+p,0) + nodeOffset - node.textContent.length
+}
+
+
 // Would be scoped to another module likely
 function renderHTML(doc) {
-
+  
 }
 
 
 const wrapText = string => ({
   value: string,
-  apply: tag => wrapSegment(new Segment(tag, ...string))
+  apply: tag => wrapSegment(new Segment([tag], ...string))
 })
 // 'const' function, basically, the function that maps all input to one value
 const wrapSegment = (seg) => ({
   value: seg,
-  apply: _ => wrapSegment(seg)
+  apply: tag => wrapSegment(seg.reTag([tag, ...seg.tags]))
 })
 const wrapNull = {
   value: null,
   apply: _ => wrapNull
 }
 
-const unwrap = (wrapped) => wrapped.value
+// Maybe 'apply' is like the 'transform' operation that happens on inline elements. For example,
+// imagine **Some _te|xt_ is ni|ce**. User selets from | to | and <C-b>, what happens?
+// it "applies" the 'bold' operation, but it crosses segments. so it has to apply to the partial
+// segments, by first splitting them and applying as appropriate to each one. Outcome is
+// **Some _te_**_xt_ is ni**ce**. We have to express it as splitting and stitching.
+// Or, just splitting, any cross-boundary apply is going to split. if a cross boundary apply 
+// produces, say, neighboring <strong>elements we could merge them but it's not necessary
+// when an element is completely covered and an op is applied, no splitting happens- it just
+// applies the fmt. which could be an 'inverse' op of italic to unitalic, bold to unbold,
+// or an existing italic becoming a 'bold italic' or vice versa.
+// the last of these is what happens when we load the document and have nested elements too,
+// because apply() is called on all the nested elems with their parents. we can track it.
+// but can we get a two-for-one deal and use Transformation logic?
+//........ can I work in linear algebra transforms? :o
+// might be hard to use the apply logic in both places, since right now segments will re-order the
+// tags based on appearance. So if you have <strong>. . . <em> . . . <strong> </strong></em></strong>
+// you'll get "STRONG" "STRONG EM" though, in this case, that *is* kinda what we want. hm. Need to
+// think about the linearity of this and how it kinda reflects the tree structure. because beneath
+// it all it's still a tree, right? gotta ponder.
 const apply = (tag) => wrapped => wrapped.apply(tag)
+const unwrap = (wrapped) => wrapped.value
 
 // see, this "wrap/unwrap" business suggests, wait for it, monads :o
 // ^^ sort of, if my fuzzy recollections are collect
+// have to refine this, atm <strong><em>hi!</em></strong> becomes {tag:"EM", string:"hi!"} gotta wrap in 'open' and 'close' indicators
 function segmentate(node, segments) {
 
   if (node.nodeType === Node.TEXT_NODE) {
@@ -85,22 +132,34 @@ function segmentate(node, segments) {
 }
 
 /**
- * Parse DOM into an EditDocument
- * @param rootElement Root element of the document in the DOM
+ * Parse a piece of the DOM into an edit document
+ * @param rootElement DOM Element
  */
-function loadHTML(rootElement) {
+function loadHTML(element) {
   // Convert to a list of Segments, then construct a document
-  const wrappedSegments = treeTraverse(segmentate, rootElement)
+  
+  const wrappedSegments = treeTraverse(segmentate, element)
   return EditDocument.fromSegments(wrappedSegments.map(unwrap))
 }
 
-function html(tag) {
+/**
+ * Given the root of a document parse into an EditDocument
+ * This differs from loadHTML as rootElement tag is excluded from
+ * the resulting segments 
+ * @param rootElement Root element of a document
+ */
+function loadDocument(rootElement) {
+  return EditDocument.fromSegments([...rootElement.children].map(loadHTML))
+}
+
+function html(tags) {
   return (fragments, ...values) => {
-    result = `<${tag}>`
+    result = tags.map(t=>`<${t}>`)
     for (let i = 0; i < values.length; i++) {
       result += `${fragments[i]}${values[i]}`
     }
-    result += `${fragments.at(-1)}</${tag}>`
+    tags.reverse()
+    result += `${fragments.at(-1)}${[tags.map(t=>`</${t}>`)]}`
     return result
   }
 }
@@ -109,7 +168,7 @@ function md(tag) {
 
 }
 
-export { loadHTML, renderHTML }
+export const domFunctions = { loadDocument, loadHTML, renderHTML, charOffset }
 
 // =============================================
 
@@ -143,11 +202,19 @@ export { loadHTML, renderHTML }
  *   to edits as the come in to complicate and decomplicate.
  */
 class Segment {
-  constructor(tag, ...characters) {
-    this.tag = tag
+  constructor(tags, ...characters) {
+    const uniqueTags = new Set(tags)
+    this.tags = [...uniqueTags]
     this.length = characters.length
     this.characters = characters
     this.templateFn = html
+  }
+
+  reTag(tags) {
+    const newSeg = new Segment(tags)
+    newSeg.characters = this.characters
+    newSeg.length = this.length
+    return newSeg
   }
 
   /**
@@ -175,7 +242,7 @@ class Segment {
   }
 
   render() {
-    return this.templateFn(tag)`${this.characters}`
+    return this.templateFn(this.tags)`${this.characters}`
   }
 }
 
@@ -222,7 +289,7 @@ export default class EditDocument {
       offset -= this.segments[segmentIndex].length
       segmentIndex++;
     }
-    return segmentIndex, characterIndex
+    return [ segmentIndex, offset ]
   }
 
   selectSegCoords(segmentIndex, offset) {

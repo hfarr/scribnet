@@ -1,4 +1,4 @@
-import { Token } from './Token.mjs'
+import { Token, TokenVisitor } from './Token.mjs'
 
 
 /**
@@ -274,8 +274,15 @@ function foldIndexOf(rootElement, node) {
 
 }
 
+const upToAndIncluding = node => nodeOther => {
+  if (nodeOther === node) return true;
+  return node.compareDocumentPosition(nodeOther) & (Node.DOCUMENT_POSITION_PRECEDING | Node.DOCUMENT_POSITION_CONTAINS | Node.DOCUMENT_POSITION_CONTAINED_BY)
+}
+
+const traversePruneTokens = node => traversePrune(upToAndIncluding(node), traverseTokens)
+
 // Temp (yeah... "temp") until I figure out tests (yeah... until I "figure out tests") 
-export { treeTraverse, treeFoldr, foldElements, foldNodes }
+export { treeTraverse, treeFoldr, foldElements, foldNodes, traversePruneTokens }
 // Public
 
 export function offsetToDOM(rootElement, offset) {
@@ -319,17 +326,18 @@ function renderedText(rootElement, node) {
 }
 
 
+
 export function renderTextFold(rootElement, node) {
   // TODO map text offset to internal document model, not DOM. Or, construct a function
   // for internal DOC in addition to keeping this one for DOM
 
-  const upToAndIncludingNode = nodeOther => {
-    if (nodeOther === node) return true;
-    return node.compareDocumentPosition(nodeOther) & (Node.DOCUMENT_POSITION_PRECEDING | Node.DOCUMENT_POSITION_CONTAINS | Node.DOCUMENT_POSITION_CONTAINED_BY)
-  }
+  // const upToAndIncludingNode = nodeOther => {
+  //   if (nodeOther === node) return true;
+  //   return node.compareDocumentPosition(nodeOther) & (Node.DOCUMENT_POSITION_PRECEDING | Node.DOCUMENT_POSITION_CONTAINS | Node.DOCUMENT_POSITION_CONTAINED_BY)
+  // }
 
-  const traversePrunedTokens = traversePrune(upToAndIncludingNode, traverseTokens)
-  const tokens = treeTraverse(traversePrunedTokens, rootElement)
+  // const traversePrunedTokens = traversePrune(upToAndIncluding(node), traverseTokens)
+  const tokens = treeTraverse(traversePruneTokens(node), rootElement)
   const result = Token.joinTokens(tokens)
 
   return result

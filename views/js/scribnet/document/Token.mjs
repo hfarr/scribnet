@@ -30,11 +30,44 @@ function collapseBreaking(string) {
   return string.replaceAll(/[^\P{White_Space}\u{00A0}]+/gu, ' ')
 }
 
+export class TokenVisitor {
+
+  visitLinebreak(token) {
+    return token.string
+  };
+  visitText(token) {
+    return token.string
+  };
+  visitBlock(token) {
+    return token.string
+  };
+  visitInline(token) {
+    return token.string
+  };
+
+  visit(token) {
+    return token.accept(this)
+  }
+
+  visitList(tokens) {
+
+
+    const visited = Token.collapseTokens(tokens).map(this.visit, this)
+    return visited
+
+    return Token.collapseTokens(tokens).map(this.visit, this)
+    // also works:
+    // return Token.collapseTokens(tokens).map(t=>this.visit(t))
+  }
+}
+
 export class Token {
   static TOKEN_TEXT = 1
   static TOKEN_LINEBREAK = 2
   static TOKEN_BLOCK = 3
   static TOKEN_INLINE = 4
+
+  static defaultVisitor = new TokenVisitor
 
   static whitespace = /[^\P{White_Space}\u{00A0}]+/u
 
@@ -66,6 +99,19 @@ export class Token {
     }
     return false
   }
+
+  // okay maybe Token has grown enough to warrant a proper inheritance model.
+  accept(visitor = Token.defaultVisitor) {
+    switch (this.type) {
+      case Token.TOKEN_LINEBREAK: return visitor.visitLinebreak(this);
+      case Token.TOKEN_TEXT: return visitor.visitText(this);
+      case Token.TOKEN_INLINE: return visitor.visitInline(this);
+      case Token.TOKEN_BLOCK: return visitor.visitBlock(this);
+
+      default: return undefined
+    }
+  }
+
 
   static tokenText(node, text) {
     const token = new Token(Token.TOKEN_TEXT)

@@ -100,12 +100,12 @@ import("/js/scribnet/document/DOM.mjs").then(m => {
 
     import('/js/scribnet/document/Document.mjs').then(m=>{
       // console.log(m)
-      const { default: EditDocument, loadHTML } = m
+      const { default: EditDocument, domFunctions:{ loadHTML } } = m
       const hfDoc = loadHTML(hf)
       console.log(hfDoc)
       console.log(hfDoc.length)
 
-      editor.editDocument = hfDoc
+      // editor.editDocument = hfDoc
     })
 
   })
