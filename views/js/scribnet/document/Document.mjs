@@ -52,29 +52,72 @@ const fnConst = v => _ => v
 // this fella maps a selected character in the editor to an edit document
 // assuming the editor is showing an HTML view
 class MapToHTMLEditDocIdx extends TokenVisitor {
-  visitLinebreak = fnConst(1)
-  visitBlock = fnConst(1)
+  visitLinebreak(token) { return 1 }  // return fnConst(1)(token) :(
+  visitBlock(token) { return 1}
   // the problem child of the 0th order Token kinds
-  visitInline = fnConst(0)
+  visitInline(token) { return 0}
   visitText(token) {
-    return token.string.length
+    return token.string.length - 1
   }
+  // look it. I want it to work like this. but.
+  // visitLinebreak = fnConst(1)
+  // visitBlock = fnConst(1)
+  // // the problem child of the 0th order Token kinds
+  // visitInline = fnConst(0)
+  // visitText(token) {
+  //   return token.string.length - 1
+  // }
 }
+
+const mixOriginal= (tokenVisitor) => (class extends tokenVisitor {
+  visitLinebreak(tok) { return [super.visitLinebreak(tok), '\n']}
+  visitBlock(tok) { return [super.visitBlock(tok), '\n']}
+  visitInline(tok) { return [super.visitInline(tok), '']}
+  visitText(tok) { return [super.visitText(tok), tok.string]}
+})
+// function mixOriginal(tokenVisitor) {
+//   return class extends tokenVisitor {
+//     visitLinebreak(tok) { return [super.visitLinebreak(tok), '\n'] }
+//     visitBlock(tok) { return [super.visitLinebreak(tok), '\n'] }
+//     visitInline(tok) { return [super.visitLinebreak(tok), ''] }
+//     visitText(tok) { return [super.visitLinebreak(tok), token.string] }
+//   }
+// }
+
 const htmlMapper = new MapToHTMLEditDocIdx()
 
 function charOffset(rootElement, node, nodeOffset) {
-  
+
   const tokens = treeTraverse(traversePruneTokens(node), rootElement)
-  console.debug(tokens)
-  
-  // return htmlMapper.visitList(tokens).slice(2).reduce((p,c)=>c+p,0) + nodeOffset - node.textContent.length
-  return htmlMapper.visitList(tokens).reduce((p,c)=>c+p,0) + nodeOffset - node.textContent.length
+  // console.debug(tokens)
+
+  // Need to supply (inject) different collapse rules
+  const sliced = tokens.slice(1)
+  const MixMap = mixOriginal(MapToHTMLEditDocIdx)
+  const htmlMixMapper = new MixMap()
+  // const htmlMixMapper = new (mixOriginal(MapToHTMLEditDocIdx))()
+
+  const mapskies = htmlMixMapper.visitList(sliced).slice(1) // pesky construct still producing a '\n' at the front
+
+  // return mapskies.reduce((p, c) => c + p, 0)
+
+                                                    // the - node.... should be the value of that Token under visit. So, maybe, even just use the last idx of mapskies?
+  const cOffset = mapskies.reduce((p,c)=>c[0]+p,0) - node.textContent.length + nodeOffset
+  return cOffset
+  // return mapskies.reduce((p, c) => c[0] + p, 0)
+
+  // const mapskies = mixOriginal(htmlMapper).visitList(sliced)
+  // for (let i = 0; i < tokens.length; i++) {
+  //   console.debug(tokens[i], mapskies[i])
+  // }
+  // console.debug(mapskies)
+  // return htmlMapper.visitList(tokens).reduce((p,c)=>c+p,0) + nodeOffset - node.textContent.length
 }
 
 
 // Would be scoped to another module likely
 function renderHTML(doc) {
-  
+
 }
 
 
@@ -137,7 +180,7 @@ function segmentate(node, segments) {
  */
 function loadHTML(element) {
   // Convert to a list of Segments, then construct a document
-  
+
   const wrappedSegments = treeTraverse(segmentate, element)
   return EditDocument.fromSegments(wrappedSegments.map(unwrap))
 }
@@ -154,12 +197,12 @@ function loadDocument(rootElement) {
 
 function html(tags) {
   return (fragments, ...values) => {
-    result = tags.map(t=>`<${t}>`)
+    result = tags.map(t => `<${t}>`)
     for (let i = 0; i < values.length; i++) {
       result += `${fragments[i]}${values[i]}`
     }
     tags.reverse()
-    result += `${fragments.at(-1)}${[tags.map(t=>`</${t}>`)]}`
+    result += `${fragments.at(-1)}${[tags.map(t => `</${t}>`)]}`
     return result
   }
 }
@@ -289,24 +332,24 @@ export default class EditDocument {
       offset -= this.segments[segmentIndex].length
       segmentIndex++;
     }
-    return [ segmentIndex, offset ]
+    return [segmentIndex, offset]
   }
 
   selectSegCoords(segmentIndex, offset) {
     // Might not expose this particular piece of info. At least, only to
     // package-internal or. It should be used by render/loaders.
     // At present I'm overthinking the design.
-    this.writeHead = [ segmentIndex, offset ]
+    this.writeHead = [segmentIndex, offset]
   }
 
   select(characterIndex) {
     this.writeHead = this.computeSegmentCoordinates(characterIndex)
   }
 
-  at(characterIndex=undefined) {
-    let [ segmentIndex, offset ] = this.writeHead
+  at(characterIndex = undefined) {
+    let [segmentIndex, offset] = this.writeHead
     if (characterIndex) {
-      ([ segmentIndex, offset ] = this.computeSegmentCoordinates(characterIndex))
+      ([segmentIndex, offset] = this.computeSegmentCoordinates(characterIndex))
     }
     return this.segments[segmentIndex].at(offset)
   }
