@@ -197,32 +197,36 @@ const pad = segments => {
 
 
 /**
- * Parse a piece of the DOM into an edit document
- * @param rootElement DOM Element
+ * Parse a piece of the DOM into a list of Segments
+ * 
+ * @param element DOM Element
  */
 function loadHTML(element) {
-  // Convert to a list of Segments, then construct a document
-  const segments = treeTraverse(segmentate, element).map(unwrap)
-  const untagged = segments.map(s=>s.reTag(s.tags.slice(1)))
-  // const previous
-  return EditDocument.fromSegments(untagged)
-  // return EditDocument.fromSegments(segments)
+  return treeTraverse(segmentate, element).map(unwrap)
 }
 
 /**
  * Given the root of a document parse into an EditDocument
  * This differs from loadHTML as rootElement tag is excluded from
  * the resulting segments 
- * @param rootElement Root element of a document
+ * 
+ * Another difference is running loadHTML on rootElement yields a list of
+ * segments but its impossible to distinguish which are direct children.
+ * That is needed because the direct children are all the block elements
+ * and we need to pad the last segment of each block to account for the
+ * implicit "character" at the end of paragraphs (that is to say we virtually
+ * insert a new line, or rather, just a bit of \u{0032})
+ * 
+ * @param rootElement Root element of the DOM portion to convert
  */
 function loadDocument(rootElement) {
 
   // ._.     .u.
-  const chiSegs = [...rootElement.children].map(cn=>treeTraverse(segmentate, cn).map(unwrap)).map(pad).flat()
-  // seggos.map(unwrap)
-  return EditDocument.fromSegments(chiSegs)
-
-  // return EditDocument.fromSegments([...rootElement.children].map(loadHTML))
+  const childSegments = [...rootElement.children]
+    .map(loadHTML)
+    .map(pad)
+    .flat()
+  return EditDocument.fromSegments(childSegments)
 }
 
 function html(tags) {
