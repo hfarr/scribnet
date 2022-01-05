@@ -188,7 +188,8 @@ const padd = compose(segments=>{
 })
 // I like 'overdoing' it. Why the hell not
 const pad = segments => {
-  const seg = segments.at(-1).push(' ')
+  // const seg = segments.at(-1).push(' ')
+  const seg = segments.at(-1).push('\n')
   // segments.splice(-1,1,seg)
   // Yeah I know. Very into "creating new objects" instead of "mutating"
   return [...segments.slice(0,-1), seg]
@@ -407,6 +408,13 @@ export default class EditDocument {
 
   accept(visitor, ...args) {
     return visitor.visitDocument(this, ...args)
+  }
+
+  toString() {
+    // note that the "\n" (which again, we just use ' ', but. Maybe we should use '\n') of the last paragraph is always present
+    // but not always addressable (can't click there), it's not a rendered character
+    return this.segments.map(s=>s.characters).flat().join('')
+    // see I want so badly to write segments.map(.characters), treating '.' as a half-applied curried infix operator
   }
 
 }
