@@ -27,6 +27,7 @@ class EditorComponent extends HTMLElement {
 
     this.editor = new Editor(this);
     this.editor.reformat()
+    this.editor.readDOM()
 
     // this.contentEditable = true // being more explicit. Not trying to store data on the object, but DOM interaction.
     // Maybe extend another class that has the state? a mix in? Then it can't interfere with the DOM accidentally

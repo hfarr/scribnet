@@ -59,7 +59,7 @@ export class Editor {
    */
   reformat() {
 
-    this.readDOM()
+    this.formatDOM()
     this.render()
 
   }
@@ -90,13 +90,16 @@ export class Editor {
 
 
 
+  }
 
+  formatDOM() {
     // -------------
     // use DOM tools to traverse & grep in text. i.e what renderedText does now, but owned by Editor instead
     // Right now, reads doc and stuffs the formatted HTML into a div to convey html
     const formatNode = formatDocument(this.component)
     // would create a new Document here... for now manipulating just the editor
     this.internalNode = formatNode
+
   }
 
   /**
