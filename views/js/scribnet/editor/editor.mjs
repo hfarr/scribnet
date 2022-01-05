@@ -220,14 +220,14 @@ export class Editor {
     // in a given paragraph, the cursor can be positioned at length + 1 spots, indexed 0-length.
     // you can index characters 0-(length-1) but we are counting cursor positions
 
-    if (sel.isCollapsed) {
+    if (!sel.isCollapsed) {
 
       const domAnchorOffset = domFunctions.charOffset(this.component, sel.anchorNode, sel.anchorOffset)
+      this.currentDocument.select(domFocusOffset, domAnchorOffset)
 
-
-      const parent = sel.focusNode.parentElement
+      // const parent = sel.focusNode.parentElement
       // traverse index much?
-      const segmentIndex = elements.indexOf(parent) + [...parent.childNodes].indexOf(sel.focusNode) - 1
+      // const segmentIndex = elements.indexOf(parent) + [...parent.childNodes].indexOf(sel.focusNode) - 1
       // const [ idx, offset ] = [ elements.indexOf(sel.focusNode.parentElement), sel.focusOffset ]
       // yeah, long term the editor isn't going to know how to translate DOM selection to doc
       // In the interim it's okay to use this strategy, Editor assumes all EditDocs are rendering as HTML

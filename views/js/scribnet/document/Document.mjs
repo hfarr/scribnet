@@ -343,6 +343,8 @@ export default class EditDocument {
 
     // Segment index, index in segment
     this.writeHead = [0, 0]
+    this.focus = 0
+    this.anchor = 0
 
     this.previous = null;
   }
@@ -363,6 +365,18 @@ export default class EditDocument {
   }
   get cursorOffset() {
     return this.segments.slice(0,this.writeHead[0]).reduce((accum, seg)=>accum+seg.length, 0) + this.writeHead[1]
+  }
+
+  // hmm. I'd like to get these and cursorOffset consistent.
+  get focusOffset() {
+    return this.focus
+  }
+  get anchorOffset() {
+    // let [ anchorSegment, segOffset ] = this.computeSegmentCoordinates(this.anchor)
+    return this.anchor
+  }
+  get isCollapsed() {
+    return this.focusOffset === this.anchorOffset
   }
 
   // Maybe 'at()' always return what's currently under the cursor (or the 'focus' end of it)
@@ -387,8 +401,11 @@ export default class EditDocument {
     this.writeHead = [segmentIndex, offset]
   }
 
-  select(characterIndex) {
-    this.writeHead = this.computeSegmentCoordinates(characterIndex)
+  select(focusIndex, anchorIndex = undefined) {
+    if (!anchorIndex) anchorIndex = focusIndex
+    this.writeHead = this.computeSegmentCoordinates(focusIndex)
+    this.focus = focusIndex
+    this.anchor = anchorIndex
   }
 
   at(characterIndex = undefined) {
@@ -397,6 +414,32 @@ export default class EditDocument {
       ([segmentIndex, offset] = this.computeSegmentCoordinates(characterIndex))
     }
     return this.segments[segmentIndex].at(offset)
+  }
+  selection(focusIndex = this.focus, anchorIndex = this.anchor) {
+    const [ anchorSegment, anchorOffset ] = this.computeSegmentCoordinates(anchorIndex)
+    const [ focusSegment, focusOffset ] = this.computeSegmentCoordinates(focusIndex)
+
+    // let startSegment = focusSegment, startOffset = focusOffset
+    // let endSegment = anchorSegment, endOffset = anchorOffset
+    let [startSegment, startOffset, endSegment, endOffset] = [focusSegment, focusOffset, anchorSegment, anchorOffset]
+    if (anchorSegment < focusSegment || (anchorSegment === focusSegment && anchorOffset < focusOffset)) {
+      // 'swap' semantics? meh this is fine.
+      ([startSegment, startOffset, endSegment, endOffset] = [anchorSegment, anchorOffset, focusSegment, focusOffset])
+    }
+
+    if (startSegment === anchorSegment) {
+      return this.segments[startSegment].characters.slice(startOffset,endOffset)
+    }
+
+    let result = this.segments[startSegment].characters.slice(startOffset).join('')
+    for (let i = startSegment + 1; i < endSegment; i++) {
+      result += this.segments[i].characters.join('')
+    }
+    result += this.segments[endSegment].characters.slice(0,endOffset).join('')
+
+    return result;
+    // might be broken depending on whether end precedes start (for example, if end is before start, then we sliced incorrectly)
+    // hmm. Maybe should. Get start/end.
   }
 
 
