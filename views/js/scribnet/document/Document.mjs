@@ -100,39 +100,36 @@ function charOffset(rootElement, node, nodeOffset) {
   const htmlMixMapper = new MixMap()
   // const htmlMixMapper = new (mixOriginal(MapToHTMLEditDocIdx))()
 
+  // It's awkward to do the slicing (here and above)
+  // It would be ideal to have flexibility over Token "collapse" rules to handle 
+  // all these cases, as right now charOffset is accounting for too much Token
+  // specific behavior
   const mapskies = htmlMixMapper.visitList(sliced).slice(1) // pesky construct still producing a '\n' at the front
+  const totalCharacters = mapskies.reduce((p,c)=>c[0]+p,0)
 
-  // return mapskies.reduce((p, c) => c + p, 0)
-
-  let utf8offset = 0, charOffset = 0, totalCharacters = 0
+  let utf8offset = 0, characterOffset = 0, nodeCharacterLength = 0
   while (utf8offset < nodeOffset) {
-    utf8offset++, charOffset++, totalCharacters++
+    utf8offset++, characterOffset++, nodeCharacterLength++
     if (node.textContent.codePointAt(utf8offset) > 0xFFFF) utf8offset++
   }
   while (utf8offset < node.textContent.length) {
-    utf8offset++, totalCharacters++
+    utf8offset++, nodeCharacterLength++
     if (node.textContent.codePointAt(utf8offset) > 0xFFFF) utf8offset++
   }
 
-  // have to go from selected *character* to *cursor position*.
+  // have to go from selected DOM *character* to document *cursor position*.
   // if the offset is equal to the length, then the cursor is positioned to the right
   // of the last character. if the offset is equal to 0, then the cursor is positioned
   // to the left of the first character.
   // ~but~
   // the right side of the last character is the left side of the first character in
-  // the adjacent sequence 
-                                                    // the - node.... should be the value of that Token under visit. So, maybe, even just use the last idx of mapskies?
-  // const cOffset = mapskies.reduce((p,c)=>c[0]+p,0) + (nodeOffset - [...node.textContent].length)  // the [...nerrr] is, again, to keep 16byte character counting consistent
-  const cOffset = mapskies.reduce((p,c)=>c[0]+p,0) + (charOffset - totalCharacters)
-  return cOffset
-  // return mapskies.reduce((p, c) => c[0] + p, 0)
+  // the adjacent sequence! ceteris paribus we perform the same kinda computation
 
-  // const mapskies = mixOriginal(htmlMapper).visitList(sliced)
-  // for (let i = 0; i < tokens.length; i++) {
-  //   console.debug(tokens[i], mapskies[i])
-  // }
-  // console.debug(mapskies)
-  // return htmlMapper.visitList(tokens).reduce((p,c)=>c+p,0) + nodeOffset - node.textContent.length
+  // rather than apply the offset coupled with a difference, we could compute totalCharaters from applying reduce over all but the last index, as that would naturally remove 
+  // nodeCharacterLength from the sum. Then again, I think I prefer making the transformation explicit. Like, first we compute the total characters for all nodes, then we apply the 
+  // offset- it's more pleasing? Not a huge cost either way since we are paying for the computation of charOffset regardless which, in the worst case, is the same cost as computing
+  // both charOffset and totalCharacters (charOffset being equal to totalCharacters)
+  return totalCharacters + characterOffset - nodeCharacterLength
 }
 
 
