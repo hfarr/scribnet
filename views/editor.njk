@@ -131,11 +131,11 @@ window.addEventListener('load', async (event) => {
   hf.editor.addListener('selectionchange', (editor) => {
     const cursor = editor.cursor
     const selection = editor.selectedText.length > 0 ? editor.selectedText : editor.characterAtCursor
-    p.innerHTML = label`Offset ${cursor} Length ${selection.length} Selection ${selection}`
+    p.innerHTML = label`DOM Offset ${cursor} DOM Selection ${selection} Length ${selection.length}`
 
     const docCursor = editor.currentDocument.cursorOffset
     const character = editor.currentDocument.at()
-    p2.innerHTML = label`Doc Character ${docCursor} Doc Selection ${character}`
+    p2.innerHTML = label`Doc Offset ${docCursor} Doc Selection ${character}`
   })
 })
 
