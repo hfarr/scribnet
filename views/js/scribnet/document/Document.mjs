@@ -78,34 +78,22 @@ const mixOriginal= (tokenVisitor) => (class extends tokenVisitor {
   visitInline(tok) { return [super.visitInline(tok), '']}
   visitText(tok) { return [super.visitText(tok), tok.string]}
 })
-// function mixOriginal(tokenVisitor) {
-//   return class extends tokenVisitor {
-//     visitLinebreak(tok) { return [super.visitLinebreak(tok), '\n'] }
-//     visitBlock(tok) { return [super.visitLinebreak(tok), '\n'] }
-//     visitInline(tok) { return [super.visitLinebreak(tok), ''] }
-//     visitText(tok) { return [super.visitLinebreak(tok), token.string] }
-//   }
-// }
 
 const htmlMapper = new MapToHTMLEditDocIdx()
 
 function charOffset(rootElement, node, nodeOffset) {
 
   const tokens = treeTraverse(traversePruneTokens(node), rootElement)
-  // console.debug(tokens)
 
   // Need to supply (inject) different collapse rules
   const sliced = tokens.slice(1)
-  const MixMap = mixOriginal(MapToHTMLEditDocIdx)
-  const htmlMixMapper = new MixMap()
-  // const htmlMixMapper = new (mixOriginal(MapToHTMLEditDocIdx))()
 
   // It's awkward to do the slicing (here and above)
   // It would be ideal to have flexibility over Token "collapse" rules to handle 
   // all these cases, as right now charOffset is accounting for too much Token
   // specific behavior
-  const mapskies = htmlMixMapper.visitList(sliced).slice(1) // pesky construct still producing a '\n' at the front
-  const totalCharacters = mapskies.reduce((p,c)=>c[0]+p,0)
+  const mapskies = htmlMapper.visitList(sliced).slice(1) // pesky construct still producing a '\n' at the front
+  const totalCharacters = mapskies.reduce((p,c) => c + p, 0)
 
   let utf8offset = 0, characterOffset = 0, nodeCharacterLength = 0
   while (utf8offset < nodeOffset) {
