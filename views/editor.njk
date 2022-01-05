@@ -111,6 +111,8 @@ import("/js/scribnet/document/DOM.mjs").then(m => {
   })
 })
 
+
+
 function label(fragments, ...values) {
   let result = ""
   for (let i = 0; i < values.length; i++) {
@@ -119,24 +121,39 @@ function label(fragments, ...values) {
   return result
 }
 
+const p1 = document.createElement('p')
+const p2 = document.createElement('p')
+const p3 = document.createElement('p')
+const p4 = document.createElement('p')
+toolmark.append(p1, p2, p3, p4)
+p3.style = 'white-space: pre-wrap;'
+
+let editDocDisplay 
+import('/js/scribnet/document/EditRenderer.mjs').then(m=>{
+  const EditRenderer = m.default
+  editDocDisplay = new EditRenderer(p3)
+})
+
 document.addEventListener('DOMContentLoaded', (dce) => {
   console.debug("DOM COntent loaded")
 })
 
 window.addEventListener('load', async (event) => {
   editor = hf.editor
-  let p = document.createElement('p')
-  let p2 = document.createElement('p')
-  toolmark.append(p)
-  toolmark.append(p2)
   hf.editor.addListener('selectionchange', (editor) => {
     const cursor = editor.cursor
     const selection = editor.selectedText.length > 0 ? editor.selectedText : editor.characterAtCursor
-    p.innerHTML = label`DOM Offset ${cursor} DOM Selection ${selection} Length ${selection.length}`
+    p1.innerHTML = label`DOM Offset ${cursor} DOM Selection ${selection} Length ${selection.length}`
 
     const docCursor = editor.currentDocument.cursorOffset
     const character = editor.currentDocument.at()
     p2.innerHTML = label`Doc Offset ${docCursor} Doc Selection ${character}`
+    // *every* time the selection changes? sure why not
+    // ideally, "projection" components would handle anything that renders the state of the doc.
+    // one for HTML, markdown, the "proposed edits" style.
+    // p3.innerHTML = escapskies(editor.currentDocument.toString())
+    // p4.innerHTML = editor.currentDocument.toString()
+    editDocDisplay.render(editor.currentDocument)
   })
 })
 
