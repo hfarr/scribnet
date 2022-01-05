@@ -52,12 +52,14 @@ const fnConst = v => _ => v
 // this fella maps a selected character in the editor to an edit document
 // assuming the editor is showing an HTML view
 class MapToHTMLEditDocIdx extends TokenVisitor {
-  visitLinebreak(token) { return 1 }  // return fnConst(1)(token) :(
+  // why is lineBreak 0 not 1? because we 'collapse' it to a newline and push it to the previous elem (in effect, it's an inline character we convert to text)
+  // ^^^ likely want to verify this is the case. It's a bit awkward I'll admit. Am I admitting to awkwardness because I forgot when I am the one who coded this, or because the behavior is awkward? :shrug:
+  visitLinebreak(token) { return 0 }  // return fnConst(1)(token) :(
   visitBlock(token) { return 1}
   // the problem child of the 0th order Token kinds
   visitInline(token) { return 0}
   visitText(token) {
-    return token.string.length - 1
+    return [...token.string].length // separates string into code points as to not over-count 16byte characters
   }
   // look it. I want it to work like this. but.
   // visitLinebreak = fnConst(1)
@@ -69,6 +71,7 @@ class MapToHTMLEditDocIdx extends TokenVisitor {
   // }
 }
 
+// This is a debug mixin to get the string the token 'represents' in addition to its regular output
 const mixOriginal= (tokenVisitor) => (class extends tokenVisitor {
   visitLinebreak(tok) { return [super.visitLinebreak(tok), '\n']}
   visitBlock(tok) { return [super.visitBlock(tok), '\n']}
@@ -101,8 +104,26 @@ function charOffset(rootElement, node, nodeOffset) {
 
   // return mapskies.reduce((p, c) => c + p, 0)
 
+  let utf8offset = 0, charOffset = 0, totalCharacters = 0
+  while (utf8offset < nodeOffset) {
+    utf8offset++, charOffset++, totalCharacters++
+    if (node.textContent.codePointAt(utf8offset) > 0xFFFF) utf8offset++
+  }
+  while (utf8offset < node.textContent.length) {
+    utf8offset++, totalCharacters++
+    if (node.textContent.codePointAt(utf8offset) > 0xFFFF) utf8offset++
+  }
+
+  // have to go from selected *character* to *cursor position*.
+  // if the offset is equal to the length, then the cursor is positioned to the right
+  // of the last character. if the offset is equal to 0, then the cursor is positioned
+  // to the left of the first character.
+  // ~but~
+  // the right side of the last character is the left side of the first character in
+  // the adjacent sequence 
                                                     // the - node.... should be the value of that Token under visit. So, maybe, even just use the last idx of mapskies?
-  const cOffset = mapskies.reduce((p,c)=>c[0]+p,0) - node.textContent.length + nodeOffset
+  // const cOffset = mapskies.reduce((p,c)=>c[0]+p,0) + (nodeOffset - [...node.textContent].length)  // the [...nerrr] is, again, to keep 16byte character counting consistent
+  const cOffset = mapskies.reduce((p,c)=>c[0]+p,0) + (charOffset - totalCharacters)
   return cOffset
   // return mapskies.reduce((p, c) => c[0] + p, 0)
 
@@ -174,15 +195,42 @@ function segmentate(node, segments) {
 
 }
 
+// a silly little function for a silly little programmer
+const compose = (f => {
+  return { of: g => x=> f(g(x)) }
+})
+
+// const decompose = :(
+
+// think of compose as a decorator applied to a function, converting it to be used in a composition form
+// pad: pad the last segment in a list of segments with one space. compose: convert the function to composition form,
+// so it takes as input the output from another function (we might imagine that before executing f, we apply g to its
+// parameters)
+const padd = compose(segments=>{
+  const seg = segments.at(-1).push(' ')
+  return seg
+})
+// I like 'overdoing' it. Why the hell not
+const pad = segments => {
+  const seg = segments.at(-1).push(' ')
+  // segments.splice(-1,1,seg)
+  // Yeah I know. Very into "creating new objects" instead of "mutating"
+  return [...segments.slice(0,-1), seg]
+}
+
+
+
 /**
  * Parse a piece of the DOM into an edit document
  * @param rootElement DOM Element
  */
 function loadHTML(element) {
   // Convert to a list of Segments, then construct a document
-
-  const wrappedSegments = treeTraverse(segmentate, element)
-  return EditDocument.fromSegments(wrappedSegments.map(unwrap))
+  const segments = treeTraverse(segmentate, element).map(unwrap)
+  const untagged = segments.map(s=>s.reTag(s.tags.slice(1)))
+  // const previous
+  return EditDocument.fromSegments(untagged)
+  // return EditDocument.fromSegments(segments)
 }
 
 /**
@@ -192,7 +240,13 @@ function loadHTML(element) {
  * @param rootElement Root element of a document
  */
 function loadDocument(rootElement) {
-  return EditDocument.fromSegments([...rootElement.children].map(loadHTML))
+
+  // ._.     .u.
+  const chiSegs = [...rootElement.children].map(cn=>treeTraverse(segmentate, cn).map(unwrap)).map(pad).flat()
+  // seggos.map(unwrap)
+  return EditDocument.fromSegments(chiSegs)
+
+  // return EditDocument.fromSegments([...rootElement.children].map(loadHTML))
 }
 
 function html(tags) {
@@ -257,6 +311,13 @@ class Segment {
     const newSeg = new Segment(tags)
     newSeg.characters = this.characters
     newSeg.length = this.length
+    return newSeg
+  }
+
+  push(...chars) {
+    const newSeg = new Segment(this.tags, ...this.characters)
+    newSeg.characters.push(...chars)
+    newSeg.length = newSeg.characters.length
     return newSeg
   }
 
@@ -328,7 +389,7 @@ export default class EditDocument {
 
   computeSegmentCoordinates(characterIndex) {
     let segmentIndex = 0, offset = characterIndex
-    while (offset > this.segments[segmentIndex].length) {
+    while (offset >= this.segments[segmentIndex].length) {
       offset -= this.segments[segmentIndex].length
       segmentIndex++;
     }

@@ -86,9 +86,8 @@ export class Editor {
   readDOM() {
 
     // newDoc = loadHTML(this.component)
-    this.docHistory.add(domFunctions.loadHTML(this.component))
-
-
+    // this.docHistory.add(domFunctions.loadHTML(this.component))
+    this.docHistory.add(domFunctions.loadDocument(this.component))
 
   }
 
@@ -219,6 +218,10 @@ export class Editor {
     // console.debug("Computed offset", domFocusOffset)
     // console.debug("character", this.currentDocument.at(domFocusOffset))
     this.currentDocument.select(domFocusOffset)
+    console.debug(this.currentDocument.at(), domFocusOffset)
+
+    // in a given paragraph, the cursor can be positioned at length + 1 spots, indexed 0-length.
+    // you can index characters 0-(length-1) but we are counting cursor positions
     return
 
     if (sel.isCollapsed) {
@@ -252,8 +255,7 @@ export class Editor {
       return
     }
     this.updateCursor()
-    console.debug(this.currentDocument.at())
-
+    // console.debug(this.currentDocument.at())
 
 
     // --------------------------------------------------------------
