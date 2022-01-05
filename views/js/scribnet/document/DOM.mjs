@@ -373,6 +373,7 @@ export function formatDocument(documentRoot) {
         }
 
         maybeNode.innerHTML = trimBreaking(maybeNode.innerHTML)
+        if (empty(maybeNode)) return undefined; // I want to avoid this. This function reeks of 'if'
 
         // This eliminates text space that is pure "guff", without needing to parse it with some excruciating regex
         // maybeNode.innerText = maybeNode.innerText
