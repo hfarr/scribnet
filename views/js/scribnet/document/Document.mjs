@@ -54,21 +54,12 @@ const fnConst = v => _ => v
 class MapToHTMLEditDocIdx extends TokenVisitor {
   // why is lineBreak 0 not 1? because we 'collapse' it to a newline and push it to the previous elem (in effect, it's an inline character we convert to text)
   // ^^^ likely want to verify this is the case. It's a bit awkward I'll admit. Am I admitting to awkwardness because I forgot when I am the one who coded this, or because the behavior is awkward? :shrug:
-  visitLinebreak(token) { return 0 }  // return fnConst(1)(token) :(
+  visitLinebreak(token) { return 0 }
   visitBlock(token) { return 1}
-  // the problem child of the 0th order Token kinds
   visitInline(token) { return 0}
   visitText(token) {
     return [...token.string].length // separates string into code points as to not over-count 16byte characters
   }
-  // look it. I want it to work like this. but.
-  // visitLinebreak = fnConst(1)
-  // visitBlock = fnConst(1)
-  // // the problem child of the 0th order Token kinds
-  // visitInline = fnConst(0)
-  // visitText(token) {
-  //   return token.string.length - 1
-  // }
 }
 
 // This is a debug mixin to get the string the token 'represents' in addition to its regular output

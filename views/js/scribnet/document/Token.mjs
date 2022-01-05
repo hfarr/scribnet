@@ -50,14 +50,7 @@ export class TokenVisitor {
   }
 
   visitList(tokens) {
-
-
-    const visited = Token.collapseTokens(tokens).map(this.visit, this)
-    return visited
-
-    return Token.collapseTokens(tokens).map(this.visit, this)
-    // also works:
-    // return Token.collapseTokens(tokens).map(t=>this.visit(t))
+    return Token.collapseTokens(tokens).map(t=>this.visit(t))
   }
 }
 

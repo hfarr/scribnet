@@ -215,14 +215,10 @@ export class Editor {
     // later
 
     const domFocusOffset = domFunctions.charOffset(this.component, sel.focusNode, sel.focusOffset)
-    // console.debug("Computed offset", domFocusOffset)
-    // console.debug("character", this.currentDocument.at(domFocusOffset))
     this.currentDocument.select(domFocusOffset)
-    console.debug(this.currentDocument.at(), domFocusOffset)
 
     // in a given paragraph, the cursor can be positioned at length + 1 spots, indexed 0-length.
     // you can index characters 0-(length-1) but we are counting cursor positions
-    return
 
     if (sel.isCollapsed) {
 
@@ -237,7 +233,7 @@ export class Editor {
       // In the interim it's okay to use this strategy, Editor assumes all EditDocs are rendering as HTML
       // and takes the responsibility.
       // idx less one because the collapsed list includes the editor element
-      this.currentDocument.selectSegCoords(segmentIndex, sel.focusOffset)
+      // this.currentDocument.selectSegCoords(segmentIndex, sel.focusOffset)
     }
       
   }
