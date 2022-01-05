@@ -67,9 +67,8 @@ title: Editing
   </p>
 </editor-hf>
 
-<div id="toolmark">
-  <p></p>
-</div>
+<stack-l id="toolmark">
+</stack-l>
 
 <!-- Even HTML breaks it down to separate blocks. Which means we can probably leave it
 in the editor, though I'd prefer to.. do better I suppose.
@@ -125,10 +124,18 @@ document.addEventListener('DOMContentLoaded', (dce) => {
 
 window.addEventListener('load', async (event) => {
   editor = hf.editor
+  let p = document.createElement('p')
+  let p2 = document.createElement('p')
+  toolmark.append(p)
+  toolmark.append(p2)
   hf.editor.addListener('selectionchange', (editor) => {
     const cursor = editor.cursor
     const selection = editor.selectedText.length > 0 ? editor.selectedText : editor.characterAtCursor
-    toolmark.querySelector('p').innerHTML = label`Offset ${cursor} Length ${selection.length} Selection ${selection}`
+    p.innerHTML = label`Offset ${cursor} Length ${selection.length} Selection ${selection}`
+
+    const docCursor = editor.currentDocument.cursorOffset
+    const character = editor.currentDocument.at()
+    p2.innerHTML = label`Doc Character ${docCursor} Doc Selection ${character}`
   })
 })
 

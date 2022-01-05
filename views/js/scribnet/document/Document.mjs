@@ -356,6 +356,9 @@ export default class EditDocument {
   get length() {
     return this.segments.reduce((accum, seg) => accum + seg.length, 0)
   }
+  get cursorOffset() {
+    return this.segments.slice(0,this.writeHead[0]).reduce((accum, seg)=>accum+seg.length, 0) + this.writeHead[1]
+  }
 
   // Maybe 'at()' always return what's currently under the cursor (or the 'focus' end of it)
   // then to get the same 'at' you'd select(charIndex), then at()
@@ -390,6 +393,7 @@ export default class EditDocument {
     }
     return this.segments[segmentIndex].at(offset)
   }
+
 
   write(string) {
     const [segment, cursorIndex] = this.writeHead
