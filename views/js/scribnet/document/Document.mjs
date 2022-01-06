@@ -402,7 +402,7 @@ export default class EditDocument {
   }
 
   select(focusIndex, anchorIndex = undefined) {
-    if (!anchorIndex) anchorIndex = focusIndex
+    if (anchorIndex === undefined) anchorIndex = focusIndex
     this.writeHead = this.computeSegmentCoordinates(focusIndex)
     this.focus = focusIndex
     this.anchor = anchorIndex
@@ -427,8 +427,8 @@ export default class EditDocument {
       ([startSegment, startOffset, endSegment, endOffset] = [anchorSegment, anchorOffset, focusSegment, focusOffset])
     }
 
-    if (startSegment === anchorSegment) {
-      return this.segments[startSegment].characters.slice(startOffset,endOffset)
+    if (startSegment === endSegment) {
+      return this.segments[startSegment].characters.slice(startOffset,endOffset).join('')
     }
 
     let result = this.segments[startSegment].characters.slice(startOffset).join('')

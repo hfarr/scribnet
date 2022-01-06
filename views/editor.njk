@@ -147,7 +147,7 @@ window.addEventListener('load', async (event) => {
 
     const docCursor = editor.currentDocument.cursorOffset
     let docSelection = editor.currentDocument.at()
-    const sel = editor.currentDocument.selection().join('')
+    const sel = editor.currentDocument.selection()
     if (sel !== '') docSelection = sel
     p2.innerHTML = label`Doc Offset ${docCursor} Doc Selection ${docSelection}`
     // *every* time the selection changes? sure why not
