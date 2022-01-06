@@ -25,21 +25,31 @@ export default class EditRenderer {
 
     this.indicator = document.createElement('span')
     this.indicator.style = `border-left: 0.1rem solid #b100c4;`
+
+    this.marker = document.createElement('mark')
+    this.marker.style = `background-color: #6667ab` // very peri, color of the year
+
   }
 
   // TODO should escape html too. 
   render(editDocument) {
-    // let result = ""
-    const cursorOffset = editDocument.cursorOffset
     const docString = [...editDocument.toString()]
+    const prefix = docString.slice(0, editDocument.startOffset).map(escapskies)
 
-    const prefix = docString.slice(0, cursorOffset).map(escapskies)
-    const postfix = escapskies(docString.slice(cursorOffset + 1)).map(escapskies)
-    // only handles collapsed selections at the moment
-    const selected = escapskies(escapeString(docString.at(cursorOffset)))
-    this.indicator.innerHTML = selected
-    const result = prefix.join('') + this.indicator.outerHTML + postfix.join('')
+    let result = ""
+    if (editDocument.isCollapsed) {
+      const selected = escapeString(editDocument.at())
+      this.indicator.innerHTML = selected
+      const postfix = docString.slice(editDocument.endOffset + 1).map(escapskies)
+      result = prefix.join('') + this.indicator.outerHTML + postfix.join('')
+    } else {
 
+      const selString = escapeString(editDocument.selection())
+      this.marker.innerHTML = selString
+      const postfix = docString.slice(editDocument.endOffset).map(escapskies)
+      result = prefix.join('') + this.marker.outerHTML + postfix.join('')
+    }
     this.elem.innerHTML = result
+
   }
 }

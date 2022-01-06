@@ -375,6 +375,12 @@ export default class EditDocument {
     // let [ anchorSegment, segOffset ] = this.computeSegmentCoordinates(this.anchor)
     return this.anchor
   }
+  get startOffset() {
+    return this.focusOffset <= this.anchorOffset ? this.focusOffset : this.anchorOffset
+  }
+  get endOffset() {
+    return this.focusOffset <= this.anchorOffset ? this.anchorOffset : this.focusOffset
+  }
   get isCollapsed() {
     return this.focusOffset === this.anchorOffset
   }
