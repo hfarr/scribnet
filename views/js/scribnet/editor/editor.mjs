@@ -203,7 +203,7 @@ export class Editor {
   /**
    * Update the position of the cursor in the internal EditDocument
    */
-  updateCursor() {
+  updateSelection() {
     if (!this.containsWindowSelection) {
       return
     }
@@ -250,7 +250,7 @@ export class Editor {
     if (!this.containsWindowSelection()) {
       return
     }
-    this.updateCursor()
+    this.updateSelection()
     // console.debug(this.currentDocument.at())
 
 
