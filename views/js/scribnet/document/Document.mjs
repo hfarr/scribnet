@@ -413,15 +413,9 @@ class ListSegment extends Segment {
   }
 
   // Sensing a code smell. Just pass an array to 'from'? merr
-  static from(first, ...rest) {
+  static from(...segments) {
     const listSeg = new ListSegment()
-    if (first === undefined || first.length === 0) {
-      return listSeg
-    }
-    if (rest.length === 0) {
-      return first
-    }
-    listSeg.segments = [first,...rest]
+    listSeg.segments = segments
     return listSeg
   }
 
@@ -476,6 +470,7 @@ class ListSegment extends Segment {
     start = this._normalize(start)
     end = this._normalize(end)
 
+    // Technically this case shouldn't be necessary
     if (start === 0 && end === this.length) {
       return ListSegment.from(this.segments.map( seg => seg.applyTags(tags) ))
     }
