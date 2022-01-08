@@ -87,24 +87,32 @@ describe('ListSegment', function() {
     )
   })
 
-  describe('applyTag', function() {
+  describe('applyTags', function() {
     const listSeg = ListSegment.from(
       Segment.taggedSegment(['h1'], 'Test Content'),
       Segment.taggedSegment(['p'], 'Bare text then'),
       Segment.taggedSegment(['p', 'em'], 'some emphasis'),
       Segment.taggedSegment(['p'], 'BUT not here'),
     )
-    const boldApply = listSeg.applyTags('strong', 31, 44)
+    const boldApply = listSeg.applyTags(['strong'], 31, 44)
+    const boldApplyExpected = ListSegment.from(
+      Segment.taggedSegment(['h1'], 'Test Content'),
+      Segment.taggedSegment(['p'], 'Bare text then'),
+      Segment.taggedSegment(['p', 'em'], 'some '),
+      Segment.taggedSegment(['p', 'em', 'strong'], 'emphasis'),
+      Segment.taggedSegment(['p', 'strong'], 'BUT'),
+      Segment.taggedSegment(['p'], ' not here'),
+    )
 
-    it('slices segments correctly', function() {
+    it('applies tags correctly', function() {
       // console.log(boldApply)
-      assert(true)
-      assert.deepStrictEqual(boldApply[0]?.characters, 'Test Content')
-      assert.deepStrictEqual(boldApply[1]?.characters, 'Bare text then')
-      assert.deepStrictEqual(boldApply[2]?.characters, 'some ')
-      assert.deepStrictEqual(boldApply[3]?.characters, 'emphasis')
-      assert.deepStrictEqual(boldApply[4]?.characters, 'BUT')
-      assert.deepStrictEqual(boldApply[5]?.characters, ' not here')
+      assert(boldApply.eq(boldApplyExpected))
+      // assert.deepStrictEqual(boldApply[0]?.characters, 'Test Content')
+      // assert.deepStrictEqual(boldApply[1]?.characters, 'Bare text then')
+      // assert.deepStrictEqual(boldApply[2]?.characters, 'some ')
+      // assert.deepStrictEqual(boldApply[3]?.characters, 'emphasis')
+      // assert.deepStrictEqual(boldApply[4]?.characters, 'BUT')
+      // assert.deepStrictEqual(boldApply[5]?.characters, ' not here')
     }) 
   })
 

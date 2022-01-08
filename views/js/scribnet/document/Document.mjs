@@ -285,13 +285,14 @@ class Segment {
   // for the time being, as fun as property attributes are, it's
   // too much to dig around that API
 
+  // TODO extract tagging functionality into its own capability
+
   static taggedSegment(tags, string) {
     
     const uniqueTags = new Set(tags)
     const seg = new Segment()
     const characters = [...string]
     seg.tags = [...uniqueTags]
-    seg.length = characters.length
     seg.characters = characters
     seg.templateFn = html
     return seg
@@ -319,17 +320,27 @@ class Segment {
   push(...chars) {
     const newSeg = new Segment(this.tags, ...this.characters)
     newSeg.characters.push(...chars)
-    newSeg.length = newSeg.characters.length
     return newSeg
   }
 
+  copy() {
+    const seg = new Segment()
+    seg.tags = this.tags
+    seg.characters = this.characters
+    seg.templateFn = this.templateFn
+    return seg
+  }
+
   slice(start, end) {
-    const sliced = this.characters.slice(start, end)
-    return new Segment(this.tags, ...sliced)
+    if (end === undefined) end = this.length
+    // const sliced = this.characters.slice(start, end)
+    const seg = this.copy()
+    seg.characters = this.characters.slice(start, end)
+    return seg
   }
 
   split(idx) {
-    return ListSegment.from(this.slice(0, idx), this.slice(idx, -1))
+    return [ this.slice(0, idx), this.slice(idx) ]
   }
 
   /**
@@ -343,6 +354,10 @@ class Segment {
     this.length += characters.length
     this.characters.splice(idx, 0, ...characters)
     return characters.length
+  }
+
+  get length() {
+    return this.characters.length
   }
 
   // at(...segmentCoords) {
@@ -393,18 +408,19 @@ class ListSegment extends Segment {
     return listSeg
   }
 
-  static split(index) {
-    const [ splitSeg, offset ] = this._locate(index)
-    const [ left, right ] = splitSeg.split(offset).segments
+  split(index) {
+    const [ splitSegIndex, offset ] = this._locate(index)
+    const [ left, right ] = this.segments[splitSegIndex].split(offset)
+    // Sensing a code smell. Just pass an array to 'from'? merr
     return [
-      ListSegment.from(...[this.segments.slice(0, splitSeg)], left), 
-      ListSegment.from(right, ...[this.segments.slice(splitSeg + 1)]), 
+      ListSegment.from(...[...this.segments.slice(0, splitSegIndex), left]), 
+      ListSegment.from(...[right, ...this.segments.slice(splitSegIndex + 1)]), 
     ]
   }
 
   get characters() {
     if (this._characters === undefined) {
-      this._characters = this.segments.reduce((charsSoFar, segment) => charsSoFar + segment.characters.join(''), "")
+      this._characters = this.segments.reduce((charsSoFar, segment) => [...charsSoFar, ...segment.characters], [])
     }
     return this._characters
   }
@@ -455,6 +471,16 @@ class ListSegment extends Segment {
     let [ infix, postfix ] = affected.split(end - prefix.length)
 
     return ListSegment.from(prefix, infix.applyTags(tags), postfix)
+  }
+
+  eq(other) {
+    if (other instanceof ListSegment && this.segments.length === other.segments.length) {
+      for (let i = 0; i < this.segments.length; i++) {
+        if (!this.segments[i].eq(other.segments[i])) return false
+      }
+      return true
+    }
+    return false;
   }
 
 }
