@@ -150,6 +150,11 @@ export class Segment {
  * flat to represent the linearity of text
  */
 export class ListSegment extends Segment {
+  // On the subclassing - Some functionalities of Segment do not make sense in ListSegment
+  // so I might either refactor the hierarchy or scrap it and just duplicate the common
+  // functionality. eh. 
+  // TODO Probably should refactor.
+
   constructor() {
     super()
     this.segments = []
