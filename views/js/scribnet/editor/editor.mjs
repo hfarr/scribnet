@@ -161,7 +161,41 @@ export class Editor {
 
   }
 
-  //------------------------
+  //========================
+
+  // -- View functionality (listening for changes)
+  docSelectionChange(docEvent) {
+
+  }
+
+  docContentChange(docEvent) {
+
+  }
+
+  // -- EditDoc "mutations"
+
+  /**
+   * Toggle the "bold"ness of the selected text
+   */
+  toggleBold() {
+    this.currentDocument.applyTag('strong')
+  }
+
+  toggleItalic() {
+    this.currentDocument.applyTag('em')
+  }
+
+  toggleHighlight() {
+    this.currentDocument.applyTag('mark')
+  }
+
+  applyColor(color) {
+    // TODO work on interface for tags. Pass an object for attributes? An instance of a class?
+    // TODO escape the color incase someone tries something... unsafe
+    this.currentDocument.applyTag('span', `style="background-color: ${color};"`)
+  }
+
+  // -----------------------
 
   setSelection(start, end) {
     // const editorNodes = treeFoldr((cur,prev) => [cur,...prev], [], this.component)
