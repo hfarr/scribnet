@@ -4,7 +4,7 @@
   "description": "Yet Another Notes App",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
+    "test": "mocha test/**/*.mjs",
     "clear": "rm -r ./site/*",
     "serve": "npx @11ty/eleventy --serve"
   },
@@ -21,5 +21,8 @@
   "homepage": "https://github.com/hfarr/scribnet#readme",
   "dependencies": {
     "@11ty/eleventy": "^0.12.1"
+  },
+  "devDependencies": {
+    "mocha": "^9.1.3"
   }
 }
