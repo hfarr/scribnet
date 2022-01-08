@@ -302,6 +302,15 @@ class Segment {
     return newSeg
   }
 
+  slice(start, end) {
+    const sliced = this.characters.slice(start, end)
+    return new Segment(this.tags, ...sliced)
+  }
+
+  split(idx) {
+    return [ this.slice(0, idx), this.slice(idx, -1) ]
+  }
+
   /**
    * Write characters into this segment
    * 
@@ -326,10 +335,93 @@ class Segment {
     return this.characters.at(offset)
   }
 
+  eq(other) {
+    if (other instanceof Segment && this.characters === other.characters) {
+      for (let i = 0; i < this.tags.length || i < other.tags.length; i++) {
+        if (! (this.tags.includes(other.tags[i]) && other.tags.includes(this.tags[i]) ) ) return false
+      }
+      return true
+    }
+    return false
+  }
+
   render() {
     return this.templateFn(this.tags)`${this.characters}`
   }
 }
+
+const pairComp = (p1, p2, cmp=(x,y)=>x-y) => {
+  const outer = cmp(p1[0], p2[0])
+  return outer === 0 ? cmp(p1[1], p2[1]) : outer
+}
+
+// tags (elements)- operate somewhat like sets. In that we are computing presence or absence.
+// then along the way its set complements and unions and what-what.
+// At the in-line level at least. I'm thinking we can treat applying inline tags like applying Set 
+// operations, and when it comes time to render, that's when any sorting of tags
+// comes into play, where we merge and do all that other nice stuff. but the
+// internal state doesn't have to really reflect the end state does it now!
+// block level tags are different because they affect just a single Segment, they are a Set minus
+// and union, ridding the old and adding the new. perhaps, for instance, we can treat all "block"
+// tags like a Union type where setting a new one overwrites the previous one.
+// Inline tags then are Composite types that setting a new one simply adds it to the previous,
+// replacing an earlier of the same but that has practically nil effect
+// we'll consider the Set semantics more formally in an abstraction after getting a basic version
+// working
+function applyTag(tag, segment) {
+  // yeah i'd like to implement with a set. Yet for now.
+  // Only handling inline case for time being
+
+  if (!segment.tags.includes(tag)) {
+    return segment.reTag([...segment.tags, tag])
+  }
+  return segment
+}
+
+// edge case is what happens at the edges. Applying a tag partway into an offset requires splitting it
+// first, then applying, so we need to start with a helper
+function applyTagToSegments(tag, segments, startCoords, endCoords) { // TODO abstract Segment coords into a total ordering? so we can define comparision functions in just one place ._.
+  // should this go in doc, then we scrape out the start/end parameters? just use the 'selection'? that's partially what it is for, right? hmm
+  const applyApplyTag = seg => applyTag(tag, seg)
+  const [prefix, infix, postfix] = [
+    segments.slice(0, startCoords[0]),
+    segments.slice(startCoords[0], endCoords[0] + 1),
+    segments.slice(endCoords[0] + 1, -1),
+  ]
+
+  const [ startLeft, startRight ] = infix.at(0).split(startCoords[1])
+  const [ endLeft, endRight ] = infix.at(-1).split(endCoords[1])
+  const affected = [ startRight, infix.slice(1,-1), endLeft].map(applyApplyTag)
+
+  return [prefix, startLeft, affected, endRight, postfix].flat()
+
+  // if (pairComp(startCoords, endCoords) === 0) {
+  //   return [...prefix, ...affected.map(applyApplyTag), ...postfix]
+  // } else {
+  //   if (pairComp(startCoords, endCoords) > 0) return segments
+
+  //   const [startLeft, startRight] = segments[startCoords[0]].split(startCoords[1])
+  //   const [endLeft, endRight] = segments[endCoords[0]].split(endCoords[1])
+
+  //   const result = [
+  //     segments.slice(0, startCoords[0]), startLeft,
+  //     [startRight, segments.slice(startCoords[0]+1, endCoords[0]), endLeft].map(applyApplyTag),
+  //     endRight, segments.slice(endCoords[0] + 1)
+  //   ].flat()
+
+  //   // I hate it, burn it now
+  //   return [ 
+  //     ...segments.slice(0, startCoords[0]),
+  //     applyTagToSegments(tag, [ segments.at(startCoords[0]),    [0, startCoords[1]], [0, -1] ]), 
+  //     ...segments.slice(1,-1),
+  //     applyTagToSegments(tag, [ segments.at(endCoords[0]),      [0, 0], [0, endCoords[1] ] ]),
+  //     ...segments.slice(endCoords[0] + 1)
+  //   ]
+  // }
+}
+// mmmmm I want to make EditSegments, a type for fast manipulation but slowish reads.
+// Might need to engineer a way to detect which parts of a segment changed and see if I can get away with
+// partial renders. I think that's feasible.
 
 /**
  * Expensive reads, cheap(?) writes
@@ -384,6 +476,14 @@ export default class EditDocument {
   get isCollapsed() {
     return this.focusOffset === this.anchorOffset
   }
+
+  // ----- Builders ------
+
+  applyTag(tag, attributes) {
+
+  }
+
+  // ----- Accessors ------
 
   // Maybe 'at()' always return what's currently under the cursor (or the 'focus' end of it)
   // then to get the same 'at' you'd select(charIndex), then at()
@@ -468,3 +568,25 @@ export default class EditDocument {
 
 }
 
+
+// ---------------------------
+// Exports for testing
+export const expose = { 
+  // mutators
+  applyTag, 
+  applyTagToSegments, 
+
+  // derivators
+  charOffset, // derive cursor position in DOC from given node/nodeoffset from DOM
+  segmentate, // functionally process an element into a list of segments (compose with treeTraverse)
+
+  // templaters
+  html, md,
+
+  // builders
+  loadDocument, 
+  loadHTML,
+
+  // Types
+  Segment,
+}
