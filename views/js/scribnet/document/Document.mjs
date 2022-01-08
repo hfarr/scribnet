@@ -125,7 +125,7 @@ const wrapText = string => ({
 // 'const' function, basically, the function that maps all input to one value
 const wrapSegment = (seg) => ({
   value: seg,
-  apply: tag => wrapSegment(seg.reTag([tag, ...seg.tags]))
+  apply: tag => wrapSegment(seg.applyTag([tag, ...seg.tags]))
 })
 const wrapNull = {
   value: null,
@@ -280,19 +280,40 @@ export const domFunctions = { loadDocument, loadHTML, renderHTML, charOffset }
  *   to edits as the come in to complicate and decomplicate.
  */
 class Segment {
-  constructor(tags, ...characters) {
+  // seal the object? I don't want characters/length to be mutable.
+  // Holding off for now, I don't need to enforce immutability and
+  // for the time being, as fun as property attributes are, it's
+  // too much to dig around that API
+
+  static taggedSegment(tags, string) {
+    
     const uniqueTags = new Set(tags)
-    this.tags = [...uniqueTags]
-    this.length = characters.length
-    this.characters = characters
-    this.templateFn = html
+    const seg = new Segment()
+    const characters = [...string]
+    seg.tags = [...uniqueTags]
+    seg.length = characters.length
+    seg.characters = characters
+    seg.templateFn = html
+    return seg
   }
 
-  reTag(tags) {
-    const newSeg = new Segment(tags)
-    newSeg.characters = this.characters
-    newSeg.length = this.length
-    return newSeg
+  empty() {
+    return this.length === 0
+  }
+
+  applyTags(tags, start = 0, end = -1) {
+    // if (tags.length === 0) {
+    //   return this
+    // }
+    // const newTags = tags.filter(t => !this.tags.includes(t))
+    // lmao so. We already filter unique on tags, don't have to double enforce it so to speak.
+    return this.replaceTags([...this.tags, ...tags])
+  }
+
+  replaceTags(tags) {
+    const seg = Segment.taggedSegment(tags,'')
+    seg.characters = this.characters
+    return seg
   }
 
   push(...chars) {
@@ -308,7 +329,7 @@ class Segment {
   }
 
   split(idx) {
-    return [ this.slice(0, idx), this.slice(idx, -1) ]
+    return ListSegment.from(this.slice(0, idx), this.slice(idx, -1))
   }
 
   /**
@@ -350,6 +371,54 @@ class Segment {
   }
 }
 
+/**
+ * ListSegment is a list of segment
+ * It derives its attributes from its elements
+ */
+class ListSegment extends Segment {
+  constructor() {
+    super()
+    this.segments = []
+  }
+
+  static from(first, ...rest) {
+    const listSeg = new ListSegment()
+    if (first === undefined || first.length === 0) {
+      return listSeg
+    }
+    if (rest.length === 0) {
+      return first
+    }
+    listSeg.segments = [first,...rest]
+    return listSeg
+  }
+
+  get characters() {
+    return this.segments.reduce((charsSoFar, segment) => charsSoFar + segment.characters.join(''), "")
+  }
+
+  get length() {
+    return this.segments.reduce((lengthSoFar, segment) => lengthSoFar + segment.length, 0)
+  }
+
+  _locate(characterIndex) {
+    let segmentIndex = 0
+    while (characterIndex > this.segments[segmentIndex].length) {
+      segmentIndex++;
+      characterIndex -= this.segments[segmentIndex].length;
+    }
+    return [ segmentIndex, characterIndex ]
+  }
+
+
+  applyTags(tags, start = 0, end = -1) {
+    if (tags.length === 0) return this
+
+    return ListSegment.from()
+  }
+
+}
+
 const pairComp = (p1, p2, cmp=(x,y)=>x-y) => {
   const outer = cmp(p1[0], p2[0])
   return outer === 0 ? cmp(p1[1], p2[1]) : outer
@@ -373,10 +442,17 @@ function applyTag(tag, segment) {
   // Only handling inline case for time being
 
   if (!segment.tags.includes(tag)) {
-    return segment.reTag([...segment.tags, tag])
+    return segment.applyTag([...segment.tags, tag])
   }
   return segment
 }
+
+// function segmentsSplit(segments, idx) {
+
+//   let segIdx = 0
+//   while (idx < )
+
+// }
 
 // edge case is what happens at the edges. Applying a tag partway into an offset requires splitting it
 // first, then applying, so we need to start with a helper
@@ -588,5 +664,5 @@ export const expose = {
   loadHTML,
 
   // Types
-  Segment,
+  Segment, ListSegment
 }
