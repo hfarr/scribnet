@@ -303,11 +303,11 @@ class Segment {
   }
 
   applyTags(tags, start = 0, end = -1) {
-    // if (tags.length === 0) {
-    //   return this
-    // }
-    // const newTags = tags.filter(t => !this.tags.includes(t))
-    // lmao so. We already filter unique on tags, don't have to double enforce it so to speak.
+    // TODO probably should produce a ListSegment? 
+    // no, I think we can keep the Segments simple for now, I don't feel compelled.
+    // I want the computer to think like a person. If we apply a tag to a segment
+    // it applies to all text therein, if you want something else wrap it in a
+    // ListSegment first, that will split it for you.
     return this.replaceTags([...this.tags, ...tags])
   }
 
@@ -333,7 +333,6 @@ class Segment {
 
   slice(start, end) {
     if (end === undefined) end = this.length
-    // const sliced = this.characters.slice(start, end)
     const seg = this.copy()
     seg.characters = this.characters.slice(start, end)
     return seg
@@ -360,14 +359,7 @@ class Segment {
     return this.characters.length
   }
 
-  // at(...segmentCoords) {
-  //   const [ segment, offset ] = segmentCoords.flat()
-  //   return 
-  // }
   at(offset) {
-    // if (offset < 0) {
-    //   offset = this.length - offset
-    // }
     return this.characters.at(offset)
   }
 
@@ -405,6 +397,8 @@ class Segment {
 /**
  * ListSegment is a list of segment
  * It derives its attributes from its elements
+ * ListSegment is not a recursive data structure, it is intentionally
+ * flat to represent the linearity of text
  */
 class ListSegment extends Segment {
   constructor() {
@@ -426,14 +420,6 @@ class ListSegment extends Segment {
       ...this.segments[splitSegIndex].split(offset).segments,
       ...this.segments.slice(splitSegIndex + 1)
     ]) 
-
-    // Although I like this, I think it will benefit me to keep the ListSegments 'flat' for now.
-    // The whole point is to consider the tree linearly.
-    // return ListSegment.from(...[
-    //   ...this.segments.slice(0, splitSegIndex), 
-    //   this.segments[splitSegIndex].split(offset),
-    //   ...this.segments.slice(splitSegIndex + 1)
-    // ]) 
   }
 
   get characters() {
@@ -485,10 +471,6 @@ class ListSegment extends Segment {
 
     return ListSegment.from(...applied)
 
-    // let [ infix, postfix ] = affected.split(end - prefix.length)
-
-    // return ListSegment.from(prefix, infix.applyTags(tags), postfix)
-
   }
 
   eq(other) {
@@ -502,86 +484,6 @@ class ListSegment extends Segment {
   }
 
 }
-
-const pairComp = (p1, p2, cmp=(x,y)=>x-y) => {
-  const outer = cmp(p1[0], p2[0])
-  return outer === 0 ? cmp(p1[1], p2[1]) : outer
-}
-
-// tags (elements)- operate somewhat like sets. In that we are computing presence or absence.
-// then along the way its set complements and unions and what-what.
-// At the in-line level at least. I'm thinking we can treat applying inline tags like applying Set 
-// operations, and when it comes time to render, that's when any sorting of tags
-// comes into play, where we merge and do all that other nice stuff. but the
-// internal state doesn't have to really reflect the end state does it now!
-// block level tags are different because they affect just a single Segment, they are a Set minus
-// and union, ridding the old and adding the new. perhaps, for instance, we can treat all "block"
-// tags like a Union type where setting a new one overwrites the previous one.
-// Inline tags then are Composite types that setting a new one simply adds it to the previous,
-// replacing an earlier of the same but that has practically nil effect
-// we'll consider the Set semantics more formally in an abstraction after getting a basic version
-// working
-function applyTag(tag, segment) {
-  // yeah i'd like to implement with a set. Yet for now.
-  // Only handling inline case for time being
-
-  if (!segment.tags.includes(tag)) {
-    return segment.applyTag([...segment.tags, tag])
-  }
-  return segment
-}
-
-// function segmentsSplit(segments, idx) {
-
-//   let segIdx = 0
-//   while (idx < )
-
-// }
-
-// edge case is what happens at the edges. Applying a tag partway into an offset requires splitting it
-// first, then applying, so we need to start with a helper
-function applyTagToSegments(tag, segments, startCoords, endCoords) { // TODO abstract Segment coords into a total ordering? so we can define comparision functions in just one place ._.
-  // should this go in doc, then we scrape out the start/end parameters? just use the 'selection'? that's partially what it is for, right? hmm
-  const applyApplyTag = seg => applyTag(tag, seg)
-  const [prefix, infix, postfix] = [
-    segments.slice(0, startCoords[0]),
-    segments.slice(startCoords[0], endCoords[0] + 1),
-    segments.slice(endCoords[0] + 1, -1),
-  ]
-
-  const [ startLeft, startRight ] = infix.at(0).split(startCoords[1])
-  const [ endLeft, endRight ] = infix.at(-1).split(endCoords[1])
-  const affected = [ startRight, infix.slice(1,-1), endLeft].map(applyApplyTag)
-
-  return [prefix, startLeft, affected, endRight, postfix].flat()
-
-  // if (pairComp(startCoords, endCoords) === 0) {
-  //   return [...prefix, ...affected.map(applyApplyTag), ...postfix]
-  // } else {
-  //   if (pairComp(startCoords, endCoords) > 0) return segments
-
-  //   const [startLeft, startRight] = segments[startCoords[0]].split(startCoords[1])
-  //   const [endLeft, endRight] = segments[endCoords[0]].split(endCoords[1])
-
-  //   const result = [
-  //     segments.slice(0, startCoords[0]), startLeft,
-  //     [startRight, segments.slice(startCoords[0]+1, endCoords[0]), endLeft].map(applyApplyTag),
-  //     endRight, segments.slice(endCoords[0] + 1)
-  //   ].flat()
-
-  //   // I hate it, burn it now
-  //   return [ 
-  //     ...segments.slice(0, startCoords[0]),
-  //     applyTagToSegments(tag, [ segments.at(startCoords[0]),    [0, startCoords[1]], [0, -1] ]), 
-  //     ...segments.slice(1,-1),
-  //     applyTagToSegments(tag, [ segments.at(endCoords[0]),      [0, 0], [0, endCoords[1] ] ]),
-  //     ...segments.slice(endCoords[0] + 1)
-  //   ]
-  // }
-}
-// mmmmm I want to make EditSegments, a type for fast manipulation but slowish reads.
-// Might need to engineer a way to detect which parts of a segment changed and see if I can get away with
-// partial renders. I think that's feasible.
 
 /**
  * Expensive reads, cheap(?) writes
