@@ -61,13 +61,14 @@ export class Segment {
   }
 
   replaceTags(tags) {
-    const seg = Segment.taggedSegment(tags,'')
-    seg.characters = this.characters
+    const seg = this.copy() // Segment.taggedSegment(tags,'')
+    seg.tags = [...new Set(tags)]
+    // seg.characters = this.characters
     return seg
   }
 
   push(...chars) {
-    const newSeg = new Segment(this.tags, ...this.characters)
+    const newSeg = this.copy() // new Segment(this.tags, ...this.characters)
     newSeg.characters.push(...chars)
     return newSeg
   }
