@@ -4,14 +4,19 @@ layout: root.njk
 
 {% block header %}
   <link rel="stylesheet" type="text/css" href="/css/note.css">
+  <link rel="stylesheet" type="text/css" href="/css/slidebar.css">
 
 {% endblock %}
 
 <div class="note-page">
-  <sidebar-l sideWidth="30ch" space="0" contentMin="66%" noStretch>
-    <stack-l class="buf">
-      <p>Words Words Words Words</p>
-    </stack-l>
+  <!-- <sidebar-l sideWidth="30ch" space="0" contentMin="66%" noStretch> -->
+  <sidebar-l space="0" contentMin="66%" noStretch>
+    <label>
+      <input type="checkbox" class="toggle">
+      <stack-l class="buf collapsible">
+        <p>Words Words Words Words</p>
+      </stack-l>
+    </label>
     <div class="note-content">
       <stack-l splitAfter=1 space="0">
 

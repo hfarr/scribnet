@@ -1,0 +1,50 @@
+/* Sliding side bar :shrug: */
+
+
+/* sidebar-l > :first-child {
+  transition: flex-basis 200ms;
+} */
+
+/* .collapsible {
+  transition: flex-basis 200ms;
+}
+
+.collapsible:hover {
+  flex-basis: 2rem;
+} */
+
+/* sidebar-l > :first-child {
+  transition: flex-basis 200ms;
+}
+
+sidebar-l > :first-child:hover {
+  flex-basis: 2rem;
+} */
+
+/** okay super convoluted but! */
+
+sidebar-l > label:last-child {
+  height: 100%;
+}
+
+.toggle {
+  display: none;
+}
+
+.toggle ~ * {
+  /* background-color: var(--hue-cream-dark); */
+
+  transition: max-width 200ms;
+  max-width: 100vw;
+}
+
+.toggle:checked ~ * {
+  /* display: none; */
+  max-width: 0rem;
+  /* flex-basis: 1rem; */
+  /* background-color:rebeccapurple; */
+}
+
+.toggle:checked ~ * * {
+  display: none;
+}
