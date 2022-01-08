@@ -82,7 +82,7 @@ describe('ListSegment', function() {
   )
   it('has the characters of its components combined', function() {
     assert.deepStrictEqual(
-      listSeg.characters,
+      listSeg.characters.join(''),
       "Titular Segmentbody text. Wonderfully emphasized! Boldly go away."
     )
   })
@@ -94,7 +94,7 @@ describe('ListSegment', function() {
       Segment.taggedSegment(['p', 'em'], 'some emphasis'),
       Segment.taggedSegment(['p'], 'BUT not here'),
     )
-    const boldApply = listSeg.applyTags(['strong'], 31, 44)
+    const boldApply = listSeg.applyTags(['strong'], 31, 42)
     const boldApplyExpected = ListSegment.from(
       Segment.taggedSegment(['h1'], 'Test Content'),
       Segment.taggedSegment(['p'], 'Bare text then'),
