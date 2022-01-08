@@ -340,7 +340,7 @@ class Segment {
   }
 
   split(idx) {
-    return [ this.slice(0, idx), this.slice(idx) ]
+    return ListSegment.from( this.slice(0, idx), this.slice(idx) )
   }
 
   /**
@@ -372,7 +372,11 @@ class Segment {
   }
 
   eq(other) {
-    if (other instanceof Segment && this.characters === other.characters) {
+    
+    if (other instanceof Segment){ 
+      if (this.characters.join('') !== other.characters.join('')) {
+        return false
+      }
       for (let i = 0; i < this.tags.length || i < other.tags.length; i++) {
         if (! (this.tags.includes(other.tags[i]) && other.tags.includes(this.tags[i]) ) ) return false
       }
@@ -384,6 +388,18 @@ class Segment {
   render() {
     return this.templateFn(this.tags)`${this.characters}`
   }
+
+  _normalize(idx) {
+    if (idx > this.length) {
+      return this.length
+    }
+    if (idx < 0) {
+      idx = idx % this.length
+      id = (idx === 0) ? 0 : idx + this.length
+    }
+    return idx
+  }
+
 }
 
 /**
@@ -396,6 +412,7 @@ class ListSegment extends Segment {
     this.segments = []
   }
 
+  // Sensing a code smell. Just pass an array to 'from'? merr
   static from(first, ...rest) {
     const listSeg = new ListSegment()
     if (first === undefined || first.length === 0) {
@@ -410,12 +427,19 @@ class ListSegment extends Segment {
 
   split(index) {
     const [ splitSegIndex, offset ] = this._locate(index)
-    const [ left, right ] = this.segments[splitSegIndex].split(offset)
-    // Sensing a code smell. Just pass an array to 'from'? merr
-    return [
-      ListSegment.from(...[...this.segments.slice(0, splitSegIndex), left]), 
-      ListSegment.from(...[right, ...this.segments.slice(splitSegIndex + 1)]), 
-    ]
+    return ListSegment.from(...[
+      ...this.segments.slice(0, splitSegIndex), 
+      ...this.segments[splitSegIndex].split(offset).segments,
+      ...this.segments.slice(splitSegIndex + 1)
+    ]) 
+
+    // Although I like this, I think it will benefit me to keep the ListSegments 'flat' for now.
+    // The whole point is to consider the tree linearly.
+    // return ListSegment.from(...[
+    //   ...this.segments.slice(0, splitSegIndex), 
+    //   this.segments[splitSegIndex].split(offset),
+    //   ...this.segments.slice(splitSegIndex + 1)
+    // ]) 
   }
 
   get characters() {
@@ -435,21 +459,10 @@ class ListSegment extends Segment {
   _locate(characterIndex) {
     let segmentIndex = 0
     while (characterIndex > this.segments[segmentIndex].length) {
-      segmentIndex++;
       characterIndex -= this.segments[segmentIndex].length;
+      segmentIndex++;
     }
     return [ segmentIndex, characterIndex ]
-  }
-
-  _normalize(idx) {
-    if (idx > this.length) {
-      return this.length
-    }
-    if (idx < 0) {
-      idx = idx % this.length
-      id = (idx === 0) ? 0 : idx + this.length
-    }
-    return idx
   }
 
 
@@ -467,10 +480,20 @@ class ListSegment extends Segment {
       return ListSegment.from(this.segments.map( seg => seg.applyTags(tags) ))
     }
 
-    let [ prefix, affected ] = this.split(start)
-    let [ infix, postfix ] = affected.split(end - prefix.length)
+    let splegment = this.split(start).split(end)
+    let [ leftBound ] = splegment._locate(start)
+    let [ rightBound ] = splegment._locate(end)
+    const applied = splegment.segments.map( (seg, idx) => { 
+      if (leftBound + 1 <= idx && idx <= rightBound) return seg.applyTags(tags)
+      return seg
+    })
 
-    return ListSegment.from(prefix, infix.applyTags(tags), postfix)
+    return ListSegment.from(...applied)
+
+    // let [ infix, postfix ] = affected.split(end - prefix.length)
+
+    // return ListSegment.from(prefix, infix.applyTags(tags), postfix)
+
   }
 
   eq(other) {
