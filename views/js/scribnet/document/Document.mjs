@@ -393,12 +393,27 @@ class ListSegment extends Segment {
     return listSeg
   }
 
+  static split(index) {
+    const [ splitSeg, offset ] = this._locate(index)
+    const [ left, right ] = splitSeg.split(offset).segments
+    return [
+      ListSegment.from(...[this.segments.slice(0, splitSeg)], left), 
+      ListSegment.from(right, ...[this.segments.slice(splitSeg + 1)]), 
+    ]
+  }
+
   get characters() {
-    return this.segments.reduce((charsSoFar, segment) => charsSoFar + segment.characters.join(''), "")
+    if (this._characters === undefined) {
+      this._characters = this.segments.reduce((charsSoFar, segment) => charsSoFar + segment.characters.join(''), "")
+    }
+    return this._characters
   }
 
   get length() {
-    return this.segments.reduce((lengthSoFar, segment) => lengthSoFar + segment.length, 0)
+    if (this._length === undefined) {
+      this._length = this.segments.reduce((lengthSoFar, segment) => lengthSoFar + segment.length, 0)
+    }
+    return this._length
   }
 
   _locate(characterIndex) {
@@ -410,11 +425,36 @@ class ListSegment extends Segment {
     return [ segmentIndex, characterIndex ]
   }
 
+  _normalize(idx) {
+    if (idx > this.length) {
+      return this.length
+    }
+    if (idx < 0) {
+      idx = idx % this.length
+      id = (idx === 0) ? 0 : idx + this.length
+    }
+    return idx
+  }
 
-  applyTags(tags, start = 0, end = -1) {
-    if (tags.length === 0) return this
 
-    return ListSegment.from()
+  applyTags(tags, start, end) {
+    if (tags === undefined || tags.length === 0) return this
+    if (!( start < end)) return this
+    if (start >= this.length) return this
+
+    start = (start === undefined) ? 0 : start
+    end = (end === undefined) ? this.length : end 
+    start = this._normalize(start)
+    end = this._normalize(end)
+
+    if (start === 0 && end === this.length) {
+      return ListSegment.from(this.segments.map( seg => seg.applyTags(tags) ))
+    }
+
+    let [ prefix, affected ] = this.split(start)
+    let [ infix, postfix ] = affected.split(end - prefix.length)
+
+    return ListSegment.from(prefix, infix.applyTags(tags), postfix)
   }
 
 }
