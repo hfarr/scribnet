@@ -275,10 +275,10 @@ export default class EditDocument {
 
   // ----- Accessors ------
 
-  select(focusIndex, anchorIndex = undefined) {
-    if (anchorIndex === undefined) anchorIndex = focusIndex
-    this.focus = focusIndex
+  select(anchorIndex=0, focusIndex=undefined) {
+    if (focusIndex === undefined) focusIndex = anchorIndex
     this.anchor = anchorIndex
+    this.focus = focusIndex
   }
 
   at(characterIndex = undefined) {
