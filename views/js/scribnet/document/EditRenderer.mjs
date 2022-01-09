@@ -1,6 +1,6 @@
 'use strict';
 
-import EditDocument from "./Document.mjs";
+// import EditDocument from "./Document.mjs";
 function escapskies(codePoint) {
   switch (codePoint) {
     case '<': return '&lt;'
@@ -19,7 +19,7 @@ function escapeString(htmlRaw) {
 
 // big custom component potential y'know
 export default class EditRenderer {
-  constructor(wrapperElement) {
+  constructor(wrapperElement, editDocument) {
     this.elem = wrapperElement
     this.elem.style = "white-space: pre-wrap;"
 
@@ -29,24 +29,39 @@ export default class EditRenderer {
     this.marker = document.createElement('mark')
     this.marker.style = `background-color: #6667ab` // very peri, color of the year
 
+    this.setEditDoc(editDocument)
+
+  }
+
+  setEditDoc(editDocument) {
+    if (editDocument === undefined) return
+    this.editDocument = editDocument
+    this.editDocument.addSelectListener(_ => this.render())
+  }
+  removeEditDoc() {
+    if (this.editDocument === undefined) return
+    this.editDocument.removeSelectListener(this.render)
+    this.editDocument = undefined
   }
 
   // TODO should escape html too. 
-  render(editDocument) {
-    const docString = [...editDocument.toString()]
-    const prefix = docString.slice(0, editDocument.startOffset).map(escapskies)
+  render() {
+    if (this.editDocument === undefined) return
+
+    const docString = [...this.editDocument.toString()]
+    const prefix = docString.slice(0, this.editDocument.startOffset).map(escapskies)
 
     let result = ""
-    if (editDocument.isCollapsed) {
-      const selected = escapeString(editDocument.at())
+    if (this.editDocument.isCollapsed) {
+      const selected = escapeString(this.editDocument.at())
       this.indicator.innerHTML = selected
-      const postfix = docString.slice(editDocument.endOffset + 1).map(escapskies)
+      const postfix = docString.slice(this.editDocument.endOffset + 1).map(escapskies)
       result = prefix.join('') + this.indicator.outerHTML + postfix.join('')
     } else {
 
-      const selString = escapeString(editDocument.selection())
+      const selString = escapeString(this.editDocument.selection())
       this.marker.innerHTML = selString
-      const postfix = docString.slice(editDocument.endOffset).map(escapskies)
+      const postfix = docString.slice(this.editDocument.endOffset).map(escapskies)
       result = prefix.join('') + this.marker.outerHTML + postfix.join('')
     }
     this.elem.innerHTML = result

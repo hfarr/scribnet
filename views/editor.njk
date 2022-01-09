@@ -143,6 +143,8 @@ const updateEditRender = (editor) => {
 
 window.addEventListener('load', async (event) => {
   editor = hf.editor
+  editDocDisplay.render(editor.currentDocument)
+  editDocDisplay.setEditDoc(editor.currentDocument)
   hf.editor.addListener('selectionchange', (editor) => {
     const cursor = editor.cursor
     const selection = editor.selectedText.length > 0 ? editor.selectedText : editor.characterAtCursor
@@ -160,9 +162,8 @@ window.addEventListener('load', async (event) => {
     // p3.innerHTML = escapskies(editor.currentDocument.toString())
     // p4.innerHTML = editor.currentDocument.toString()
     p2.innerHTML = label`Doc Offset ${docCursor} Length ${[...docSelection].length}`
-    editDocDisplay.render(editor.currentDocument)
+    // editDocDisplay.render(editor.currentDocument)
   })
-  editDocDisplay.render(editor.currentDocument)
 })
 
 
