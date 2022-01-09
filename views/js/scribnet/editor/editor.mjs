@@ -215,6 +215,12 @@ export class Editor {
    */
   select(anchor, focus) {
     this.currentDocument.select(anchor, focus)
+    this.selectInDOM()  
+    // (?) Should we always do this? I think so, it's the API we expose and
+    // there are not meant to be direct ways to modify the document. If
+    // someone wanted to they could write extensions in JS and select in the
+    // document without updating.
+    // In fact, editor might even do that. we may yet need a select-no-render
   }
   
 
