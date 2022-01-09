@@ -161,6 +161,10 @@ window.addEventListener('load', async (event) => {
 
   editor.currentDocument.addSelectListener(updateEditDocLabel)
 
+  // initial renders
+  updateEditDocLabel(editor.currentDocument)
+  editDocDisplay.render()
+
   hf.editor.addListener('selectionchange', (editor) => {
     const cursor = editor.cursor
     const selection = editor.selectedText.length > 0 ? editor.selectedText : editor.characterAtCursor
