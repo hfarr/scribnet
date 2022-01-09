@@ -197,31 +197,24 @@ export class Editor {
 
   // -----------------------
 
-  setSelection(start, end) {
-    // const editorNodes = treeFoldr((cur,prev) => [cur,...prev], [], this.component)
-    // let startNode, endNode, startOffset, endOffset, previous
-    // for (const node of editorNodes) {
-    //   let textDifference = 0
-    //   if (node.nodeType === Node.TEXT_NODE) {
-    //     textDifference = node.textContent.length
-    //   } else {
-    //     if (node.tag)
-    //   }
-    // }
-    const [ startNode=this.component, startOffset=0 ] = offsetToDOM(this.component, start)
-    const [ endNode=this.component, endOffset=1 ] = offsetToDOM(this.component, end)
-    window.getSelection().setBaseAndExtent(startNode, startOffset, endNode, endOffset)
-
-    console.debug(startNode, startOffset)
+  /**
+   * Inverse (well..) of 'updateSelection'. Takes the currently selected text in the
+   * internal EditDocument and maps it to the DOM, where it is rendered
+   * 
+   */
+  selectInDOM() {
+    const [ anchorNode, anchorOffset ] = offsetToDOM(this.component, this.currentDocument.anchorOffset)
+    const [ focusNode, focusOffset ] = offsetToDOM(this.component, this.currentDocument.focusOffset)
+    window.getSelection().setBaseAndExtent(anchorNode, anchorOffset, focusNode, focusOffset)
   }
 
   /**
    * Update the cursor in the document
-   * @param segmentIndex Segment index
+   * 
    * @param offset Offset into segment
    */
-  selectInDoc(segmentIndex, offset) {
-    // this.editDocument.
+  select(anchor, focus) {
+    this.currentDocument.select(anchor, focus)
   }
   
 

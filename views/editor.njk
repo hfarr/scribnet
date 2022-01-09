@@ -105,7 +105,6 @@ import("/js/scribnet/document/DOM.mjs").then(m => {
       console.log(hfDoc)
       console.log(hfDoc.length)
 
-      // editor.editDocument = hfDoc
     })
 
   })
@@ -138,25 +137,32 @@ document.addEventListener('DOMContentLoaded', (dce) => {
   console.debug("DOM COntent loaded")
 })
 
+const updateEditRender = (editor) => {
+
+}
+
 window.addEventListener('load', async (event) => {
   editor = hf.editor
   hf.editor.addListener('selectionchange', (editor) => {
     const cursor = editor.cursor
     const selection = editor.selectedText.length > 0 ? editor.selectedText : editor.characterAtCursor
-    p1.innerHTML = label`DOM Offset ${cursor} DOM Selection ${selection} Length ${selection.length}`
+    // TODO Im hiding these but I'd like them. Not hidden. a collapsible yknow.
+    // p1.innerHTML = label`DOM Offset ${cursor} DOM Selection ${selection} Length ${selection.length}`
 
     const docCursor = editor.currentDocument.cursorOffset
     let docSelection = editor.currentDocument.at()
     const sel = editor.currentDocument.selection()
     if (sel !== '') docSelection = sel
-    p2.innerHTML = label`Doc Offset ${docCursor} Doc Selection ${docSelection} Length ${[...docSelection].length}`
+    // p2.innerHTML = label`Doc Offset ${docCursor} Doc Selection ${docSelection} Length ${[...docSelection].length}`
     // *every* time the selection changes? sure why not
     // ideally, "projection" components would handle anything that renders the state of the doc.
     // one for HTML, markdown, the "proposed edits" style.
     // p3.innerHTML = escapskies(editor.currentDocument.toString())
     // p4.innerHTML = editor.currentDocument.toString()
+    p2.innerHTML = label`Doc Offset ${docCursor} Length ${[...docSelection].length}`
     editDocDisplay.render(editor.currentDocument)
   })
+  editDocDisplay.render(editor.currentDocument)
 })
 
 

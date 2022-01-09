@@ -285,24 +285,78 @@ const traversePruneTokens = node => traversePrune(upToAndIncluding(node), traver
 export { treeTraverse, treeFoldr, foldElements, foldNodes, traversePruneTokens }
 // Public
 
-export function offsetToDOM(rootElement, offset) {
+// TODO this is a nearish duplicate of MapHTMLToEditDocIdx
+// functionally we are "parsing" a EditDocument in order to work out 
+// the node that is rendering the selected character and offset into
+// that node
+class HTMLOffsetMap extends TokenVisitor {
+  // okay, the left return result is basically the inverse of the equivalent in MapToHTMLEditDocIdx
+  // (Fantastic names btw). Suggests we oughta extend THAT, but that's a refactor too far for
+  // the delicate hours of 8pm
+  // Instead I'll write this note, the time of whose writing likely could have been enough to do
+  // the refactor. Hm!
+  // oh, and I forgot, the right return result is the accumulation of that node in the DOM
+  // update- the left is just what the MapToHTMLEditDocIdx is. aids the downstream a bit, don't have
+  // to guess, thinking about it as a composition more
+  visitLinebreak(token) {
+    return [ 0, token ]
+  };
+  visitText(token) {
+    const lenDoc = [...token.string].length
+    return [ lenDoc, token ]
+  };
+  visitBlock(token) {
+    // one since we only do one "newline" in EditDocument
+    // two for the newline we rendered into the DOM
+    return [ 1, token ]
+  };
+  visitInline(token) {
+    // nyeh heh heh
+    return [ 0, token ]
+  };
+}
+
+// TODO okay, so Im beginning to think we should move this to Document,
+// or to the Renders once I layer those out
+// One thing to think is instead of glomping over tokens we should be
+// hitting segments, because this is kinda parsing the DOM as a pseudo
+// document in order to count the offset down, when we have. An actual
+// document.
+// I can stick with this for now but I'm in peril of shaming myself for
+// acknowledging a design gap and not addressing it.
+export function offsetToDOM(rootElement, docOffset) {
   const tokens = Token.collapseTokens(treeFoldr((c, p) => [Token.tokenize(c), ...p], [], rootElement))
-  // TODO we need a function to map from *code point offsets* of an internal document
-  // model to the DOM. This can stay for now but we need to focus on the capabilities
-  // of the editor document.
 
-  for (const token of tokens) {
+  const dualAccumulator = new HTMLOffsetMap()
+  // TODO still awkwardly slicing the 'h1' off
+  // TODO Could, in line with other TODOs suggesting a refactor, stuff in the "padding" rules to eliminate
+  const dualAccums = dualAccumulator.visitList(tokens).slice(1)
 
-    if (offset <= token.string.length) {
+  let resultToken = undefined
+  for (const [ docAcc, token ] of dualAccums) {
+    if (docOffset - docAcc > 0) {
+      docOffset -= docAcc
+    } else {
       if (token.type === Token.TOKEN_BLOCK) {
-        offset -= 1
-        continue;
+        docOffset -= 1;  // adjust for the displacement of hitting an Element node, which strive to destroy me
+        // push us to the next node which oughta be the next node.
+        continue 
       }
-      return [token.node, offset]
+      // if (token.type === Token.TOKEN_INLINE) continue // big pranks. We don't need to account for inlines because they get collapsed- UNLESS in the future that's not the case! think of **hi** in markdown for example.
+      // for here, for now, we won't, only because these offset functions are per-render type and will be refactored once we have renders anyway.
+      // and if computing offsets can use the same Visitor going both ways, then we can probably genericize it. Need a collapser pattern too.
+
+      resultToken = token
+      break;
     }
-    offset -= token.string.length
   }
-  return [undefined, undefined]
+  let nodeOffset = 0
+  while (docOffset > 0) {
+    if (resultToken.text.codePointAt(nodeOffset) > 0xFFFF) nodeOffset++
+    nodeOffset++;
+    docOffset--;
+  }
+  return [ resultToken.node, nodeOffset ]
 }
 
 /**
