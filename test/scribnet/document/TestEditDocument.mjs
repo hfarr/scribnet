@@ -2,7 +2,7 @@
 import assert from 'assert';
 const PATH = "/home/henry/dev/scribnet/views"
 
-const { expose } = await import(`${PATH}/js/scribnet/document/Document.mjs`)
+const { expose } = await import(`${PATH}/js/scribnet/document/EditDocument.mjs`)
 
 // describe('hooks', function () {
 //   before(function () {

@@ -183,9 +183,14 @@ function loadHTML(element) {
  */
 function loadDocument(rootElement) {
 
-  // ._.     .u.
+  // TODO this shouldn't break? I think it makes sense to keep the paragraph newline
+  // char but we need to correct the selection capability. Or, doc.length is reporting,
+  // maybe, the length of the "cursor" slots (1476 slots indexed 0 - 1475). Makes sense
+  // to me.
+  // const allButLast = fn => (item, idx, arr) => idx === arr.length - 1 ? item : fn(item)
   const childSegments = [...rootElement.children]
     .map(loadHTML)
+    // .map(allButLast(pad))
     .map(pad)
     .flat()
   return EditDocument.fromSegments(childSegments)
@@ -215,7 +220,7 @@ export const domFunctions = { loadDocument, loadHTML, renderHTML, charOffset }
 /**
  * Expensive reads, cheap(?) writes
  */
-export default class EditDocument {
+class _EditDocument {
 
   constructor() {
     this.root = null;
@@ -306,6 +311,42 @@ export default class EditDocument {
   }
 
 }
+
+// mix in listener
+// Im. Not the most fond. This has a bit of a code smell. In a sense I don't want the listening capability to interfere but. Confusing.
+// I think I can do better. have a "ListenerMixinMeta". Instancing ListenerMixinMeta with a method name creates a ListenerMixin which
+// when extended adds listener attachment capabilities to the method. Can supply > 1 method name too.
+// so the below declaration would become
+// let EditDocumentMixListener = class extends ListenerMixinMeta('select')
+// Thoughts for the future at any rate.
+let EditDocumentMixListener = class extends _EditDocument {
+  constructor() {
+    super()
+    this._listenersSelect = []
+  }
+  select(anchorIndex, focusIndex) {
+    super.select(anchorIndex, focusIndex)
+    this.notifySelectListeners()
+  }
+  notifySelectListeners() {
+    this._listenersSelect.forEach(listener => listener(this))
+  }
+  addSelectListener(callback) {
+    this._listenersSelect.push(callback)
+  }
+  removeSelectListener(callback) {
+    if (this._listenersSelect.includes(callback)) {
+      this._listenersSelect.splice(this._listenersSelect.indexOf(callback))
+      return callback
+    }
+    return undefined
+  }
+}
+
+const EditDocument = EditDocumentMixListener
+export default EditDocument
+
+// export default EditDocument;
 
 // ---------------------------
 // Exports for testing

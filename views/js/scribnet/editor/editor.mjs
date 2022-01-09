@@ -5,8 +5,8 @@ import { renderTextFold, foldrDOM } from '../document/DOM.mjs';
 import { formatDocument, offsetToDOM } from '../document/DOM.mjs';
 import { treeFoldr, foldElements } from '../document/DOM.mjs';
 
-import EditDocument from '../document/Document.mjs'
-import { domFunctions } from '../document/Document.mjs'
+import EditDocument from '../document/EditDocument.mjs'
+import { domFunctions } from '../document/EditDocument.mjs'
 
 class DocHistory {
 
