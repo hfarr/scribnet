@@ -120,12 +120,25 @@ function label(fragments, ...values) {
   return result
 }
 
-const p1 = document.createElement('p')
-const p2 = document.createElement('p')
-const p3 = document.createElement('p')
+// TODO I'd like all the p's in a collapsible, or maybe arrange them in collapsibles.
+// like p1, p2 could be side by side in a flex arrangement and the flex container could
+// be collapsible. Right now my layout is not too composable, since I've shifted my
+// attention over to the editor capabilities
+const p1 = document.createElement('p')  // Label for DOM state
+const p2 = document.createElement('p')  // Label for EditDoc state
+const p3 = document.createElement('p')  // EditRenderer
 const p4 = document.createElement('p')
 toolmark.append(p1, p2, p3, p4)
 p3.style = 'white-space: pre-wrap;'
+
+function updateEditDocLabel(editDoc) {
+  const docCursor = editDoc.cursorOffset
+  let docSelection = editDoc.at()
+  const sel = editDoc.selection()
+  if (sel !== '') docSelection = sel
+  // p2.innerHTML = label`Doc Offset ${docCursor} Doc Selection ${docSelection} Length ${[...docSelection].length}`
+  p2.innerHTML = label`Doc Offset ${docCursor} Length ${[...docSelection].length}`
+}
 
 let editDocDisplay 
 import('/js/scribnet/document/EditRenderer.mjs').then(m=>{
@@ -145,24 +158,13 @@ window.addEventListener('load', async (event) => {
   editor = hf.editor
   editDocDisplay.render(editor.currentDocument)
   editDocDisplay.setEditDoc(editor.currentDocument)
+
+  editor.currentDocument.addSelectListener(updateEditDocLabel)
+
   hf.editor.addListener('selectionchange', (editor) => {
     const cursor = editor.cursor
     const selection = editor.selectedText.length > 0 ? editor.selectedText : editor.characterAtCursor
-    // TODO Im hiding these but I'd like them. Not hidden. a collapsible yknow.
     // p1.innerHTML = label`DOM Offset ${cursor} DOM Selection ${selection} Length ${selection.length}`
-
-    const docCursor = editor.currentDocument.cursorOffset
-    let docSelection = editor.currentDocument.at()
-    const sel = editor.currentDocument.selection()
-    if (sel !== '') docSelection = sel
-    // p2.innerHTML = label`Doc Offset ${docCursor} Doc Selection ${docSelection} Length ${[...docSelection].length}`
-    // *every* time the selection changes? sure why not
-    // ideally, "projection" components would handle anything that renders the state of the doc.
-    // one for HTML, markdown, the "proposed edits" style.
-    // p3.innerHTML = escapskies(editor.currentDocument.toString())
-    // p4.innerHTML = editor.currentDocument.toString()
-    p2.innerHTML = label`Doc Offset ${docCursor} Length ${[...docSelection].length}`
-    // editDocDisplay.render(editor.currentDocument)
   })
 })
 
