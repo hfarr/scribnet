@@ -4,24 +4,8 @@ import { treeTraverse, traversePruneTokens, treeFoldr } from './DOM.mjs'
 import { TokenVisitor } from './Token.mjs'
 import { Segment, ListSegment } from './Segment.mjs'
 
-// atoms and ranges. an atom could be a string or element
 
-
-/**
- * rendering might be more updating just a portion
- * Most edit operations will be to apply a styling
- * to some segment of text, type characters. Less
- * likely is to cover broad ranges. We can probably
- * make the common case quick or during a render only
- * udpate affected segments
- * 
- * segment contains both or neither, unaffected
- * segment contains one or other, affected
- */
-
-// =============================================
-
-const fnConst = v => _ => v
+// ========= HTML View/Controller ==========================
 
 // this fella maps a selected character in the editor to an edit document
 // assuming the editor is showing an HTML view
@@ -46,6 +30,15 @@ const mixOriginal= (tokenVisitor) => (class extends tokenVisitor {
 
 const htmlMapper = new MapToHTMLEditDocIdx()
 
+/**
+ * Given a DOM node compute the cursor position as-rendered to the
+ * internal cursor position
+ * 
+ * @param rootElement Element that holds the HTML rendering of an EditDocument
+ * @param node Selected node
+ * @param nodeOffset Cursor offset into the node
+ * @returns Offset of the character into the text of the represented EditDocument
+ */
 function charOffset(rootElement, node, nodeOffset) {
 
   const tokens = treeTraverse(traversePruneTokens(node), rootElement)
@@ -94,12 +87,12 @@ function renderHTML(doc) {
 
 const wrapText = string => ({
   value: string,
-  apply: tag => wrapSegment(new Segment([tag], ...string))
+  apply: tag => wrapSegment(Segment.taggedSegment([tag], string))
 })
 // 'const' function, basically, the function that maps all input to one value
 const wrapSegment = (seg) => ({
   value: seg,
-  apply: tag => wrapSegment(seg.applyTag([tag, ...seg.tags]))
+  apply: tag => wrapSegment(seg.applyTags([tag]))
 })
 const wrapNull = {
   value: null,
@@ -125,6 +118,9 @@ const wrapNull = {
 // you'll get "STRONG" "STRONG EM" though, in this case, that *is* kinda what we want. hm. Need to
 // think about the linearity of this and how it kinda reflects the tree structure. because beneath
 // it all it's still a tree, right? gotta ponder.
+// haha, I think it's kinda working out like that. Except 'apply' puts it into an intermediate state,
+// we don't project down to "exactly which segments have what" until the end, at which point we need
+// to transform the segments
 const apply = (tag) => wrapped => wrapped.apply(tag)
 const unwrap = (wrapped) => wrapped.value
 
@@ -150,16 +146,6 @@ const compose = (f => {
   return { of: g => x=> f(g(x)) }
 })
 
-// const decompose = :(
-
-// think of compose as a decorator applied to a function, converting it to be used in a composition form
-// pad: pad the last segment in a list of segments with one space. compose: convert the function to composition form,
-// so it takes as input the output from another function (we might imagine that before executing f, we apply g to its
-// parameters)
-const padd = compose(segments=>{
-  const seg = segments.at(-1).push(' ')
-  return seg
-})
 // I like 'overdoing' it. Why the hell not
 const pad = segments => {
   // const seg = segments.at(-1).push(' ')
@@ -172,7 +158,8 @@ const pad = segments => {
 
 
 /**
- * Parse a piece of the DOM into a list of Segments
+ * Parse a piece of the DOM into a list of Segment
+ * (not a ListSegment!)
  * 
  * @param element DOM Element
  */
@@ -233,10 +220,9 @@ export default class EditDocument {
   constructor() {
     this.root = null;
     this.characters = []
-    this.segments = [new Segment('p', '')]
+    this.text = ListSegment.from(Segment.taggedSegment(['p'], ''))
 
     // Segment index, index in segment
-    this.writeHead = [0, 0]
     this.focus = 0
     this.anchor = 0
 
@@ -250,23 +236,25 @@ export default class EditDocument {
   }
   static fromSegments(segments) {
     const doc = EditDocument.newDocument()
-    doc.segments = segments
+    doc.text = ListSegment.from(...segments)
     return doc
   }
 
-  get length() {
-    return this.segments.reduce((accum, seg) => accum + seg.length, 0)
-  }
-  get cursorOffset() {
-    return this.segments.slice(0,this.writeHead[0]).reduce((accum, seg)=>accum+seg.length, 0) + this.writeHead[1]
+  get segments() {
+    return this.text.segments
   }
 
-  // hmm. I'd like to get these and cursorOffset consistent.
+  get length() {
+    return this.text.length
+  }
+
+  get cursorOffset() {
+    return this.focusOffset
+  }
   get focusOffset() {
     return this.focus
   }
   get anchorOffset() {
-    // let [ anchorSegment, segOffset ] = this.computeSegmentCoordinates(this.anchor)
     return this.anchor
   }
   get startOffset() {
@@ -287,74 +275,24 @@ export default class EditDocument {
 
   // ----- Accessors ------
 
-  // Maybe 'at()' always return what's currently under the cursor (or the 'focus' end of it)
-  // then to get the same 'at' you'd select(charIndex), then at()
-  // Maybe all these functions only support a character index to obscure the internals. In fact... yeah.
-  // ha. Move over, at()
-  // or not, we can let at still index. Maybe default it grabs what's under cursor.
-
-  computeSegmentCoordinates(characterIndex) {
-    let segmentIndex = 0, offset = characterIndex
-    while (offset >= this.segments[segmentIndex].length) {
-      offset -= this.segments[segmentIndex].length
-      segmentIndex++;
-    }
-    return [segmentIndex, offset]
-  }
-
-  selectSegCoords(segmentIndex, offset) {
-    // Might not expose this particular piece of info. At least, only to
-    // package-internal or. It should be used by render/loaders.
-    // At present I'm overthinking the design.
-    this.writeHead = [segmentIndex, offset]
-  }
-
   select(focusIndex, anchorIndex = undefined) {
     if (anchorIndex === undefined) anchorIndex = focusIndex
-    this.writeHead = this.computeSegmentCoordinates(focusIndex)
     this.focus = focusIndex
     this.anchor = anchorIndex
   }
 
   at(characterIndex = undefined) {
-    let [segmentIndex, offset] = this.writeHead
-    if (characterIndex) {
-      ([segmentIndex, offset] = this.computeSegmentCoordinates(characterIndex))
-    }
-    return this.segments[segmentIndex].at(offset)
+    if (characterIndex === undefined) characterIndex = this.focusOffset
+    return this.text.at(characterIndex)
   }
-  selection(focusIndex = this.focus, anchorIndex = this.anchor) {
-    const [ anchorSegment, anchorOffset ] = this.computeSegmentCoordinates(anchorIndex)
-    const [ focusSegment, focusOffset ] = this.computeSegmentCoordinates(focusIndex)
+  selection() {
 
-    // let startSegment = focusSegment, startOffset = focusOffset
-    // let endSegment = anchorSegment, endOffset = anchorOffset
-    let [startSegment, startOffset, endSegment, endOffset] = [focusSegment, focusOffset, anchorSegment, anchorOffset]
-    if (anchorSegment < focusSegment || (anchorSegment === focusSegment && anchorOffset < focusOffset)) {
-      // 'swap' semantics? meh this is fine.
-      ([startSegment, startOffset, endSegment, endOffset] = [anchorSegment, anchorOffset, focusSegment, focusOffset])
-    }
-
-    if (startSegment === endSegment) {
-      return this.segments[startSegment].characters.slice(startOffset,endOffset).join('')
-    }
-
-    let result = this.segments[startSegment].characters.slice(startOffset).join('')
-    for (let i = startSegment + 1; i < endSegment; i++) {
-      result += this.segments[i].characters.join('')
-    }
-    result += this.segments[endSegment].characters.slice(0,endOffset).join('')
-
-    return result;
-    // might be broken depending on whether end precedes start (for example, if end is before start, then we sliced incorrectly)
-    // hmm. Maybe should. Get start/end.
+    return this.text.characters.slice(this.startOffset, this.endOffset).join('')
   }
 
+  // ----------------------
 
   write(string) {
-    const [segment, cursorIndex] = this.writeHead
-    let charsWritten = this.segments[segment].write(cursorIndex, ...string)
-    this.writeHead[1] += charsWritten
   }
 
   accept(visitor, ...args) {
@@ -364,12 +302,10 @@ export default class EditDocument {
   toString() {
     // note that the "\n" (which again, we just use ' ', but. Maybe we should use '\n') of the last paragraph is always present
     // but not always addressable (can't click there), it's not a rendered character
-    return this.segments.map(s=>s.characters).flat().join('')
-    // see I want so badly to write segments.map(.characters), treating '.' as a half-applied curried infix operator
+    return this.text.characters.join('')
   }
 
 }
-
 
 // ---------------------------
 // Exports for testing
