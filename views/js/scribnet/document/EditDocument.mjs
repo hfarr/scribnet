@@ -249,6 +249,13 @@ class _EditDocument {
     return this.text.segments
   }
 
+  /**
+   * Duly note that length reports the length of the array of cursor positions
+   * which is one more than the total (rendered) characters.
+   * 
+   * E.g if the document is "abc", these are the cursor positions, of which
+   * there are four: "|abc", "a|bc", "ab|c", "abc|"
+   */
   get length() {
     return this.text.length
   }
