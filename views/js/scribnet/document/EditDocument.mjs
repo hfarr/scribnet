@@ -281,6 +281,12 @@ class _EditDocument {
   // ----- Accessors ------
 
   select(anchorIndex=0, focusIndex=undefined) {
+    // Honestly after reading Crafting Interpreters I can't get +1 in a bounds check out of my head (as opposed to >= ). 
+    // Like I read it differently- "If the next index after anchor would be out of bounds," using + is like left shift
+    // with +1 we can think of it as "nth"s, like index 0 is 1st, index 10 is 11th, index length - 1 is "length"th
+    if (anchorIndex < 0 || anchorIndex + 1 > this.length) anchorIndex = 0
+    if (focusIndex < 0 || focusIndex + 1 > this.length) focusIndex = this.length - 1
+
     if (focusIndex === undefined) focusIndex = anchorIndex
     this.anchor = anchorIndex
     this.focus = focusIndex
