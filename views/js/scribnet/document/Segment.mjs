@@ -1,6 +1,18 @@
 'use strict'
 
 /**
+ * Something still worth considering is updating only *part* of the DOM
+ * when one piece of the EditDocument changes. But I don't think that 
+ * belongs in Segment anymore. It would have to be at the Document
+ * level to map affected nodes to segments, apply to them only, then
+ * project back out into new nodes.
+ * For the time being we won't worry about that and will continue to
+ * project the whole Document everytime an update calls for that (tag
+ * applying, but not text insertion for example since the 
+ * ContentEditable handles the rendering of the mutations already).
+ */
+
+/**
  * Starting with a flat representation for segments.
  * Might wish to layer a tree on top of that. But I'm thinking
  * linearly about these documents so I suspect they should be
