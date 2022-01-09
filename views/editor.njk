@@ -149,7 +149,7 @@ window.addEventListener('load', async (event) => {
     let docSelection = editor.currentDocument.at()
     const sel = editor.currentDocument.selection()
     if (sel !== '') docSelection = sel
-    p2.innerHTML = label`Doc Offset ${docCursor} Doc Selection ${docSelection}`
+    p2.innerHTML = label`Doc Offset ${docCursor} Doc Selection ${docSelection} Length ${[...docSelection].length}`
     // *every* time the selection changes? sure why not
     // ideally, "projection" components would handle anything that renders the state of the doc.
     // one for HTML, markdown, the "proposed edits" style.
