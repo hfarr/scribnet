@@ -74,7 +74,6 @@ class HTMLRenderer extends Renderer {
     if (editDoc === undefined) return ""
     let result = ""
     let currentBlock = undefined
-    // let inlineTags
     let inlineContext = ""
     const blocks = ["h1", "h2", "h3", "p"].map(s=>s.toUpperCase())
 
@@ -83,13 +82,12 @@ class HTMLRenderer extends Renderer {
     const isBlock = segment => blocks.some(blockTag => segment.tags.includes(blockTag))
     const newBlock = () => currentBlock === undefined
 
-    // const closeblock = ()=> `<${currentBlock}>${inlineContext.replaceAll('\n','<br>')}</${currentBlock}>`
     // I guess we won't use replaceAll since I would need the compiler to target es2021? Would prefer to keep it compatible-ish
     // const renderBlock = () => `<${currentBlock.toLowerCase()}>${inlineContext.replace(/\n/g, '<br>')}</${currentBlock.toLowerCase()}>`
 
     const cutLastNewLine = str => str.replace(/\n$/,'')
     const wrapOne = tag => (_, value) => `<${tag.toLowerCase()}>${value}</${tag.toLowerCase()}>`
-    const renderBlock = () => wrapOne(currentBlock)`${inlineContext.replace(/\n/g, '<br>')}`  // cut out last \n
+    const renderBlock = () => wrapOne(currentBlock)`${inlineContext.replace(/\n/g, '<br>')}`
     const wrap = (tags, content) => tags.length === 0 ? content : wrapOne(tags[0])`${wrap(tags.slice(1), content)}`
 
     const closeBlock = () => {
