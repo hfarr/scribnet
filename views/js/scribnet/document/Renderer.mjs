@@ -98,3 +98,6 @@ class EditRenderer extends Renderer {
 }
 
 export { EditRenderer }
+
+// for testing
+export { Renderer, escapeString, escapskies }
