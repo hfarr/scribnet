@@ -18,7 +18,7 @@ function escapeString(htmlRaw) {
 }
 
 // big custom component potential y'know
-export default class EditRenderer {
+class EditRenderer {
   constructor(wrapperElement, editDocument) {
     this.elem = wrapperElement
     this.elem.style = "white-space: pre-wrap;"
@@ -68,3 +68,5 @@ export default class EditRenderer {
 
   }
 }
+
+export { EditRenderer }
