@@ -17,7 +17,19 @@ describe('Renderer', function() {
 })
 
 describe('EditRenderer', function() {
-
+  describe('toHTML', function() {
+    const editRenderer = new EditRenderer(docOrigin)
+    docOrigin.select(100)
+    it('creates the right HTML', function() {
+      assert.strictEqual("Title! what in the heck are all these demo pages for?\
+This document exists to easily construct objec<span style=\"border-left: 0.1rem solid rgb(177, 0, 196);\">t</span>s for unit testing!\
+Featuring a couple of cool paragraphs, inline elements, nested line elements, and so much more!\
+Well, not \"so much\" more. Just enough to tell me if there are problems! Like maybe some utf-16 😀 pretty glad vscode supports unicode code points...\
+We've got headers too\
+I think this is alright for a standard document experience. Don't you?\
+", editRenderer.toHTML())
+    })
+  }) 
 })
 
 describe('HTMLRenderer', function() {
