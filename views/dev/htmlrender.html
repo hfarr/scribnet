@@ -16,6 +16,11 @@ title: Testing
 
 <stack-l id="toolmark">
 </stack-l>
+<div style="display: flex;">
+  <button id="select">Select</button>|
+  <button id="bold">Bold</button>|
+  <button id="italic">Italic</button>
+</div>
 
 <!-- <script type="module" src="js/modules/document/DOM.mjs"></script> -->
 <script>
@@ -39,6 +44,7 @@ title: Testing
   const p2 = document.createElement('p')  // Label for EditDoc state
   const p3 = document.createElement('p')  // EditRenderer
   const d4 = document.createElement('div')
+  const d5 = document.createElement('div')
   toolmark.append(p1, p2, p3, d4)
   p3.style = 'white-space: pre-wrap;'
 
@@ -85,6 +91,11 @@ title: Testing
       const selection = editor.selectedText.length > 0 ? editor.selectedText : editor.characterAtCursor
       // p1.innerHTML = label`DOM Offset ${cursor} DOM Selection ${selection} Length ${selection.length}`
     })
+
+    document.querySelector("#select").onclick = () => { editor.select(69, 96) }
+    document.querySelector("#bold").onclick = () => { editor.toggleBold() }
+    document.querySelector("#italic").onclick = () => { editor.toggleItalic() }
+
   })
 
 
