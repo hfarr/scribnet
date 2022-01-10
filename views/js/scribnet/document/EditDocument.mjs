@@ -224,7 +224,6 @@ class _EditDocument {
 
   constructor() {
     this.parent = null;
-    this.characters = []
     this.text = ListSegment.from(Segment.taggedSegment(['p'], ''))
 
     // Segment index, index in segment
