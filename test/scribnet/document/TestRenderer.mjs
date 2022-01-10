@@ -40,7 +40,7 @@ describe('Renderer', function () {
 
   describe('HTMLRenderer', function () {
     it('creates the right HTML', function() {
-      const expected = "&lt;h1&gt;Title! what in the &lt;em&gt;heck&lt;/em&gt; are all these demo pages for?&lt;/h1&gt;&lt;p&gt;This document exists to easily construct objects for unit testing!&lt;/p&gt;&lt;p&gt;Featuring a couple of cool paragraphs, &lt;strong&gt;inline elements,&lt;/strong&gt; &lt;strong&gt;&lt;em&gt;nested&lt;/em&gt; line elements,&lt;/strong&gt; and so much more!&lt;/p&gt;&lt;p&gt;Well, not &quot;so much&quot; more. Just enough to tell me if there are problems! Like maybe some utf-16 😀 pretty glad vscode supports unicode code points...&lt;/p&gt;&lt;h2&gt;We&#39;ve got headers too&lt;/h2&gt;&lt;p&gt;I think this is alright for a &lt;em&gt;standard&lt;/em&gt; document experience. Don&#39;t you?&lt;/p&gt;"
+      const expected = "<h1>Title! what in the <em>heck</em> are all these demo pages for?</h1><p>This document exists to easily construct objects for unit testing!</p><p>Featuring a couple of cool paragraphs, <strong>inline elements,</strong> <strong><em>nested</em> line elements,</strong> and so much more!</p><p>Well, not &quot;so much&quot; more. Just enough to tell me if there are problems! Like maybe some utf-16 😀 pretty glad vscode supports unicode code points...</p><h2>We&#39;ve got headers too</h2><p>I think this is alright for a <em>standard</em> document experience. Don&#39;t you?</p>"
     }) 
 
   })
