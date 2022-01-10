@@ -54,7 +54,8 @@ title: Testing
   let editDocDisplay
   import('/js/scribnet/document/Renderer.mjs').then(m => {
     const { EditRenderer } = m
-    editDocDisplay = new EditRenderer(p3)
+    editDocDisplay = new EditRenderer()
+    editDocDisplay.setWrapper(p3)
   })
 
   document.addEventListener('DOMContentLoaded', (dce) => {
@@ -67,7 +68,6 @@ title: Testing
 
   window.addEventListener('load', async (event) => {
     editor = hf.editor
-    editDocDisplay.render(editor.currentDocument)
     editDocDisplay.setEditDoc(editor.currentDocument)
 
     editor.currentDocument.addSelectListener(updateEditDocLabel)
