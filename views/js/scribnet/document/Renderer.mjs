@@ -17,20 +17,11 @@ function escapeString(htmlRaw) {
   return [...htmlRaw].map(escapskies).join('')
 }
 
-// big custom component potential y'know
-class EditRenderer {
+class Renderer {
   constructor(wrapperElement, editDocument) {
     this.elem = wrapperElement
-    this.elem.style = "white-space: pre-wrap;"
-
-    this.indicator = document.createElement('span')
-    this.indicator.style = `border-left: 0.1rem solid #b100c4;`
-
-    this.marker = document.createElement('mark')
-    this.marker.style = `background-color: #6667ab` // very peri, color of the year
 
     this.setEditDoc(editDocument)
-
   }
 
   setEditDoc(editDocument) {
@@ -43,10 +34,29 @@ class EditRenderer {
     this.editDocument.removeSelectListener(this.render)
     this.editDocument = undefined
   }
+  canRender() {
+    return this.editDocument !== undefined
+  }
+}
+
+// big custom component potential y'know
+class EditRenderer extends Renderer {
+  constructor(wrapperElement, editDocument) {
+    super(wrapperElement, editDocument)
+    
+    this.elem.style = "white-space: pre-wrap;"
+
+    this.indicator = document.createElement('span')
+    this.indicator.style = `border-left: 0.1rem solid #b100c4;`
+
+    this.marker = document.createElement('mark')
+    this.marker.style = `background-color: #6667ab` // very peri, color of the year
+
+  }
 
   // TODO should escape html too. 
   render() {
-    if (this.editDocument === undefined) return
+    if (!this.canRender()) return
 
     const docString = [...this.editDocument.toString()]
     const prefix = docString.slice(0, this.editDocument.startOffset).map(escapskies)

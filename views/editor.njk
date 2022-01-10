@@ -97,7 +97,7 @@ import("/js/scribnet/document/DOM.mjs").then(m => {
     let text = await processText()
     console.debug("!", text === hf.innerText, "!")
 
-    import('/js/scribnet/document/Document.mjs').then(m=>{
+    import('/js/scribnet/document/EditDocument.mjs').then(m=>{
       // console.log(m)
       const { default: EditDocument, domFunctions:{ loadDocument } } = m
       // const hfDoc = loadHTML(hf)
