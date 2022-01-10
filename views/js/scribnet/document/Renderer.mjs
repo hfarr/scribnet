@@ -37,6 +37,13 @@ class Renderer {
   canRender() {
     return this.editDocument !== undefined
   }
+  toHTML() {
+    return "<mark>Renderer superclass—use a subclass!</mark>"
+  }
+  render() {
+    if (!this.canRender()) return
+    this.elem.innerHTML = this.toHTML()
+  }
 }
 
 // big custom component potential y'know
@@ -55,8 +62,8 @@ class EditRenderer extends Renderer {
   }
 
   // TODO should escape html too. 
-  render() {
-    if (!this.canRender()) return
+  toHTML() {
+    if (!this.canRender()) return ""
 
     const docString = [...this.editDocument.toString()]
     const prefix = docString.slice(0, this.editDocument.startOffset).map(escapskies)
@@ -74,8 +81,8 @@ class EditRenderer extends Renderer {
       const postfix = docString.slice(this.editDocument.endOffset).map(escapskies)
       result = prefix.join('') + this.marker.outerHTML + postfix.join('')
     }
-    this.elem.innerHTML = result
 
+    return result
   }
 }
 
