@@ -57,6 +57,12 @@ class Renderer {
   }
 }
 
+class HTMLRenderer extends Renderer {
+  get wrapperStyling() {  // hmmmmmmmmmmmmmmmmmmmm
+    return "white-space: pre-wrap;" // yeah. I think. In a shadow-dom world we'd just Not and leave it to the component, but I havent component'd renders yet.
+  }
+}
+
 // big custom component potential y'know
 class EditRenderer extends Renderer {
   constructor(editDocument) {
@@ -97,7 +103,7 @@ class EditRenderer extends Renderer {
   }
 }
 
-export { EditRenderer }
+export { EditRenderer, HTMLRenderer }
 
 // for testing
 export { Renderer, escapeString, escapskies }
