@@ -38,8 +38,8 @@ title: Testing
   const p1 = document.createElement('p')  // Label for DOM state
   const p2 = document.createElement('p')  // Label for EditDoc state
   const p3 = document.createElement('p')  // EditRenderer
-  const p4 = document.createElement('p')
-  toolmark.append(p1, p2, p3, p4)
+  const d4 = document.createElement('div')
+  toolmark.append(p1, p2, p3, d4)
   p3.style = 'white-space: pre-wrap;'
 
   function updateEditDocLabel(editDoc) {
@@ -51,11 +51,13 @@ title: Testing
     p2.innerHTML = label`Doc Offset ${docCursor} Length ${[...docSelection].length}`
   }
 
-  let editDocDisplay
+  let editDocRender, htmlRender
   import('/js/scribnet/document/Renderer.mjs').then(m => {
-    const { HTMLRenderer } = m
-    editDocDisplay = new HTMLRenderer()
-    editDocDisplay.setWrapper(p3)
+    const { EditRenderer, HTMLRenderer } = m
+    editDocRender = new EditRenderer()
+    editDocRender.setWrapper(p3)
+    htmlRender = new HTMLRenderer()
+    htmlRender.setWrapper(d4)
   })
 
   document.addEventListener('DOMContentLoaded', (dce) => {
@@ -68,13 +70,15 @@ title: Testing
 
   window.addEventListener('load', async (event) => {
     editor = hf.editor
-    editDocDisplay.setEditDoc(editor.currentDocument)
+    editDocRender.setEditDoc(editor.currentDocument)
+    htmlRender.setEditDoc(editor.currentDocument)
 
     editor.currentDocument.addSelectListener(updateEditDocLabel)
 
     // initial renders
     updateEditDocLabel(editor.currentDocument)
-    editDocDisplay.render()
+    editDocRender.render()
+    htmlRender.render()
 
     hf.editor.addListener('selectionchange', (editor) => {
       const cursor = editor.cursor
