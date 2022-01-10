@@ -40,7 +40,9 @@ describe('Renderer', function () {
 
   describe('HTMLRenderer', function () {
     it('creates the right HTML', function() {
+      const htmlRenderer = new HTMLRenderer(docOrigin)
       const expected = "<h1>Title! what in the <em>heck</em> are all these demo pages for?</h1><p>This document exists to easily construct objects for unit testing!</p><p>Featuring a couple of cool paragraphs, <strong>inline elements,</strong> <strong><em>nested</em> line elements,</strong> and so much more!</p><p>Well, not &quot;so much&quot; more. Just enough to tell me if there are problems! Like maybe some utf-16 😀 pretty glad vscode supports unicode code points...</p><h2>We&#39;ve got headers too</h2><p>I think this is alright for a <em>standard</em> document experience. Don&#39;t you?</p>"
+      assert.strictEqual(htmlRenderer.toHTML(), expected)
     }) 
 
   })
