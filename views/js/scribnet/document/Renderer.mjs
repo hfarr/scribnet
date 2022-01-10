@@ -97,12 +97,11 @@ class HTMLRenderer extends Renderer {
     for (const segment of this.editDocument.text.segments) {
       if (newBlock()) {
         currentBlock = segment.tags.find(t => blocks.includes(t))
-      } else {
-        const inlineTags = segment.tags.filter(t => !blocks.includes(t))
-        inlineContext += wrap(inlineTags, segment.characters.join(''))
-
-        if (segment.characters.at(-1) === "\n") closeBlock()
       }
+      const inlineTags = segment.tags.filter(t => !blocks.includes(t))
+      inlineContext += wrap(inlineTags, segment.characters.join(''))
+
+      if (segment.characters.at(-1) === "\n") closeBlock()
     }
     return result
   }
