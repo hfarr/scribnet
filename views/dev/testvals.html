@@ -4,106 +4,84 @@ title: Testing
 ---
 
 <editor-hf style="white-space: pre-wrap;">
-<h1>Title title title <em>And now, a word from our sponsor</em></h1>
-<p>&nbsp;</p>
-<p>&nbsp;</p>
-<p>Uselessly spaced out maybe even &nbsp; like this</p>
-<p>Hi. Here is some <strong>Bold text! </strong><strong><em>Bold and italicized!</em> bold </strong> <strong>back to
-    bold...</strong></p>
-<h2>section</h2>
-<p>blessed are these &lt;p&gt;</p>
-<p>Hey! edge case <span> more like—edge SPACE</span></p>
-<p><span>want to see even edgier space? </span><span> yeah you do you-</span></p>
-<p><span>WATCH OUT CURVE</span><span> ball</span></p>
-<p><span>egads.</span> <span>ball</span></p>
-<p>Seems we've &nbsp;&nbsp; &nbsp; no choice</p>
-<h2>second section</h2>
-<p>A serious paragraph</p>
-<p>A trial of inline <span>&nbsp;</span></p>
-<p>Space after</p>
-<p>A long bit of text. See, it's rather unfortunate that we don't write like this often. The DOM will take this chunk of
-  text. I think it should keep it within the same paragraph. Sometimes it will rearrange HTML for you. It is rather
-  forgiving of the input it accepts, such as mixing tags that would normally be separated into different elements.</p>
-<p>I could (and probably should) nest my header tags. Accessibility wise I think it reads the same as the \"flattened\"
-  kind where all these elements are next to each other. My document model might produce html that's nested which will be
-  useful for querying the headers when I eventually make my list element.</p>
-<p>Now for sauce <br></p>
-<h2>Conclusion</h2>
-<p>Hello, 🌐!</p>
-<p>Here our sample text adventure comes to an end. I haven't decided whether I want to permit the natural edit events
-  from <span>contentEditable</span> to take their natural course or if I'd prefer to interrupt each event and re-render
-  each time. It is easy to let the browser do the work but I'll have to take interrupts regardless. I want to identify
-  what I'd need to supplement with code.</p>
-  </editor-hf>
+  <h1>Title! what in the <em>heck</em> are all these demo pages for?</h1>
+  <p>This document exists to easily construct objects for unit testing!</p>
+  <p>Featuring a couple of cool paragraphs, <strong>inline elements,</strong> <strong><em>nested</em> line
+      elements,</strong> and so much more!</p>
+  <p>Well, not "so much" more. Just enough to tell me if there are problems! Like maybe some utf-16 😀 pretty glad
+    vscode supports unicode code points...</p>
+  <h2>We've got headers too</h2>
+  <p>I think this is alright for a <em>standard</em> document experience. Don't you?</p>
+</editor-hf>
 
 <stack-l id="toolmark">
 </stack-l>
 
 <!-- <script type="module" src="js/modules/document/DOM.mjs"></script> -->
 <script>
-const hf = document.querySelector('editor-hf')
-let editor
-const toolmark = document.querySelector("#toolmark")
+  const hf = document.querySelector('editor-hf')
+  let editor
+  const toolmark = document.querySelector("#toolmark")
 
-function label(fragments, ...values) {
-  let result = ""
-  for (let i = 0; i < values.length; i++) {
-    result += `<strong>${fragments[i].trim()}:</strong>&nbsp;${values[i]}<br>`
+  function label(fragments, ...values) {
+    let result = ""
+    for (let i = 0; i < values.length; i++) {
+      result += `<strong>${fragments[i].trim()}:</strong>&nbsp;${values[i]}<br>`
+    }
+    return result
   }
-  return result
-}
 
-// TODO I'd like all the p's in a collapsible, or maybe arrange them in collapsibles.
-// like p1, p2 could be side by side in a flex arrangement and the flex container could
-// be collapsible. Right now my layout is not too composable, since I've shifted my
-// attention over to the editor capabilities
-const p1 = document.createElement('p')  // Label for DOM state
-const p2 = document.createElement('p')  // Label for EditDoc state
-const p3 = document.createElement('p')  // EditRenderer
-const p4 = document.createElement('p')
-toolmark.append(p1, p2, p3, p4)
-p3.style = 'white-space: pre-wrap;'
+  // TODO I'd like all the p's in a collapsible, or maybe arrange them in collapsibles.
+  // like p1, p2 could be side by side in a flex arrangement and the flex container could
+  // be collapsible. Right now my layout is not too composable, since I've shifted my
+  // attention over to the editor capabilities
+  const p1 = document.createElement('p')  // Label for DOM state
+  const p2 = document.createElement('p')  // Label for EditDoc state
+  const p3 = document.createElement('p')  // EditRenderer
+  const p4 = document.createElement('p')
+  toolmark.append(p1, p2, p3, p4)
+  p3.style = 'white-space: pre-wrap;'
 
-function updateEditDocLabel(editDoc) {
-  const docCursor = editDoc.cursorOffset
-  let docSelection = editDoc.at()
-  const sel = editDoc.selection()
-  if (sel !== '') docSelection = sel
-  // p2.innerHTML = label`Doc Offset ${docCursor} Doc Selection ${docSelection} Length ${[...docSelection].length}`
-  p2.innerHTML = label`Doc Offset ${docCursor} Length ${[...docSelection].length}`
-}
+  function updateEditDocLabel(editDoc) {
+    const docCursor = editDoc.cursorOffset
+    let docSelection = editDoc.at()
+    const sel = editDoc.selection()
+    if (sel !== '') docSelection = sel
+    // p2.innerHTML = label`Doc Offset ${docCursor} Doc Selection ${docSelection} Length ${[...docSelection].length}`
+    p2.innerHTML = label`Doc Offset ${docCursor} Length ${[...docSelection].length}`
+  }
 
-let editDocDisplay 
-import('/js/scribnet/document/Renderer.mjs').then(m=>{
-  const { EditRenderer } = m
-  editDocDisplay = new EditRenderer(p3)
-})
-
-document.addEventListener('DOMContentLoaded', (dce) => {
-  console.debug("DOM COntent loaded")
-})
-
-const updateEditRender = (editor) => {
-
-}
-
-window.addEventListener('load', async (event) => {
-  editor = hf.editor
-  editDocDisplay.render(editor.currentDocument)
-  editDocDisplay.setEditDoc(editor.currentDocument)
-
-  editor.currentDocument.addSelectListener(updateEditDocLabel)
-
-  // initial renders
-  updateEditDocLabel(editor.currentDocument)
-  editDocDisplay.render()
-
-  hf.editor.addListener('selectionchange', (editor) => {
-    const cursor = editor.cursor
-    const selection = editor.selectedText.length > 0 ? editor.selectedText : editor.characterAtCursor
-    // p1.innerHTML = label`DOM Offset ${cursor} DOM Selection ${selection} Length ${selection.length}`
+  let editDocDisplay
+  import('/js/scribnet/document/Renderer.mjs').then(m => {
+    const { EditRenderer } = m
+    editDocDisplay = new EditRenderer(p3)
   })
-})
+
+  document.addEventListener('DOMContentLoaded', (dce) => {
+    console.debug("DOM COntent loaded")
+  })
+
+  const updateEditRender = (editor) => {
+
+  }
+
+  window.addEventListener('load', async (event) => {
+    editor = hf.editor
+    editDocDisplay.render(editor.currentDocument)
+    editDocDisplay.setEditDoc(editor.currentDocument)
+
+    editor.currentDocument.addSelectListener(updateEditDocLabel)
+
+    // initial renders
+    updateEditDocLabel(editor.currentDocument)
+    editDocDisplay.render()
+
+    hf.editor.addListener('selectionchange', (editor) => {
+      const cursor = editor.cursor
+      const selection = editor.selectedText.length > 0 ? editor.selectedText : editor.characterAtCursor
+      // p1.innerHTML = label`DOM Offset ${cursor} DOM Selection ${selection} Length ${selection.length}`
+    })
+  })
 
 
 </script>
