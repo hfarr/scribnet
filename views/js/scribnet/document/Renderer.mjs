@@ -18,10 +18,15 @@ function escapeString(htmlRaw) {
 }
 
 class Renderer {
-  constructor(wrapperElement, editDocument) {
-    this.elem = wrapperElement
-
+  // TODO work out who should take responsibility for 'wrapperElement'. Renders is renders but perhaps it belongs.
+  constructor(editDocument) {
+    this.elem = undefined
     this.setEditDoc(editDocument)
+  }
+
+  setWrapper(elem) {
+    this.elem = elem
+    this.elem.style = this.wrapperStyling
   }
 
   setEditDoc(editDocument) {
@@ -34,8 +39,14 @@ class Renderer {
     this.editDocument.removeSelectListener(this.render)
     this.editDocument = undefined
   }
-  canRender() {
+  get wrapperStyling() {
+    return ""
+  }
+  canShowHTML() {
     return this.editDocument !== undefined
+  }
+  canRender() {
+    return this.canShowHTML() && this.elem !== undefined
   }
   toHTML() {
     return "<mark>Renderer superclass—use a subclass!</mark>"
@@ -48,22 +59,25 @@ class Renderer {
 
 // big custom component potential y'know
 class EditRenderer extends Renderer {
-  constructor(wrapperElement, editDocument) {
-    super(wrapperElement, editDocument)
-    
-    this.elem.style = "white-space: pre-wrap;"
+  constructor(editDocument) {
+    super(editDocument)
+  }
 
-    this.indicator = document.createElement('span')
-    this.indicator.style = `border-left: 0.1rem solid #b100c4;`
+  get wrapperStyling() {
+    return "white-space: pre-wrap;" 
+  }
 
-    this.marker = document.createElement('mark')
-    this.marker.style = `background-color: #6667ab` // very peri, color of the year
+  indicator(text) {
+    return `<span style="border-left: 0.1rem solid #b100c4;">${text}</span>`
+  }
 
+  marker(text) {
+    return `<mark style="background-color: #6667ab">${text}</mark>`
   }
 
   // TODO should escape html too. 
   toHTML() {
-    if (!this.canRender()) return ""
+    if (!this.canShowHTML()) return ""
 
     const docString = [...this.editDocument.toString()]
     const prefix = docString.slice(0, this.editDocument.startOffset).map(escapskies)
@@ -71,15 +85,12 @@ class EditRenderer extends Renderer {
     let result = ""
     if (this.editDocument.isCollapsed) {
       const selected = escapeString(this.editDocument.at())
-      this.indicator.innerHTML = selected
       const postfix = docString.slice(this.editDocument.endOffset + 1).map(escapskies)
-      result = prefix.join('') + this.indicator.outerHTML + postfix.join('')
+      result = prefix.join('') + this.indicator(selected) + postfix.join('')
     } else {
-
       const selString = escapeString(this.editDocument.selection())
-      this.marker.innerHTML = selString
       const postfix = docString.slice(this.editDocument.endOffset).map(escapskies)
-      result = prefix.join('') + this.marker.outerHTML + postfix.join('')
+      result = prefix.join('') + this.marker(selString) + postfix.join('')
     }
 
     return result
