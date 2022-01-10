@@ -21,6 +21,7 @@ title: Testing
   <button id="bold">Bold</button>|
   <button id="italic">Italic</button>
 </div>
+<button id="bug">Low key, a bug (the reason we'd collapse inline tags)</button>
 
 <!-- <script type="module" src="js/modules/document/DOM.mjs"></script> -->
 <script>
@@ -95,6 +96,7 @@ title: Testing
     document.querySelector("#select").onclick = () => { editor.select(69, 96) }
     document.querySelector("#bold").onclick = () => { editor.toggleBold() }
     document.querySelector("#italic").onclick = () => { editor.toggleItalic() }
+    document.querySelector("#bug").onclick = () => { editor.select(96, 165), editor.toggleBold() }
 
   })
 
