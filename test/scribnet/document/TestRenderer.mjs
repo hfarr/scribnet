@@ -13,7 +13,9 @@ const docOrigin = EditDocument.fromListSegment(ListSegment.from(...segments))
 
 
 describe('Renderer', function() {
+  describe('escapskies', function() {
 
+  })
 })
 
 describe('EditRenderer', function() {
@@ -21,13 +23,14 @@ describe('EditRenderer', function() {
     const editRenderer = new EditRenderer(docOrigin)
     docOrigin.select(100)
     it('creates the right HTML', function() {
-      assert.strictEqual("Title! what in the heck are all these demo pages for?\
-This document exists to easily construct objec<span style=\"border-left: 0.1rem solid rgb(177, 0, 196);\">t</span>s for unit testing!\
-Featuring a couple of cool paragraphs, inline elements, nested line elements, and so much more!\
-Well, not \"so much\" more. Just enough to tell me if there are problems! Like maybe some utf-16 😀 pretty glad vscode supports unicode code points...\
-We've got headers too\
-I think this is alright for a standard document experience. Don't you?\
-", editRenderer.toHTML())
+      // assert.strictEqual(actual, expected)
+      assert.strictEqual(editRenderer.toHTML(), 
+"Title! what in the heck are all these demo pages for?\n\
+This document exists to easily construct objec<span style=\"border-left: 0.1rem solid #b100c4;\">t</span>s for unit testing!\n\
+Featuring a couple of cool paragraphs, inline elements, nested line elements, and so much more!\n\
+Well, not &quot;so much&quot; more. Just enough to tell me if there are problems! Like maybe some utf-16 😀 pretty glad vscode supports unicode code points...\n\
+We&#39;ve got headers too\n\
+I think this is alright for a standard document experience. Don&#39;t you?\n")
     })
   }) 
 })
