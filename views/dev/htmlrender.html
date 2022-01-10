@@ -84,8 +84,8 @@ title: Testing
 
     // initial renders
     updateEditDocLabel(editor.currentDocument)
-    editDocRender.render()
-    htmlRender.render()
+    editDocRender.render(editor.currentDocument)
+    htmlRender.render(editor.currentDocument)
 
     hf.editor.addListener('selectionchange', (editor) => {
       const cursor = editor.cursor

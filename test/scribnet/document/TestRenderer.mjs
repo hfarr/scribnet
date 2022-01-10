@@ -28,12 +28,12 @@ describe('Renderer', function () {
       docOrigin.select(100)
       it('creates the right HTML for collapsed selection', function () {
         const expected = "Title! what in the heck are all these demo pages for?\nThis document exists to easily construct objec<span style=\"border-left: 0.1rem solid #b100c4;\">t</span>s for unit testing!\nFeaturing a couple of cool paragraphs, inline elements, nested line elements, and so much more!\nWell, not &quot;so much&quot; more. Just enough to tell me if there are problems! Like maybe some utf-16 😀 pretty glad vscode supports unicode code points...\nWe&#39;ve got headers too\nI think this is alright for a standard document experience. Don&#39;t you?\n"
-        assert.strictEqual(editRenderer.toHTML(), expected)
+        assert.strictEqual(editRenderer.toHTML(docOrigin), expected)
       })
       it('creates the right HTML for non-collapsed selection', function () {
         docOrigin.select(300, 350)
         const expected = "Title! what in the heck are all these demo pages for?\nThis document exists to easily construct objects for unit testing!\nFeaturing a couple of cool paragraphs, inline elements, nested line elements, and so much more!\nWell, not &quot;so much&quot; more. Just enough to tell me if there are problems! Like maybe <mark style=\"background-color: #6667ab\">some utf-16 😀 pretty glad vscode supports unicode </mark>code points...\nWe&#39;ve got headers too\nI think this is alright for a standard document experience. Don&#39;t you?\n"
-        assert.strictEqual(editRenderer.toHTML(), expected)
+        assert.strictEqual(editRenderer.toHTML(docOrigin), expected)
       })
     })
   })
@@ -44,7 +44,7 @@ describe('Renderer', function () {
     const htmlRenderer = new HTMLRenderer(docOrigin)
     const source = "<h1>Title! what in the <em>heck</em> are all these demo pages for?</h1><p>This document exists to easily construct objects for unit testing!</p><p>Featuring a couple of cool paragraphs, <strong>inline elements,</strong> <strong><em>nested</em> line elements,</strong> and so much more!</p><p>Well, not &quot;so much&quot; more. Just enough to tell me if there are problems! Like maybe some utf-16 😀 pretty glad vscode supports unicode code points...</p><h2>We&#39;ve got headers too</h2><p>I think this is alright for a <em>standard</em> document experience. Don&#39;t you?</p>"
     it('has the right text', function() {
-      const rendered = htmlRenderer.toHTML()
+      const rendered = htmlRenderer.toHTML(docOrigin)
       assert.strictEqual(stripTags(rendered), stripTags(source))
     })
 
