@@ -223,20 +223,17 @@ export const domFunctions = { loadDocument, loadHTML, renderHTML, charOffset }
 class _EditDocument {
 
   constructor() {
-    this.parent = null;
+    this.history = null;
     this.text = ListSegment.from(Segment.taggedSegment(['p'], ''))
 
     // Segment index, index in segment
     this.focus = 0
     this.anchor = 0
 
-    this.previous = null;
   }
 
   static newDocument() {
-    const doc = new EditDocument()
-    doc.previous = null
-    return doc
+    return new EditDocument()
   }
   static fromSegments(segments) {
     return EditDocument.fromListSegment(ListSegment.from(...segments))
@@ -285,11 +282,16 @@ class _EditDocument {
 
   applyTag(tag, attributes) {
 
-    const newDoc = EditDocument.fromListSegment(this.text.applyTags([ tag ], this.startOffset, this.endOffset))
-    newDoc.parent = this
-    newDoc.anchor = this.anchor
-    newDoc.focus = this.focus
-    return newDoc
+    const newText = this.text.applyTags([tag], this.startOffset, this.endOffset)
+    this.history = { prev: this.history, text: newText }
+    this.text = newText
+    this.notifySelectListeners()  // temp. or... temp?
+
+    // const newDoc = EditDocument.fromListSegment(this.text.applyTags([ tag ], this.startOffset, this.endOffset))
+    // newDoc.parent = this
+    // newDoc.anchor = this.anchor
+    // newDoc.focus = this.focus
+    // return newDoc
   }
 
   // ----- Accessors ------
