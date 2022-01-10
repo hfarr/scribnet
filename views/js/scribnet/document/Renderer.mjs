@@ -56,6 +56,8 @@ class Renderer {
   }
   render(editDoc) {
     if (this.doesntHaveElem()) return
+    // this.elem.innerHTML = ""
+    // this.elem.insertAdjacentHTML('afterbegin',this.toHTML(editDoc))  // thinking about doing this. Maybe Element.setHTML once it's widely supported.
     this.elem.innerHTML = this.toHTML(editDoc)
   }
 }
@@ -85,8 +87,9 @@ class HTMLRenderer extends Renderer {
     // I guess we won't use replaceAll since I would need the compiler to target es2021? Would prefer to keep it compatible-ish
     // const renderBlock = () => `<${currentBlock.toLowerCase()}>${inlineContext.replace(/\n/g, '<br>')}</${currentBlock.toLowerCase()}>`
 
+    const cutLastNewLine = str => str.replace(/\n$/,'')
     const wrapOne = tag => (_, value) => `<${tag.toLowerCase()}>${value}</${tag.toLowerCase()}>`
-    const renderBlock = () => wrapOne(currentBlock)`${inlineContext.slice(0,-1).replace(/\n/g, '<br>')}`  // cut out last \n
+    const renderBlock = () => wrapOne(currentBlock)`${inlineContext.replace(/\n/g, '<br>')}`  // cut out last \n
     const wrap = (tags, content) => tags.length === 0 ? content : wrapOne(tags[0])`${wrap(tags.slice(1), content)}`
 
     const closeBlock = () => {
@@ -102,7 +105,7 @@ class HTMLRenderer extends Renderer {
         currentBlock = segment.tags.find(t => blocks.includes(t))
       }
       const inlineTags = segment.tags.filter(t => !blocks.includes(t))
-      inlineContext += wrap(inlineTags, escapeString(segment.characters.join('')))
+      inlineContext += wrap(inlineTags, escapeString(cutLastNewLine(segment.characters.join(''))))
 
       if (segment.characters.at(-1) === "\n") closeBlock()
     }
