@@ -99,9 +99,8 @@ class HTMLRenderer extends Renderer {
     }
 
     for (const segment of editDoc.text.segments) {
-      if (newBlock()) {
-        currentBlock = segment.tags.find(t => blocks.includes(t))
-      }
+      if (newBlock()) currentBlock = segment.tags.find(t => blocks.includes(t))
+
       const inlineTags = segment.tags.filter(t => !blocks.includes(t))
       inlineContext += wrap(inlineTags, escapeString(cutLastNewLine(segment.characters.join(''))))
 
