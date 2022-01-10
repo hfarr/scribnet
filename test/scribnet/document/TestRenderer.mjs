@@ -2,7 +2,7 @@
 import assert from 'assert';
 const PATH = "/home/henry/dev/scribnet/views"
 
-const { Renderer, EditRenderer, HTMLRenderer } = await import(`${PATH}/js/scribnet/document/Renderer.mjs`)
+const { Renderer, EditRenderer, HTMLRenderer, escapeString } = await import(`${PATH}/js/scribnet/document/Renderer.mjs`)
 const { default: EditDocument } = await import(`${PATH}/js/scribnet/document/EditDocument.mjs`)
 const { Segment, ListSegment } = await import(`${PATH}/js/scribnet/document/Segment.mjs`)
 
@@ -13,8 +13,13 @@ const docOrigin = EditDocument.fromListSegment(ListSegment.from(...segments))
 
 
 describe('Renderer', function () {
-  describe('escapskies', function () {
-
+  describe('escapeString', function () {
+    const unescaped = "Silly ' little \"<\" characters > &"
+    const actual = escapeString(unescaped)
+    const expected = 'Silly &#39; little &quot;&lt;&quot; characters &gt; &amp;'
+    it('escapes the characters', function() {
+      assert.strictEqual(actual, expected)
+    })
   })
 
   describe('EditRenderer', function () {
@@ -46,6 +51,9 @@ I think this is alright for a standard document experience. Don&#39;t you?\n"
   })
 
   describe('HTMLRenderer', function () {
+    it('creates the right HTML', function() {
+      const expected = "&lt;h1&gt;Title! what in the &lt;em&gt;heck&lt;/em&gt; are all these demo pages for?&lt;/h1&gt;&lt;p&gt;This document exists to easily construct objects for unit testing!&lt;/p&gt;&lt;p&gt;Featuring a couple of cool paragraphs, &lt;strong&gt;inline elements,&lt;/strong&gt; &lt;strong&gt;&lt;em&gt;nested&lt;/em&gt; line elements,&lt;/strong&gt; and so much more!&lt;/p&gt;&lt;p&gt;Well, not &quot;so much&quot; more. Just enough to tell me if there are problems! Like maybe some utf-16 😀 pretty glad vscode supports unicode code points...&lt;/p&gt;&lt;h2&gt;We&#39;ve got headers too&lt;/h2&gt;&lt;p&gt;I think this is alright for a &lt;em&gt;standard&lt;/em&gt; document experience. Don&#39;t you?&lt;/p&gt;"
+    }) 
 
   })
 })
