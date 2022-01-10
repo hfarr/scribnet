@@ -27,25 +27,13 @@ describe('Renderer', function () {
       const editRenderer = new EditRenderer(docOrigin)
       docOrigin.select(100)
       it('creates the right HTML for collapsed selection', function () {
-        // assert.strictEqual(actual, expected)
-        assert.strictEqual(editRenderer.toHTML(),
-          "Title! what in the heck are all these demo pages for?\n\
-This document exists to easily construct objec<span style=\"border-left: 0.1rem solid #b100c4;\">t</span>s for unit testing!\n\
-Featuring a couple of cool paragraphs, inline elements, nested line elements, and so much more!\n\
-Well, not &quot;so much&quot; more. Just enough to tell me if there are problems! Like maybe some utf-16 😀 pretty glad vscode supports unicode code points...\n\
-We&#39;ve got headers too\n\
-I think this is alright for a standard document experience. Don&#39;t you?\n")
+        const expected = "Title! what in the heck are all these demo pages for?\nThis document exists to easily construct objec<span style=\"border-left: 0.1rem solid #b100c4;\">t</span>s for unit testing!\nFeaturing a couple of cool paragraphs, inline elements, nested line elements, and so much more!\nWell, not &quot;so much&quot; more. Just enough to tell me if there are problems! Like maybe some utf-16 😀 pretty glad vscode supports unicode code points...\nWe&#39;ve got headers too\nI think this is alright for a standard document experience. Don&#39;t you?\n"
+        assert.strictEqual(editRenderer.toHTML(), expected)
       })
       it('creates the right HTML for non-collapsed selection', function () {
         docOrigin.select(300, 350)
-        assert.strictEqual(editRenderer.toHTML(),
-          "Title! what in the heck are all these demo pages for?\n\
-This document exists to easily construct objects for unit testing!\n\
-Featuring a couple of cool paragraphs, inline elements, nested line elements, and so much more!\n\
-Well, not &quot;so much&quot; more. Just enough to tell me if there are problems! Like maybe <mark style=\"background-color: #6667ab\">some utf-16 😀 pretty glad vscode supports unicode </mark>code points...\n\
-We&#39;ve got headers too\n\
-I think this is alright for a standard document experience. Don&#39;t you?\n"
-        )
+        const expected = "Title! what in the heck are all these demo pages for?\nThis document exists to easily construct objects for unit testing!\nFeaturing a couple of cool paragraphs, inline elements, nested line elements, and so much more!\nWell, not &quot;so much&quot; more. Just enough to tell me if there are problems! Like maybe <mark style=\"background-color: #6667ab\">some utf-16 😀 pretty glad vscode supports unicode </mark>code points...\nWe&#39;ve got headers too\nI think this is alright for a standard document experience. Don&#39;t you?\n"
+        assert.strictEqual(editRenderer.toHTML(), expected)
       })
     })
   })
