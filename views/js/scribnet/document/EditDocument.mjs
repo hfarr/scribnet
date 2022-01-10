@@ -244,6 +244,15 @@ class _EditDocument {
     return doc
   }
 
+  copy() {
+    const doc = EditDocument.newDocument()
+    doc.text = this.text
+    doc.focus = this.focus
+    doc.anchor = this.anchor
+    doc.history = this.history
+    return doc
+  }
+
   get segments() {
     return this.text.segments
   }
@@ -278,14 +287,24 @@ class _EditDocument {
     return this.focusOffset === this.anchorOffset
   }
 
+  // ----- "State" -----
+  // pushHistory() {
+
+  // }
+
   // ----- Builders ------
 
   applyTag(tag, attributes) {
 
-    const newText = this.text.applyTags([tag], this.startOffset, this.endOffset)
-    this.history = { prev: this.history, text: newText }
-    this.text = newText
-    this.notifySelectListeners()  // temp. or... temp?
+    const newDoc = this.copy()
+    newDoc.text = this.text.applyTags([tag], this.startOffset, this.endOffset)
+    // newDoc.pushHistory()
+    // this.history = { prev: this.history, text: newText }
+    // this.text = newText
+    newDoc.notifySelectListeners()  // temp. or... temp?
+
+    // hmm. do we...? track past EditDocs? or just past ListSegment? hmm.
+    return newDoc
 
     // const newDoc = EditDocument.fromListSegment(this.text.applyTags([ tag ], this.startOffset, this.endOffset))
     // newDoc.parent = this
@@ -346,12 +365,17 @@ let EditDocumentMixListener = class extends _EditDocument {
     super()
     this._listenersSelect = []
   }
+  copy() {
+    const doc = super.copy()
+    doc._listenersSelect = this._listenersSelect
+    return doc
+  }
   select(anchorIndex, focusIndex) {
     super.select(anchorIndex, focusIndex)
     this.notifySelectListeners()
   }
-  notifySelectListeners() {
-    this._listenersSelect.forEach(listener => listener(this))
+  notifySelectListeners(editDoc = this) { // May not be strictly necessary to parameterize, leaving as an option for now
+    this._listenersSelect.forEach(listener => listener(editDoc))
   }
   addSelectListener(callback) {
     this._listenersSelect.push(callback)

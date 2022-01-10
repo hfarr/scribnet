@@ -178,21 +178,21 @@ export class Editor {
    * Toggle the "bold"ness of the selected text
    */
   toggleBold() {
-    this.currentDocument.applyTag('strong')
+    this.docHistory.add(this.currentDocument.applyTag('strong'))
   }
 
   toggleItalic() {
-    this.currentDocument.applyTag('em')
+    this.docHistory.add(this.currentDocument.applyTag('em'))
   }
 
   toggleHighlight() {
-    this.currentDocument.applyTag('mark')
+    this.docHistory.add(this.currentDocument.applyTag('mark'))
   }
 
   applyColor(color) {
     // TODO work on interface for tags. Pass an object for attributes? An instance of a class?
     // TODO escape the color incase someone tries something... unsafe
-    this.currentDocument.applyTag('span', `style="background-color: ${color};"`)
+    this.docHistory.add(this.currentDocument.applyTag('span', `style="background-color: ${color};"`))
   }
 
   // -----------------------

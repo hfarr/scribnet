@@ -32,7 +32,7 @@ class Renderer {
   setEditDoc(editDocument) {
     if (editDocument === undefined) return
     this.editDocument = editDocument
-    this.editDocument.addSelectListener(_ => this.render())
+    this.editDocument.addSelectListener(editDoc => this.render(editDoc))
   }
   removeEditDoc() {
     if (this.editDocument === undefined) return
@@ -45,15 +45,18 @@ class Renderer {
   canShowHTML() {
     return this.editDocument !== undefined
   }
+  doesntHaveElem() {
+    return this.elem === undefined
+  }
   canRender() {
     return this.canShowHTML() && this.elem !== undefined
   }
-  toHTML() {
+  toHTML(_editDoc) {
     return "<mark>Renderer superclass—use a subclass!</mark>"
   }
-  render() {
-    if (!this.canRender()) return
-    this.elem.innerHTML = this.toHTML()
+  render(editDoc) {
+    if (this.doesntHaveElem()) return
+    this.elem.innerHTML = this.toHTML(editDoc)
   }
 }
 
@@ -64,9 +67,9 @@ class HTMLRenderer extends Renderer {
 
 
 
-  toHTML() {
+  toHTML(editDoc) {
     // Not the most elegant 'prettyprinter'
-    if (!this.canShowHTML()) return ""
+    if (editDoc === undefined) return ""
     let result = ""
     let currentBlock = undefined
     // let inlineTags
@@ -94,7 +97,7 @@ class HTMLRenderer extends Renderer {
       }
     }
 
-    for (const segment of this.editDocument.text.segments) {
+    for (const segment of editDoc.text.segments) {
       if (newBlock()) {
         currentBlock = segment.tags.find(t => blocks.includes(t))
       }
@@ -126,20 +129,20 @@ class EditRenderer extends Renderer {
   }
 
   // TODO should escape html too. 
-  toHTML() {
-    if (!this.canShowHTML()) return ""
+  toHTML(editDoc) {
+    if (editDoc === undefined) return ""
 
-    const docString = [...this.editDocument.toString()]
-    const prefix = docString.slice(0, this.editDocument.startOffset).map(escapskies)
+    const docString = [...editDoc.toString()]
+    const prefix = docString.slice(0, editDoc.startOffset).map(escapskies)
 
     let result = ""
-    if (this.editDocument.isCollapsed) {
-      const selected = escapeString(this.editDocument.at())
-      const postfix = docString.slice(this.editDocument.endOffset + 1).map(escapskies)
+    if (editDoc.isCollapsed) {
+      const selected = escapeString(editDoc.at())
+      const postfix = docString.slice(editDoc.endOffset + 1).map(escapskies)
       result = prefix.join('') + this.indicator(selected) + postfix.join('')
     } else {
-      const selString = escapeString(this.editDocument.selection())
-      const postfix = docString.slice(this.editDocument.endOffset).map(escapskies)
+      const selString = escapeString(editDoc.selection())
+      const postfix = docString.slice(editDoc.endOffset).map(escapskies)
       result = prefix.join('') + this.marker(selString) + postfix.join('')
     }
 
