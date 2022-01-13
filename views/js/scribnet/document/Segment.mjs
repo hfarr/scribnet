@@ -12,6 +12,16 @@
  * ContentEditable handles the rendering of the mutations already).
  */
 
+// more evidence Tags are starting to become enough of their own concept
+// it might make sense to stick 'em in a Class. For example, in here, we
+// explore the concept of tag equality, for the purpose of eliminating
+// duplicates. Equality or the 'eq' operation is a perfect case for the
+// good object orientation
+const filterUniqueTags = tags => {
+  const uniqueTags = new Set(tags.map(str=>str.toUpperCase()))
+  return [...uniqueTags]
+}
+
 /**
  * Starting with a flat representation for segments.
  * Might wish to layer a tree on top of that. But I'm thinking
@@ -51,10 +61,9 @@ export class Segment {
 
   static taggedSegment(tags, string) {
     
-    const uniqueTags = new Set(tags)
     const seg = new Segment()
     const characters = [...string]
-    seg.tags = [...uniqueTags]
+    seg.tags = filterUniqueTags(tags)
     seg.characters = characters
     return seg
   }
@@ -74,7 +83,7 @@ export class Segment {
 
   replaceTags(tags) {
     const seg = this.copy() // Segment.taggedSegment(tags,'')
-    seg.tags = [...new Set(tags)]
+    seg.tags = filterUniqueTags(tags)
     // seg.characters = this.characters
     return seg
   }
