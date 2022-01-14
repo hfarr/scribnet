@@ -47,6 +47,25 @@ describe('Segment', function () {
     })
   })
 
+  describe('removeTags', function() {
+    it('should yield a segment without the removed tags', function() {
+      assert(!segmentEmStrong.removeTags(['em']).hasTag('em'))
+      assert(!segmentEmStrong.removeTags(['p', 'strong']).hasTag('p'))
+      assert(!segmentEmStrong.removeTags(['p', 'strong']).hasTag('strong'))
+    })
+
+    it('should leave in place non-removed tags', function() {
+      assert(segmentEmStrong.removeTags(['em']).hasTag('p'))
+      assert(segmentEmStrong.removeTags(['em']).hasTag('strong'))
+    })
+
+    it('should not change the original', function() {
+      const copied = segmentEmStrong.copy()
+      segmentEmStrong.removeTags(['em']).hasTag('em')
+      assert(segmentEmStrong.eq(copied))
+    })
+  })
+
   describe('replaceTags', function () {
     const replaced = basicSegment.replaceTags(['h1', 'em'])
     it('should have the new tags', function () {
@@ -55,6 +74,24 @@ describe('Segment', function () {
     })
     it('should remove old tags', function () {
       assert(!replaced.hasTag('p'))
+    })
+  })
+
+  // yeah this is just. like "XOR" between two sets (S1 u S2) - (S1 n S2)
+  // highly suggestive we oughta kick it up a level of abstraction. I'm
+  // fairly committed to implementing all these operations though.
+  describe('toggleTags', function() {
+    const tagsToToggle = ['em', 'mark', 'span']
+    it ('adds and removes tags', function() {
+      const toggled = segmentEmStrong.toggleTags(tagsToToggle)
+      assert(!toggled.hasTag('em'))
+      assert(toggled.hasTag('mark'))
+      assert(toggled.hasTag('span'))
+    })
+
+    it ('is self invertible', function() {
+      const twiceToggled = segmentEmStrong.toggleTags(tagsToToggle).toggleTags(tagsToToggle)
+      assert(segmentEmStrong.eq(twiceToggled))
     })
   })
 
@@ -77,12 +114,21 @@ describe('ListSegment', function () {
     Segment.taggedSegment(['p'], ' away.'),
   )
 
-  const listSeg2 = ListSegment.from(
+  const listSeg2 = ListSegment.from(                      // cursors indices
+    Segment.taggedSegment(['h1'], 'Test Content'),        // 0 - 12
+    Segment.taggedSegment(['p'], 'Bare text then'),       // 12 - 26
+    Segment.taggedSegment(['p', 'em'], 'some emphasis'),  // 26 - 39
+    Segment.taggedSegment(['p'], 'BUT not here'),         // 39 - 51
+  )
+  const boldApplyExpected = ListSegment.from(
     Segment.taggedSegment(['h1'], 'Test Content'),
     Segment.taggedSegment(['p'], 'Bare text then'),
-    Segment.taggedSegment(['p', 'em'], 'some emphasis'),
-    Segment.taggedSegment(['p'], 'BUT not here'),
+    Segment.taggedSegment(['p', 'em'], 'some '),
+    Segment.taggedSegment(['p', 'em', 'strong'], 'emphasis'),
+    Segment.taggedSegment(['p', 'strong'], 'BUT'),
+    Segment.taggedSegment(['p'], ' not here'),
   )
+  const mixedTagSegments = listSeg2.applyTags(['em'], 39, 42).applyTags(['em'], 47, 51)
   it('has the characters of its components combined', function () {
     assert.deepStrictEqual(
       listSeg1.characters.join(''),
@@ -107,19 +153,55 @@ describe('ListSegment', function () {
 
   describe('applyTags', function () {
     const boldApply = listSeg2.applyTags(['strong'], 31, 42)
-    const boldApplyExpected = ListSegment.from(
-      Segment.taggedSegment(['h1'], 'Test Content'),
-      Segment.taggedSegment(['p'], 'Bare text then'),
-      Segment.taggedSegment(['p', 'em'], 'some '),
-      Segment.taggedSegment(['p', 'em', 'strong'], 'emphasis'),
-      Segment.taggedSegment(['p', 'strong'], 'BUT'),
-      Segment.taggedSegment(['p'], ' not here'),
-    )
 
     it('applies tags correctly', function () {
       assert(boldApply.eq(boldApplyExpected))
     })
   })
+
+
+  describe('toggleTags', function() {
+    it('applies tags if any component segment lacks the tag', function() {
+      const expected_1 = ListSegment.from(
+        Segment.taggedSegment(['h1'], 'Test Content'),
+        Segment.taggedSegment(['p'], 'Bare text then'),
+        Segment.taggedSegment(['p', 'em'], 'so'),
+        Segment.taggedSegment(['p', 'em', 'strong'], 'me '),
+        Segment.taggedSegment(['p', 'em', 'strong'], 'emphasis'),
+        Segment.taggedSegment(['p', 'strong'], 'BUT'),
+        Segment.taggedSegment(['p'], ' not here'),
+      )
+      const expected_2 = ListSegment.from(
+        Segment.taggedSegment(['h1'], 'Test Content'),
+        Segment.taggedSegment(['p'], 'Bare text then'),
+        Segment.taggedSegment(['p', 'em'], 'some '),
+        Segment.taggedSegment(['p', 'em', 'strong'], 'emphasis'),
+        Segment.taggedSegment(['p', 'strong'], 'BUT'),
+        Segment.taggedSegment(['p', 'strong'], ' not'),
+        Segment.taggedSegment(['p'], ' here'),
+      )
+      const expected_3 = ListSegment.from(
+        Segment.taggedSegment(['h1'], 'Test Content'),        // 0 - 12
+        Segment.taggedSegment(['p'], 'Bare text then'),       // 12 - 26
+        Segment.taggedSegment(['p', 'em'], 'some emphasis'),  // 26 - 39
+        Segment.taggedSegment(['p', 'em'], 'BUT'),
+        Segment.taggedSegment(['p', 'em'], ' not '),
+        Segment.taggedSegment(['p', 'em'], 'here'),
+      )
+
+      // does this overprescribe how tag applying works? like, expected the equality to the above is 
+      // to describe, or prescribe, the implementation. When a valid implmentation could, for example,
+      // merge adjacent Segments with equivalent tagging. This is the part I struggle with when
+      // writing tests.
+      assert(boldApplyExpected.applyTags(['strong'], 28, 42).eq(expected_1))
+      assert(boldApplyExpected.applyTags(['strong'], 31, 46).eq(expected_2))
+      assert(mixedTagSegments.applyTags(['em'], 47, 51).eq(expected_3))
+      // assert(boldApplyExpected.applyTags(['strong'], 28, 42).segments.slice(3, 6).every(s => s.hasTag('strong')))
+      // assert(boldApplyExpected.applyTags(['strong'], 31, 46).segments.slice(4, 7).every(s => s.hasTag('strong')))
+      // assert(mixedTagSegments.applyTags(['em'], 47, 51).segments.slice(3,6).every(s => s.hasTag('strong')))
+    })
+  })
+
 
   describe('_locate', function () {
 

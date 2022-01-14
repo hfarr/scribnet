@@ -80,10 +80,26 @@ export class Segment {
     // ListSegment first, that will split it for you.
     return this.replaceTags([...this.tags, ...tags])
   }
+  removeTags(removedTags) {
+    // when will we accept we should just use sets already
+    const seg = this.copy()
+    seg.tags = this.tags.filter(t => !filterUniqueTags(removedTags).includes(t))
+    return seg
+  }
 
   hasTag(tag) {
     if (tag === undefined) return false
     return this.tags.includes(tag.toUpperCase())
+  }
+
+  /**
+   * Take the given tag and remove it if present, or add it
+   * if not
+   * 
+   * @param tags Tags to toggle
+   */
+  toggleTag(tag) {
+    return this.hasTag(tag) ? this.removeTags([tag]) : this.applyTags([tag])
   }
 
   /**
@@ -95,12 +111,12 @@ export class Segment {
    * @param tags Tags to toggle
    */
   toggleTags(tags) {
-    // const toggleSet = uniqueTags(tags)
-    // const seg = this.copy()
-
-    // return seg 
-
+    let segment = this.copy()
+    filterUniqueTags(tags)
+      .forEach(t => segment = segment.toggleTag(t))
+    return segment
   }
+
 
   replaceTags(tags) {
     const seg = this.copy() // Segment.taggedSegment(tags,'')
