@@ -18,12 +18,17 @@ describe('Segment', function () {
       assert(segmentEmStrong.hasTag('em') && segmentEmStrong.hasTag('EM'))
       assert(!segmentEmStrong.hasTag('h1') && !segmentEmStrong.hasTag('H1'))
     })
+
+    it('returns false for tags that are not present', function() {
+      assert(!segmentEmStrong.hasTag('H1'))
+      assert(!basicSegment.hasTag('PRE'))
+    })
   })
 
   describe('applyTags', function () {
 
     it('should add the tag if not present', function () {
-      assert.strictEqual(basicSegment.applyTags(['strong']).tags.includes('strong'), true)
+      assert.strictEqual(basicSegment.applyTags(['strong']).hasTag('strong'), true)
     })
 
     it('has the same characters', function () {
@@ -45,11 +50,11 @@ describe('Segment', function () {
   describe('replaceTags', function () {
     const replaced = basicSegment.replaceTags(['h1', 'em'])
     it('should have the new tags', function () {
-      assert(replaced.tags.includes('h1'))
-      assert(replaced.tags.includes('em'))
+      assert(replaced.hasTag('h1'))
+      assert(replaced.hasTag('em'))
     })
     it('should remove old tags', function () {
-      assert(!replaced.tags.includes('p'))
+      assert(!replaced.hasTag('p'))
     })
   })
 
