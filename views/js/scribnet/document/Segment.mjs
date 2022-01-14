@@ -81,6 +81,27 @@ export class Segment {
     return this.replaceTags([...this.tags, ...tags])
   }
 
+  hasTag(tag) {
+    if (tag === undefined) return false
+    return this.tags.includes(tag.toUpperCase())
+  }
+
+  /**
+   * Take the given list of tags and this segments tags
+   * and produce a new segment that "XOR"s them together
+   * (effectively 'toggling' them)
+   * equiv set operation: (S1 u S2) - (S1 n S2)
+   * 
+   * @param tags Tags to toggle
+   */
+  toggleTags(tags) {
+    // const toggleSet = uniqueTags(tags)
+    // const seg = this.copy()
+
+    // return seg 
+
+  }
+
   replaceTags(tags) {
     const seg = this.copy() // Segment.taggedSegment(tags,'')
     seg.tags = filterUniqueTags(tags)

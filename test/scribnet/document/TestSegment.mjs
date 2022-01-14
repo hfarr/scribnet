@@ -12,6 +12,14 @@ describe('Segment', function () {
 
   })
 
+  describe('hasTags', function() {
+    it('ignores case', function() {
+      assert(basicSegment.hasTag('p') && basicSegment.hasTag('P'))
+      assert(segmentEmStrong.hasTag('em') && segmentEmStrong.hasTag('EM'))
+      assert(!segmentEmStrong.hasTag('h1') && !segmentEmStrong.hasTag('H1'))
+    })
+  })
+
   describe('applyTags', function () {
 
     it('should add the tag if not present', function () {
