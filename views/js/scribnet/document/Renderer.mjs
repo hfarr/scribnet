@@ -17,6 +17,55 @@ function escapeString(htmlRaw) {
   return [...htmlRaw].map(escapskies).join('')
 }
 
+
+// relaxed zip (populates with 'undefined' when one list runs out)
+const zip = (l1, l2) => {
+  const res = []
+  for (let i = 0; i < l1.length || i < l2.length; i++) {
+    res.push([l1[i], l2[i]])
+  }
+  return res
+}
+
+const tagGrab = /(<\/?\w+>)+/g
+const names = /\w+/g
+const adds = /<\w+>/g
+const ends = /\/\w+/g
+
+const tagGroups = html => html.match(tagGrab)//.map(grp=>grp.match(names).map(s=>s.toUpperCase()))
+
+/**
+ * Determine if the corresponding content of each HTML is nested under the
+ * same kind of tags (without regard to order of parents)
+ * 
+ * ex. <strong><em>Strongly emphasized </em>just strong</strong>
+ * is "tag equivalent" to
+ *    <strong><em>Strongly emphasized </em></strong><strong>just strong</strong>
+ * 
+ * @param html1 First html
+ * @param html2 second html
+ */
+const tagEquality = (html1, html2) => {
+  const styleState1 = []
+  const styleState2 = []
+  const [grps1, grps2] = [tagGroups(html1), tagGroups(html2)]
+  if (grps1?.length !== grps2?.length) return false
+
+  const stateDelta = (tagGrp,st) => { 
+    // grps1.map(g=>g.match(adds)).forEach(e => (e ?? []).forEach(f=>styleState1.push(f)));
+    tagGrp.forEach(grp=>grp?.match(adds).forEach(ts=>styleState1.push(ts.slice(1))))
+    tagGrp.forEach(grp=>grp?.match(ends).forEach(ts=>styleState1.splice(styleState1.indexOf(ts.slice(1)),1)))
+    
+    // const tagends = tagGrp.match(ends)
+    // tagGrp.match(ends).forEach(element => {
+    //   tagstarts.splice(element.indexOf(ends.slice(1)),1)
+    // });
+  }
+
+
+}
+  export { tagEquality }
+
 class Renderer {
   // TODO work out who should take responsibility for 'wrapperElement'. Renders is renders but perhaps it belongs.
   constructor(editDocument) {
@@ -75,7 +124,7 @@ class HTMLRenderer extends Renderer {
     let result = ""
     let currentBlock = undefined
     let inlineContext = ""
-    const blocks = ["h1", "h2", "h3", "p"].map(s=>s.toUpperCase())
+    const blocks = ["h1", "h2", "h3", "p"].map(s => s.toUpperCase())
 
     // Extract out a tool for going from listLike->treeLike? that is, from a linear input, lift it to a tree
     // in the way we have tools for collapsing a tree down to a list
@@ -85,7 +134,7 @@ class HTMLRenderer extends Renderer {
     // I guess we won't use replaceAll since I would need the compiler to target es2021? Would prefer to keep it compatible-ish
     // const renderBlock = () => `<${currentBlock.toLowerCase()}>${inlineContext.replace(/\n/g, '<br>')}</${currentBlock.toLowerCase()}>`
 
-    const cutLastNewLine = str => str.replace(/\n$/,'')
+    const cutLastNewLine = str => str.replace(/\n$/, '')
     const wrapOne = tag => (_, value) => `<${tag.toLowerCase()}>${value}</${tag.toLowerCase()}>`
     const renderBlock = () => wrapOne(currentBlock)`${inlineContext.replace(/\n/g, '<br>')}`
     const wrap = (tags, content) => tags.length === 0 ? content : wrapOne(tags[0])`${wrap(tags.slice(1), content)}`
@@ -153,4 +202,4 @@ class EditRenderer extends Renderer {
 export { EditRenderer, HTMLRenderer }
 
 // for testing
-export { Renderer, escapeString, escapskies }
+export { Renderer, escapeString, escapskies, tagGroups }
