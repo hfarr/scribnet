@@ -313,6 +313,16 @@ class _EditDocument {
     // return newDoc
   }
 
+  toggleTags(tags, attributesLists) {
+    const newDoc = this.copy()
+    newDoc.text = this.text.toggleTags(tags, this.startOffset, this.endOffset)
+    newDoc.notifySelectListeners()
+    return newDoc
+  }
+  toggleTag(tag, attributes) {
+    return this.toggleTags([tag], [attributes])
+  }
+
   // ----- Accessors ------
 
   select(anchorIndex=0, focusIndex=undefined) {

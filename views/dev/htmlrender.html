@@ -21,6 +21,10 @@ title: Testing
   <button id="bold">Bold</button>|
   <button id="italic">Italic</button>
 </div>
+<div style="display: flex;">
+  <button id="togbold">Toggle Bold</button>|
+  <button id="togitalic">Toggle Italic</button>
+</div>
 <button id="bug">Low key, (used to be) a bug. No more.</button>
 
 <!-- <script type="module" src="js/modules/document/DOM.mjs"></script> -->
@@ -94,8 +98,10 @@ title: Testing
     })
 
     document.querySelector("#select").onclick = () => { editor.select(69, 96) }
-    document.querySelector("#bold").onclick = () => { editor.toggleBold() }
-    document.querySelector("#italic").onclick = () => { editor.toggleItalic() }
+    document.querySelector("#bold").onclick = () => { editor.setBold() }
+    document.querySelector("#italic").onclick = () => { editor.setItalic() }
+    document.querySelector('#togbold').addEventListener('click', ()=>{ editor.toggleBold() })
+    document.querySelector('#togitalic').addEventListener('click', ()=>{ editor.toggleItalic() })
     document.querySelector("#bug").onclick = () => { editor.select(96, 165), editor.toggleBold() }
 
   })

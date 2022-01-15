@@ -175,17 +175,31 @@ export class Editor {
   // -- EditDoc "mutations"
 
   /**
-   * Toggle the "bold"ness of the selected text
+   * Toggle properties of the selected text
    */
   toggleBold() {
-    this.docHistory.add(this.currentDocument.applyTag('strong'))
+    this.docHistory.add(this.currentDocument.toggleTag('strong'))
   }
 
   toggleItalic() {
-    this.docHistory.add(this.currentDocument.applyTag('em'))
+    this.docHistory.add(this.currentDocument.toggleTag('em'))
   }
 
   toggleHighlight() {
+    this.docHistory.add(this.currentDocument.toggleTag('mark'))
+  }
+  /**
+   * *Set* properties of the selected text
+   */
+  setBold() {
+    this.docHistory.add(this.currentDocument.applyTag('strong'))
+  }
+
+  setItalic() {
+    this.docHistory.add(this.currentDocument.applyTag('em'))
+  }
+
+  setHighlight() {
     this.docHistory.add(this.currentDocument.applyTag('mark'))
   }
 
