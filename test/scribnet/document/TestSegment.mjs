@@ -148,18 +148,38 @@ describe('ListSegment', function () {
       }
       checkLen(listSeg1)
       checkLen(listSeg2)
+      checkLen(mixedTagSegments)
     })
-    it('has one more segment when split', function () {
-      for (let i = 0; i <= listSeg1.length; i++) {
-        const expected = listSeg1.segments.length + 1
-        const actual = listSeg1.split(i).segments.length
-        assert(actual === expected, `Failed for listSeg1 segment ${i}. Actual length ${actual}, expected ${expected}`)
+    it('has one more segment when splitting creates non-empty segments', function () {
+      const checkLenSegments = seg => {
+        // empty segments are created when splitting on the boundaries of segments
+        // then, everywhere else an *additional* segment should be created.
+        // so, we test between boundaries.
+        let offset = 0;
+        for (const segLength of seg.segments.map(seg => seg.length)) {
+          for (let i = offset + 1; i < offset + segLength; i++) {
+            const expected = seg.segments.length + 1
+            const actual = seg.split(i).segments.length
+            assert(actual === expected, `Failed for segment ${seg}, splitting on ${i}. Actual amount of segments ${actual}, expected ${expected}`)
+          }
+          offset += segLength
+        }
+
       }
-      for (let i = 0; i <= listSeg2.length; i++) {
-        const expected = listSeg2.segments.length + 1
-        const actual = listSeg2.split(i).segments.length
-        assert(actual === expected, `Failed for listSeg2 segment ${i}. Actual length ${actual}, expected ${expected}`)
-      }
+      checkLenSegments(listSeg1)
+      checkLenSegments(listSeg2)
+      checkLenSegments(mixedTagSegments)
+
+      // for (let i = 0; i <= listSeg1.length; i++) {
+      //   const expected = listSeg1.segments.length + 1
+      //   const actual = listSeg1.split(i).segments.length
+      //   assert(actual === expected, `Failed for listSeg1 segment ${i}. Actual length ${actual}, expected ${expected}`)
+      // }
+      // for (let i = 0; i <= listSeg2.length; i++) {
+      //   const expected = listSeg2.segments.length + 1
+      //   const actual = listSeg2.split(i).segments.length
+      //   assert(actual === expected, `Failed for listSeg2 segment ${i}. Actual length ${actual}, expected ${expected}`)
+      // }
     })
   })
 
