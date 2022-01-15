@@ -150,7 +150,21 @@ describe('ListSegment', function () {
       checkLen(listSeg2)
       checkLen(mixedTagSegments)
     })
+    it('is creates an equivalent segment ', function() {
+      const checkEq = seg => {
+        for (let i = 0; i <= seg.length; i++) {
+          assert(seg.eq(seg.split(i)), `Failed for seg ${seg}.`)
+        }
+      }
+      checkEq(listSeg1)
+      checkEq(listSeg2)
+      checkEq(mixedTagSegments)
+    })
     it('has one more segment when splitting creates non-empty segments', function () {
+      // TODO this test describes an implementation detail, but in a sense, maybe we do
+      // want to keep this notion. If splitting never created new segments other tests
+      // wouldn't be sufficient to catch that error. Still getting the hang of writing
+      // these tests.
       const checkLenSegments = seg => {
         // empty segments are created when splitting on the boundaries of segments
         // then, everywhere else an *additional* segment should be created.
@@ -169,17 +183,6 @@ describe('ListSegment', function () {
       checkLenSegments(listSeg1)
       checkLenSegments(listSeg2)
       checkLenSegments(mixedTagSegments)
-
-      // for (let i = 0; i <= listSeg1.length; i++) {
-      //   const expected = listSeg1.segments.length + 1
-      //   const actual = listSeg1.split(i).segments.length
-      //   assert(actual === expected, `Failed for listSeg1 segment ${i}. Actual length ${actual}, expected ${expected}`)
-      // }
-      // for (let i = 0; i <= listSeg2.length; i++) {
-      //   const expected = listSeg2.segments.length + 1
-      //   const actual = listSeg2.split(i).segments.length
-      //   assert(actual === expected, `Failed for listSeg2 segment ${i}. Actual length ${actual}, expected ${expected}`)
-      // }
     })
   })
 
