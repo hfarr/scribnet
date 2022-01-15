@@ -256,7 +256,7 @@ export class ListSegment extends Segment {
   }
 
   split(index) {
-    const [ splitSegIndex, offset ] = this._locate(index)
+    const [ splitSegIndex, offset ] = this._locateBoundary(index)
     return ListSegment.from(...[
       ...this.segments.slice(0, splitSegIndex), 
       ...this.segments[splitSegIndex].split(offset).segments,
@@ -278,15 +278,33 @@ export class ListSegment extends Segment {
     return this._length
   }
 
-  _locate(characterIndex) {
+  /**
+   * Uniquely addresses a boundary point (points between characters, where a 'cursor'
+   * might go) as a segment and an offset. 
+   * At points embedded in segments boundaries are addressed at the segment and the
+   * offset of the character to the right of the boundary (which we say is the character
+   * that would be deleted if a delete character operation ran).
+   * At points *between* segments boundaries are addressed at the segment to the left
+   * and an offset equal to that segments length. It could be equivalently defined as
+   * the segment to the right and 0, in order to keep unique addresses that boundary
+   * to the left of any segment is always defined in terms of the segment to the left
+   * and the offset into that segment. As a consequence, character offsets of 0 are only
+   * possible if the segment to the left of the boundary is "empty", when its length
+   * would be zero. This case applies to the very first addressable boundary at [0,0] 
+   * too
+   * 
+   * @param boundaryIndex Index of the boundary to locate
+   * @returns Address of the boundary in terms of Segment and character offset
+   */
+  _locateBoundary(boundaryIndex) {
     // this method needs a revisit because it mixes "boundary points" and "character points",
     // yielding the wrong addresses m' fraid
     let segmentIndex = 0
-    while (characterIndex > this.segments[segmentIndex].length) {
-      characterIndex -= this.segments[segmentIndex].length;
+    while (boundaryIndex > this.segments[segmentIndex].length) {
+      boundaryIndex -= this.segments[segmentIndex].length;
       segmentIndex++;
     }
-    return [ segmentIndex, characterIndex ]
+    return [ segmentIndex, boundaryIndex ]
   }
 
   /**
@@ -295,7 +313,7 @@ export class ListSegment extends Segment {
    */
   _locateChr(characterIndex) {
     let segmentIndex = 0
-    while (characterIndex >= this.segments[segmentIndex].length) {  // Jumps over empty segments
+    while (segmentIndex < this.segments.length && characterIndex >= this.segments[segmentIndex].length) {  // Jumps over empty segments
       characterIndex -= this.segments[segmentIndex].length; // length of a segment expresses # characters so this is still valid
       segmentIndex++;
     }
@@ -319,8 +337,8 @@ export class ListSegment extends Segment {
     }
 
     let splegment = this.split(start).split(end)
-    const [ leftBound ] = splegment._locate(start)
-    const [ rightBound ] = splegment._locate(end)
+    const [ leftBound ] = splegment._locateBoundary(start)
+    const [ rightBound ] = splegment._locateBoundary(end)
     const applied = splegment.segments.map( (seg, idx) => { 
       if (leftBound + 1 <= idx && idx <= rightBound) return seg.applyTags(tags)
       return seg
@@ -350,8 +368,8 @@ export class ListSegment extends Segment {
     }
 
     let splegment = this.split(start).split(end)
-    let [ leftBound ] = splegment._locate(start)
-    let [ rightBound ] = splegment._locate(end)
+    let [ leftBound ] = splegment._locateBoundary(start)
+    let [ rightBound ] = splegment._locateBoundary(end)
     const removed = splegment.segments.map( (seg, idx) => {
       if (leftBound + 1 <= idx && idx <= rightBound) return seg.removeTags(tags)
       return seg
@@ -377,8 +395,8 @@ export class ListSegment extends Segment {
 
     let splegment = this.split(start).split(end)
     // let listseg = this.copy()
-    let [ leftBound ] = splegment._locate(start)
-    let [ rightBound ] = splegment._locate(end)
+    let [ leftBound ] = splegment._locateBoundary(start)
+    let [ rightBound ] = splegment._locateBoundary(end)
     const removeFn = tg => s => s.removeTags([tg])
     const applyFn = tg => s => s.applyTags([tg])
     const cutWith = fn => splegment.segments = splegment.segments.map( (seg, idx) => leftBound + 1 <= idx && idx <= rightBound ? fn(seg) : seg )
