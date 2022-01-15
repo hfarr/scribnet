@@ -137,6 +137,18 @@ describe('ListSegment', function () {
   })
 
   describe('split', function () {
+    it('does not change the length of the segment', function () {
+      const checkLen = seg => {
+        for (let i = 0; i <= seg.length; i++) {
+          const expected = seg.length
+          const actual = seg.split(i).length
+          assert(actual === expected, `Failed for segment ${seg} splitting on ${i}. Actual length ${actual}, expected ${expected}`)
+        }
+
+      }
+      checkLen(listSeg1)
+      checkLen(listSeg2)
+    })
     it('has one more segment when split', function () {
       for (let i = 0; i <= listSeg1.length; i++) {
         const expected = listSeg1.segments.length + 1
