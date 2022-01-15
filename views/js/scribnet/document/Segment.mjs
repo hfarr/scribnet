@@ -251,17 +251,28 @@ export class ListSegment extends Segment {
     return listSeg
   }
 
+  // No change mutators (equivalent under eq). Could be viewed as producing another 
+  // element in the "orbit" of equality, supposing we partition ListSegment under
+  // an equivalence relation
   copy() {
     return ListSegment.from(...this.segments)
   }
 
   split(index) {
+    const listSeg = this.copy()
     const [ splitSegIndex, offset ] = this._locateBoundary(index)
-    return ListSegment.from(...[
+    listSeg.segments = [
       ...this.segments.slice(0, splitSegIndex), 
       ...this.segments[splitSegIndex].split(offset).segments,
       ...this.segments.slice(splitSegIndex + 1)
-    ]) 
+    ]
+    return listSeg
+  }
+
+  cutEmpty() {
+    const listSeg = this.copy()
+    listSeg.segments = listSeg.segments.filter(seg => !seg.empty())
+    return listSeg
   }
 
   get characters() {
@@ -347,7 +358,7 @@ export class ListSegment extends Segment {
       return ListSegment.from(this.segments.map( seg => seg.applyTags(tags) ))
     }
 
-    let splegment = this.split(start).split(end)
+    let splegment = this.split(start).split(end).cutEmpty()
     const [ leftBound ] = splegment._locateBoundary(start)
     const [ rightBound ] = splegment._locateBoundary(end)
     const applied = splegment.segments.map( (seg, idx) => { 
@@ -378,7 +389,7 @@ export class ListSegment extends Segment {
       return ListSegment.from(this.segments.map( seg => seg.removeTags(tags) ))
     }
 
-    let splegment = this.split(start).split(end)
+    let splegment = this.split(start).split(end).cutEmpty()
     let [ leftBound ] = splegment._locateBoundary(start)
     let [ rightBound ] = splegment._locateBoundary(end)
     const removed = splegment.segments.map( (seg, idx) => {
@@ -404,7 +415,7 @@ export class ListSegment extends Segment {
       return ListSegment.from(this.segments.map( seg => seg.applyTags(tags) ))
     }
 
-    let splegment = this.split(start).split(end)
+    let splegment = this.split(start).split(end).cutEmpty()
     // let listseg = this.copy()
     let [ leftBound ] = splegment._locateBoundary(start)
     let [ rightBound ] = splegment._locateBoundary(end)
