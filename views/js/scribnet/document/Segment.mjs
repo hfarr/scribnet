@@ -24,6 +24,21 @@ const filterUniqueTags = tags => {
   return [...uniqueTags]
 }
 
+// Another sign we need to dump this into a class!
+// could come as a list of tags so we can't make assumptions,
+// we COULD make assumptions if we were operating in a class.
+// you know, where we control state.
+// assumptions here means that we can't assume the tags will
+// all be upper case or even satisfy uniqueness so we do that
+// as a pre-step.
+const equalTags = (tags1, tags2) => {
+  const set1 = new Set(filterUniqueTags(tags1))
+  const set2 = new Set(filterUniqueTags(tags2))
+  const set1SubSet2 = [...set1].every(tag => set2.has(tag))
+  const set2SubSet1 = [...set2].every(tag => set1.has(tag))
+  return set1SubSet2 && set2SubSet1
+}
+
 /**
  * Starting with a flat representation for segments.
  * Might wish to layer a tree on top of that. But I'm thinking
@@ -168,6 +183,10 @@ export class Segment {
     return this.characters.length
   }
 
+  tagsAt(offset) {
+    return this.tags
+  }
+
   at(offset) {
     return this.characters.at(offset)
   }
@@ -221,9 +240,14 @@ export class ListSegment extends Segment {
   }
 
   // Sensing a code smell. Just pass an array to 'from'? merr
+  // TODO- rather than eliminate empty segments, could we adjust the notion
+  // of equality to include ListSegments are equal if each character in the
+  // segments, compared to the character of the same position, are subject
+  // to the same tags, and are the same character?
+  // Should be able to code that. Going to re-write the tests.
   static from(...segments) {
     const listSeg = new ListSegment()
-    listSeg.segments = segments.filter(s => !s.empty())
+    listSeg.segments = segments //.filter(s => !s.empty())
     return listSeg
   }
 
@@ -255,9 +279,24 @@ export class ListSegment extends Segment {
   }
 
   _locate(characterIndex) {
+    // this method needs a revisit because it mixes "boundary points" and "character points",
+    // yielding the wrong addresses m' fraid
     let segmentIndex = 0
     while (characterIndex > this.segments[segmentIndex].length) {
       characterIndex -= this.segments[segmentIndex].length;
+      segmentIndex++;
+    }
+    return [ segmentIndex, characterIndex ]
+  }
+
+  /**
+   * Locate but its friendly to empty segments
+   * @param characterIndex 
+   */
+  _locateChr(characterIndex) {
+    let segmentIndex = 0
+    while (characterIndex >= this.segments[segmentIndex].length) {  // Jumps over empty segments
+      characterIndex -= this.segments[segmentIndex].length; // length of a segment expresses # characters so this is still valid
       segmentIndex++;
     }
     return [ segmentIndex, characterIndex ]
@@ -354,10 +393,17 @@ export class ListSegment extends Segment {
 
   }
 
+  tagsAt(charIdx) {
+    const [ segmentIdx, chrOffset ] = this._locateChr(charIdx)
+    return this.segments[segmentIdx].tagsAt(chrOffset)
+  }
+
   eq(other) {
-    if (other instanceof ListSegment && this.segments.length === other.segments.length) {
-      for (let i = 0; i < this.segments.length; i++) {
-        if (!this.segments[i].eq(other.segments[i])) return false
+    if (other instanceof Segment) {
+      for (let i = 0; i < this.length; i++) {
+        const charEq = this.at(i) === other.at(i)
+        const tagsEq = equalTags(this.tagsAt(i), other.tagsAt(i))
+        if (!(charEq && tagsEq)) return false
       }
       return true
     }
