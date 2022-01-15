@@ -410,27 +410,26 @@ export class ListSegment extends Segment {
     start = this._normalize(start)
     end = this._normalize(end)
 
-    // Technically this case shouldn't be necessary
-    if (start === 0 && end === this.length) {
-      return ListSegment.from(this.segments.map( seg => seg.applyTags(tags) ))
-    }
-
     let splegment = this.split(start).split(end).cutEmpty()
     // let listseg = this.copy()
     let [ leftBound ] = splegment._locateBoundary(start)
     let [ rightBound ] = splegment._locateBoundary(end)
-    const removeFn = tg => s => s.removeTags([tg])
-    const applyFn = tg => s => s.applyTags([tg])
-    const cutWith = fn => splegment.segments = splegment.segments.map( (seg, idx) => leftBound + 1 <= idx && idx <= rightBound ? fn(seg) : seg )
+    let affectedSegs = splegment.segments.slice(leftBound+1, rightBound+1)  // this is a bit awkward! Now I'm thinking we *should* change locate so that it favors the right-segment for the left-boundary and vice versa
+
+    // Maybe we need a setSegs method. I want copy to be used
+    // since it can capture state that should be copied in case we introduce more.
+    let result = this.copy()
+    // const remove = tag => result.removeTags([tag], start, end)
+    // const apply = tag => result.applyTags([tag], start,end)
     for (const tag of tags) {
-      if (splegment.segments.slice(leftBound, rightBound+1).every(seg => seg.hasTag(tag))) {
-        cutWith(removeFn(tag))
+      // result = affectedSegs.every(seg => seg.hasTag(tag)) ? remove(tag) : apply(tag)
+      if (affectedSegs.every(seg => seg.hasTag(tag))) {
+        result = result.removeTags([tag], start, end)
       } else {
-        cutWith(applyFn(tag))
+        result = result.applyTags([tag], start, end)
       }
     }
-    return ListSegment.from(...splegment.segments)
-
+    return result
   }
 
   tagsAt(charIdx) {
