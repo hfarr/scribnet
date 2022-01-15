@@ -289,9 +289,14 @@ export class ListSegment extends Segment {
    * the segment to the right and 0, in order to keep unique addresses that boundary
    * to the left of any segment is always defined in terms of the segment to the left
    * and the offset into that segment. As a consequence, character offsets of 0 are only
-   * possible if the segment to the left of the boundary is "empty", when its length
-   * would be zero. This case applies to the very first addressable boundary at [0,0] 
-   * too
+   * possible at the first address, [0,0].
+   * The "Segment to the left" rule means the nearest non-empty segment to the left.
+   * Addressing the boundary before the first character of a non-empty segment is the 
+   * boundary to the right of the last character in of the non-empty segment preceding 
+   * it.
+   * ^^^ should cover this in tests, or otherwise work out the desired behavior since
+   * this is a critical piece of splitting.
+   * 
    * 
    * @param boundaryIndex Index of the boundary to locate
    * @returns Address of the boundary in terms of Segment and character offset
@@ -308,8 +313,14 @@ export class ListSegment extends Segment {
   }
 
   /**
-   * Locate but its friendly to empty segments
+   * Determine the address of a character.
+   * The main implementation difference between this and _locateBoundary is using >= in
+   * the comparison instead of >, so that when the characteroffset reaches the length of
+   * a segment (an invalid offset) it rolls over to the next segment, yielding an 
+   * address of that segment and offset 0. In this way it completely ignores empty 
+   * segments, unlike boundaries which respect at least one empty segment.
    * @param characterIndex 
+   * @return Address of the character in terms of segment and character offset
    */
   _locateChr(characterIndex) {
     let segmentIndex = 0
