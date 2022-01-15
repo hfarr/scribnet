@@ -223,7 +223,7 @@ export class ListSegment extends Segment {
   // Sensing a code smell. Just pass an array to 'from'? merr
   static from(...segments) {
     const listSeg = new ListSegment()
-    listSeg.segments = segments
+    listSeg.segments = segments.filter(s => !s.empty())
     return listSeg
   }
 
@@ -340,14 +340,14 @@ export class ListSegment extends Segment {
     // let listseg = this.copy()
     let [ leftBound ] = splegment._locate(start)
     let [ rightBound ] = splegment._locate(end)
-    const removeFn = (s,tg) => s.removeTags([tg])
-    const applyFn = (s,tg) => s.applyTags([tg])
+    const removeFn = tg => s => s.removeTags([tg])
+    const applyFn = tg => s => s.applyTags([tg])
     const cutWith = fn => splegment.segments = splegment.segments.map( (seg, idx) => leftBound + 1 <= idx && idx <= rightBound ? fn(seg) : seg )
     for (const tag of tags) {
       if (splegment.segments.slice(leftBound, rightBound+1).every(seg => seg.hasTag(tag))) {
-        cutWith(removeFn)
+        cutWith(removeFn(tag))
       } else {
-        cutWith(applyFn)
+        cutWith(applyFn(tag))
       }
     }
     return ListSegment.from(...splegment.segments)
