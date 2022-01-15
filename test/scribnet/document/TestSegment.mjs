@@ -195,7 +195,7 @@ describe('ListSegment', function () {
       // writing tests.
       assert(boldApplyExpected.toggleTags(['strong'], 28, 42).eq(expected_1))
       assert(boldApplyExpected.toggleTags(['strong'], 31, 46).eq(expected_2))
-      assert(mixedTagSegments.toggleTags(['em'], 47, 51).eq(expected_3))
+      assert(mixedTagSegments.toggleTags(['em'], 42, 47).eq(expected_3))
       // assert(boldApplyExpected.applyTags(['strong'], 28, 42).segments.slice(3, 6).every(s => s.hasTag('strong')))
       // assert(boldApplyExpected.applyTags(['strong'], 31, 46).segments.slice(4, 7).every(s => s.hasTag('strong')))
       // assert(mixedTagSegments.applyTags(['em'], 47, 51).segments.slice(3,6).every(s => s.hasTag('strong')))
