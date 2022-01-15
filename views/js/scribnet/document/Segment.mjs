@@ -1,5 +1,7 @@
 'use strict'
 
+import { foldNodes } from "./DOM.mjs"
+
 /**
  * Something still worth considering is updating only *part* of the DOM
  * when one piece of the EditDocument changes. But I don't think that 
@@ -225,6 +227,10 @@ export class ListSegment extends Segment {
     return listSeg
   }
 
+  copy() {
+    return ListSegment.from(...this.segments)
+  }
+
   split(index) {
     const [ splitSegIndex, offset ] = this._locate(index)
     return ListSegment.from(...[
@@ -274,14 +280,77 @@ export class ListSegment extends Segment {
     }
 
     let splegment = this.split(start).split(end)
-    let [ leftBound ] = splegment._locate(start)
-    let [ rightBound ] = splegment._locate(end)
+    const [ leftBound ] = splegment._locate(start)
+    const [ rightBound ] = splegment._locate(end)
     const applied = splegment.segments.map( (seg, idx) => { 
       if (leftBound + 1 <= idx && idx <= rightBound) return seg.applyTags(tags)
       return seg
     })
 
     return ListSegment.from(...applied)
+
+  }
+
+  // Not very "algebraic data structure of you" they said, muttering into the void
+  // "wheres the recursive constructions, hm?" they accuse
+
+  removeTags(tags, start, end) {
+    // Same work as in applyTags (might need to abstract the logic out or handle it some way)
+    if (tags === undefined || tags.length === 0) return this
+    if (!( start < end)) return this
+    if (start >= this.length) return this
+
+    start = (start === undefined) ? 0 : start
+    end = (end === undefined) ? this.length : end 
+    start = this._normalize(start)
+    end = this._normalize(end)
+
+    // Technically this case shouldn't be necessary
+    if (start === 0 && end === this.length) {
+      return ListSegment.from(this.segments.map( seg => seg.removeTags(tags) ))
+    }
+
+    let splegment = this.split(start).split(end)
+    let [ leftBound ] = splegment._locate(start)
+    let [ rightBound ] = splegment._locate(end)
+    const removed = splegment.segments.map( (seg, idx) => {
+      if (leftBound + 1 <= idx && idx <= rightBound) return seg.removeTags(tags)
+      return seg
+    })
+    return ListSegment.from(...removed)
+  }
+
+  toggleTags(tags, start, end) {
+    // Same work as in applyTags (might need to abstract the logic out or handle it some way)
+    if (tags === undefined || tags.length === 0) return this
+    if (!( start < end)) return this
+    if (start >= this.length) return this
+
+    start = (start === undefined) ? 0 : start
+    end = (end === undefined) ? this.length : end 
+    start = this._normalize(start)
+    end = this._normalize(end)
+
+    // Technically this case shouldn't be necessary
+    if (start === 0 && end === this.length) {
+      return ListSegment.from(this.segments.map( seg => seg.applyTags(tags) ))
+    }
+
+    let splegment = this.split(start).split(end)
+    // let listseg = this.copy()
+    let [ leftBound ] = splegment._locate(start)
+    let [ rightBound ] = splegment._locate(end)
+    const removeFn = (s,tg) => s.removeTags([tg])
+    const applyFn = (s,tg) => s.applyTags([tg])
+    const cutWith = fn => splegment.segments = splegment.segments.map( (seg, idx) => leftBound + 1 <= idx && idx <= rightBound ? fn(seg) : seg )
+    for (const tag of tags) {
+      if (splegment.segments.slice(leftBound, rightBound+1).every(seg => seg.hasTag(tag))) {
+        cutWith(removeFn)
+      } else {
+        cutWith(applyFn)
+      }
+    }
+    return ListSegment.from(...splegment.segments)
 
   }
 
