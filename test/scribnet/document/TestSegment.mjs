@@ -235,6 +235,14 @@ describe('ListSegment', function () {
       // assert(boldApplyExpected.applyTags(['strong'], 31, 46).segments.slice(4, 7).every(s => s.hasTag('strong')))
       // assert(mixedTagSegments.applyTags(['em'], 47, 51).segments.slice(3,6).every(s => s.hasTag('strong')))
     })
+
+    it('is removes tags if ALL segments have the tag', function() {
+      const boldApplied = boldApplyExpected.toggleTags(['strong'], 28, 42)
+      assert(boldApplied.toggleTags(['strong'], 28, 42).eq(boldApplyExpected.removeTags(['strong'], 28, 42)))
+      // assert(boldApplyExpected.toggleTags(['strong'], 31, 46).toggleTags(['strong'], 31, 46).eq(boldApplyExpected))
+      // assert(mixedTagSegments.toggleTags(['em'], 42, 47).toggleTags(['em'], 42, 47).eq(mixedTagSegments))
+
+    })
   })
 
 
