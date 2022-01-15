@@ -419,10 +419,7 @@ export class ListSegment extends Segment {
     // Maybe we need a setSegs method. I want copy to be used
     // since it can capture state that should be copied in case we introduce more.
     let result = this.copy()
-    // const remove = tag => result.removeTags([tag], start, end)
-    // const apply = tag => result.applyTags([tag], start,end)
     for (const tag of tags) {
-      // result = affectedSegs.every(seg => seg.hasTag(tag)) ? remove(tag) : apply(tag)
       if (affectedSegs.every(seg => seg.hasTag(tag))) {
         result = result.removeTags([tag], start, end)
       } else {
