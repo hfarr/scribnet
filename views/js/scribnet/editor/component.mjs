@@ -83,13 +83,25 @@ class EditorComponent extends HTMLElement {
       // this.editor.
       switch (ie.inputType) {
         case 'insertText': {
-          this.editor.write(ie.data); break;
+          this.editor.write(ie.data); 
+          // this.render(); so long as I'm reasonably convinced this works then I'm not going 
+          break;
         }
         case 'deleteContentBackward': {
-          this.editor.backspace(); break;
+          this.editor.backspace(); 
+          // WORKAROUND: Firefox bug causes certain input events to fail to fire when delete key is pressed. Described in htmlcontrol.html
+          //  the workaround is to render it out of our EditDocument since beforeinput still fires, meaning we do capture and update.
+          // However half the point of using contentEditable is because it should handle most of these bits for us. Alas
+          // also applies to deleteContentForward
+          ie.preventDefault();
+          this.render() 
+          break;
         }
         case 'deleteContentForward': {
-          this.editor.delete(); break;
+          this.editor.delete();
+          ie.preventDefault();
+          this.render()
+          break;
         }
         // Right now, this is preventing us from de-syncing the state. Long term 
         // we'll probably "flash" the document by having it re-read the DOM. That
