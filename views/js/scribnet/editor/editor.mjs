@@ -209,6 +209,20 @@ export class Editor {
     this.docHistory.add(this.currentDocument.applyTag('span', `style="background-color: ${color};"`))
   }
 
+  /**
+   * Text insertion & deletion
+   */
+  write(text) {
+    this.docHistory.add(this.currentDocument.write(text))
+  }
+  delete() {
+    this.docHistory.add(this.currentDocument.delete())
+  }
+  backspace() {
+    if (this.currentDocument.isCollapsed) this.currentDocument.select(this.currentDocument.cursorOffset - 1)
+    this.docHistory.add(this.currentDocument.delete())
+  }
+
   // -----------------------
 
   /**

@@ -80,6 +80,27 @@ class EditorComponent extends HTMLElement {
       // which blocks afterInput until all listeners are done. I am not sure.
       // ie.preventDefault()
       console.debug(ie)
+      // this.editor.
+      switch (ie.inputType) {
+        case 'insertText': {
+          this.editor.write(ie.data); break;
+        }
+        case 'deleteContentBackward': {
+          this.editor.backspace(); break;
+        }
+        case 'deleteContentForward': {
+          this.editor.delete(); break;
+        }
+        // Right now, this is preventing us from de-syncing the state. Long term 
+        // we'll probably "flash" the document by having it re-read the DOM. That
+        // becomes the next step in the editor history.
+        default: ie.preventDefault(); 
+      }
+
+      // Okay- i've just learned the power of pasting formatting. the formatting
+      // from vs code comments carried over to the demo page!!
+      // can I exploit that, or. At least. Handle it?
+
     }
     const afterInput = async (afterInput) => {
 
