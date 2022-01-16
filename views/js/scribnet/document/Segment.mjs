@@ -265,6 +265,10 @@ export class ListSegment extends Segment {
   }
 
   _splice(start, length, ...segments) {
+    // Tricky bit about splice is it operates on segments entirely
+    // caution is warranted. Most methods operate on the index of
+    // characters. There is value in manipulating the ListSegment
+    // at its own comfortable level of abstraction.
     const newListSeg = this.copy()
     newListSeg.segments.splice(start, length, ...segments)
     return newListSeg
@@ -374,20 +378,9 @@ export class ListSegment extends Segment {
     start = this._normalize(start)
     end = this._normalize(end)
 
-    // Technically this case shouldn't be necessary
-    if (start === 0 && end === this.length) {
-      return ListSegment.from(this.segments.map( seg => seg.applyTags(tags) ))
-    }
-
     let splegment = this.split(start).split(end).cutEmpty()
-    const [ leftBound ] = splegment._locateBoundary(start)
-    const [ rightBound ] = splegment._locateBoundary(end)
-    const applied = splegment.segments.map( (seg, idx) => { 
-      if (leftBound + 1 <= idx && idx <= rightBound) return seg.applyTags(tags)
-      return seg
-    })
-
-    return ListSegment.from(...applied)
+    const [ [lb], [rb] ] = [ splegment._locateChr(start), splegment._locateChr(end) ]
+    return splegment._splice(lb, rb - lb, ...splegment.segments.slice(lb, rb).map( seg => seg.applyTags(tags)))
 
   }
 
