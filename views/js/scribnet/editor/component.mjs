@@ -131,6 +131,7 @@ class EditorComponent extends HTMLElement {
     if (this._renderer) {
       // this._renderer.toHTML()
       this._renderer.render(this.editor.currentDocument)
+      this.editor.selectInDOM()
     }
   }
 
