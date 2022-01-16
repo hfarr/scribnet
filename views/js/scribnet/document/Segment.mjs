@@ -269,6 +269,12 @@ export class ListSegment extends Segment {
     return listSeg
   }
 
+  _splice(start, length, ...segments) {
+    const newListSeg = this.copy()
+    newListSeg.segments.splice(start, length, ...segments)
+    return newListSeg
+  }
+
   cutEmpty() {
     const listSeg = this.copy()
     listSeg.segments = listSeg.segments.filter(seg => !seg.empty())
@@ -360,11 +366,7 @@ export class ListSegment extends Segment {
     // ListSegments. In fact maybe just a splice function.
     const newSeg = split.segments[segBoundary].copy()
     newSeg.characters = [...string]
-    const result = ListSegment.from(...[
-      ...split.segments.slice(0, segBoundary),
-      newSeg,
-      ...split.segments.slice(segBoundary),
-    ])
+    const result = split._splice(segBoundary, 0, newSeg)
     return result
   }
 
