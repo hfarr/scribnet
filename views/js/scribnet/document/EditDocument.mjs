@@ -348,7 +348,59 @@ class _EditDocument {
 
   // ----------------------
 
-  write(string) {
+  // delete, write should do notifies- but the notify system lacks the complexity
+  // to deal with the separate situations a listener may like to listen to.
+  // In the current iteration, all selection events are ignored by renderers under
+  // editDocs, and received by all independent renderers. For now that should 
+  // suffice, the use is a little awkward.
+  // mmm. we can support the current iteration with the ability to 'suppress'
+  // notifications to not trigger events. This lets us perform normally notifying
+  // mutations in succession and only notify on the last one. This makes it a little
+  // more seamless experience for clients of renderers.
+  // may be better if we separate the 'outside' triggers into methods that will always
+  // notify. these methods compose EditDoc operations, none of which 'notify'. This
+  // would cover every situation, remove the burden to notify from EditDoc (it's not
+  // an EditDocument's responsibility, per se). Yeah. A notify revamp is in order.
+  // hmm. I could do that from the outside.
+  // essentially, wrap all methods that need to notify- yes- in EditDocMixin. Then,
+  // when any is called, it sets a flag. If the flag is set the method knows to notify.
+  // if as part of that call another mutation is used the flag is already set so it
+  // will not notify. might need a pair of flags really, one peticular to the method
+  // received so it remembers it is the one that set the flag, or perhaps the flag is
+  // in fact a counter. Each adds, each removes. If it removes and the count is 0 this
+  // is the first one called, the full stack is popped, so notify.
+  /**
+   * Delete the currently selected text. If the selection is
+   * collapsed, deletes the character to the right of the
+   * cursor.
+   */
+  delete(notify = true ) {
+    const result = this.copy()
+    const from = this.startOffset
+    const to = this.isCollapsed ? this.cursorOffset + 1 : this.endOffset
+    result.text = result.text.delete(from, to)
+    result.select(this.startOffset)
+
+    if (notify) result.notifySelectListeners()  // todo changing
+    return result
+  }
+
+  /**
+   * Insert the string into the document at the selected
+   * position. Overwrites existing selection.
+   * 
+   * @param string content to be written
+   * @returns An edit doc with the string inserted to the right place
+   */
+  write(string, notify = true) {
+    let result = this.copy()
+
+    if (!this.isCollapsed) result = result.delete(false)
+    result.text = result.text.insert(this.startOffset, string)
+    result.select(result.startOffset + [...string].length)
+
+    if (notify) result.notifySelectListeners()  // todo changing
+    return result
   }
 
   accept(visitor, ...args) {
