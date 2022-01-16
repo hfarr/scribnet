@@ -352,10 +352,7 @@ export class ListSegment extends Segment {
   delete(start, end) {
     const splitted = this.split(start).split(end).cutEmpty()
     const [ [lb], [rb] ] = [ splitted._locateChr(start), splitted._locateChr(end) ]
-    const result = ListSegment.from(...[
-      ...splitted.segments.slice(0,lb),
-      ...splitted.segments.slice(rb)
-    ])
+    const result = splitted._splice(lb, rb - lb)
     return result
   }
 
