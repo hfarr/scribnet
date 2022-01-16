@@ -18,6 +18,8 @@ title: Testing
 
 <stack-l id="toolmark">
 </stack-l>
+<stack-l>
+<br>
 <div>
   <p>Deleting across multiple block elements will produce results out of sync with the document. contentEditable will add the remainder of the block element to the right of the selection before delete to the block element left of the selection, after delete.</p>
   <button id="bug">Select here to see</button>
@@ -25,6 +27,13 @@ title: Testing
   <p>Another bug- well. Not a bug, just difference in behavior this time. contentEditable is sensitive to where the cursor *was*. That is, if you move the cursor from one text node to the edge, bordering an element with a style such as 'em', the text you enter will be appended to the prior text node. But if you put the cursor at the edge, coming from the right, then the text you enter prepends to the styled node. In mine, the cursor is stateless and doesn't remember where it was, so both situation are the same. It counts as being in the styled node. So, we either have to override that (mmmmm, preventing input events..) or. maybe. Maybe just toggle the editor's "input" status on selection change? We alreaedy have to have state on the editor to indicate if the next entered character should be a different style, this would be no different. </p>
   <p>Then again maybe we double down on behaving as close to content editable as we can. For instance, right now, we don't "squash" adjacent segments in the ListSegment if they have the same tags. That would minimize segments and keep the behavior of list segment closer to editdoc, because it is updating just regular segments. the mutation would produce a new segment inserted into an existing one or elsewise. it would create a NEW segment if the user toggles style mode on the editor. </p>
 </div>
+<div>
+  <p>Firefox bug alert! If you select from "We've got headers too" to just before the first character of the next block element, then hit delete, <em>it won't delete</em>. Other browsers do. And, my code works.</p>
+  <p>One solution? re-render on delete >_></p>
+  <p>I can. Not happy with that though.</p>
+  <p>Should probably open a bug report. Does it have to do with the custom element? It works on <a href="../contentEditableBehavior">this page</a>. Try the same steps as above. Note that it deletes the h2 properly. This also affects the h1. Huh.</p>
+</div>
+</stack-l>
 
 <!-- <script type="module" src="js/modules/document/DOM.mjs"></script> -->
 <script>
