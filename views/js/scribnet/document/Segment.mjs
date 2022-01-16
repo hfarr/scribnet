@@ -357,7 +357,7 @@ export class ListSegment extends Segment {
   }
 
   insert(location, string) {
-    const split = this.split(location)
+    const split = this.split(location).cutEmpty()
     const [ segBoundary ] = split._locateChr(location)
     // Work out an elegant approach to the 'splice' approach we've been taking to manipulate
     // ListSegments. In fact maybe just a splice function.
