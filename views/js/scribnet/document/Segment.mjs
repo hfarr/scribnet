@@ -259,14 +259,9 @@ export class ListSegment extends Segment {
   }
 
   split(index) {
-    const listSeg = this.copy()
     const [ splitSegIndex, offset ] = this._locateBoundary(index)
-    listSeg.segments = [
-      ...this.segments.slice(0, splitSegIndex), 
-      ...this.segments[splitSegIndex].split(offset).segments,
-      ...this.segments.slice(splitSegIndex + 1)
-    ]
-    return listSeg
+    const splitSegment = this.segments[splitSegIndex].split(offset).segments
+    return this._splice(splitSegIndex, 1, ...splitSegment)
   }
 
   _splice(start, length, ...segments) {
