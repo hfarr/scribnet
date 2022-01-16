@@ -353,8 +353,19 @@ export class ListSegment extends Segment {
     return result
   }
 
-  insert(start, end) {
-
+  insert(location, string) {
+    const split = this.split(location)
+    const [ segBoundary ] = split._locateChr(location)
+    // Work out an elegant approach to the 'splice' approach we've been taking to manipulate
+    // ListSegments. In fact maybe just a splice function.
+    const newSeg = split.segments[segBoundary].copy()
+    newSeg.characters = [...string]
+    const result = ListSegment.from(...[
+      ...split.segments.slice(0, segBoundary),
+      newSeg,
+      ...split.segments.slice(segBoundary),
+    ])
+    return result
   }
 
   /* Tag mutators */
