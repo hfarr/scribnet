@@ -16,6 +16,10 @@ import { Editor } from './editor.mjs'
 // multiclass the renderer? Hm, no. That might make it into a separate custom component someday
 // since I plan to have more components that render based on the Document.
 // Maybe the renderer should attach to the Document? Probably not right now
+
+// TODO we need to handle nested block elements, or make a distinction between block elements that
+// nest and ones that don't. That is, recursively generate "block" contexts, where we imagine right
+// now the editor only has one block context, and it is also a 'base case'.
 class EditorComponent extends HTMLElement {
 
   constructor() {
@@ -66,8 +70,8 @@ class EditorComponent extends HTMLElement {
     // In fact that might not be as hard as I'm thinking.
 
     const actionsKeyDown = {
-      'ctrl-KeyB': () => { this.editor.toggleBold() },
-      'ctrl-KeyI': () => { this.editor.toggleItalic() },
+      'ctrl-KeyB': () => { this.editor.toggleBold(); this.render() },
+      'ctrl-KeyI': () => { this.editor.toggleItalic(); this.render() },
     }
 
     const beforeInput = ie => {
@@ -116,6 +120,18 @@ class EditorComponent extends HTMLElement {
       'input': afterInput,
     }
 
+  }
+
+  set defaultRenderer(renderer) {
+    renderer.elem = this
+    this._renderer = renderer;
+  }
+
+  render() {
+    if (this._renderer) {
+      // this._renderer.toHTML()
+      this._renderer.render(this.editor.currentDocument)
+    }
   }
 
   beforeInput(inputEvent) {

@@ -4,14 +4,16 @@ title: Testing
 ---
 
 <editor-hf style="white-space: pre-wrap;">
-  <h1>Title! what in the <em>heck</em> are all these demo pages for?</h1>
-  <p>This document exists to easily construct objects for unit testing!</p>
-  <p>Featuring a couple of cool paragraphs, <strong>inline elements,</strong> <strong><em>nested</em> line
-      elements,</strong> and so much more!</p>
-  <p>Well, not "so much" more. Just enough to tell me if there are problems! Like maybe some utf-16 😀 pretty glad
-    vscode supports unicode code points...</p>
-  <h2>We've got headers too</h2>
-  <p>I think this is alright for a <em>standard</em> document experience. Don't you?</p>
+  <!-- <div class="htmlrender"> -->
+    <h1>Title! what in the <em>heck</em> are all these demo pages for?</h1>
+    <p>This document exists to easily construct objects for unit testing!</p>
+    <p>Featuring a couple of cool paragraphs, <strong>inline elements,</strong> <strong><em>nested</em> line
+        elements,</strong> and so much more!</p>
+    <p>Well, not "so much" more. Just enough to tell me if there are problems! Like maybe some utf-16 😀 pretty glad
+      vscode supports unicode code points...</p>
+    <h2>We've got headers too</h2>
+    <p>I think this is alright for a <em>standard</em> document experience. Don't you?</p>
+  <!-- </div> -->
 </editor-hf>
 
 <stack-l id="toolmark">
@@ -55,21 +57,40 @@ title: Testing
 
 
   let htmlRender
-  import('/js/scribnet/document/Renderer.mjs').then(m => {
-    const { EditRenderer, HTMLRenderer } = m
-    // editDocRender = new EditRenderer()
-    // editDocRender.setWrapper(p3)
-    htmlRender = new HTMLRenderer()
-    htmlRender.setWrapper(d4)
-  })
 
 
   window.addEventListener('load', async (event) => {
     editor = hf.editor
-    htmlRender.setEditDoc(editor.currentDocument)
+    /* Two notions for renderes. Independent ones, and ones attached to an editor.
+      There can be multiple or 0 independent renderers, and right now we're
+      constructing software to allow exactly one renderer, specifically an HTML
+      renderer, for the editor component. Eventually such restrictions won't
+      apply to that either, where we could have multiple or 0 renderes there too.
+      Or maybe for simplicity we won't. Maybe each editor will only have one
+      renderer. But Editors can share documents.
+      What's the difference then?
+      Indepdent renders would use the below to receive all events from the document
+    
+        htmlRender.setEditDoc(editor.currentDocument)
+    
+      whereas renders attached to editors won't always re-render. Only when the
+      editor decides they should. That's a tricky bit but I think it can still
+      work. It's what I'm going to do first, and we'll iterate to uncover the
+      next steps, whether either of the proposed ideas above or something else.
+    */
 
     // initial renders
-    htmlRender.render(editor.currentDocument)
+
+    import('/js/scribnet/document/Renderer.mjs').then(m => {
+      const { EditRenderer, HTMLRenderer } = m
+      // editDocRender = new EditRenderer()
+      // editDocRender.setWrapper(p3)
+      htmlRender = new HTMLRenderer()
+      // htmlRender.setWrapper(document.querySelector('.htmlrender'))
+      // htmlRender.setWrapper(hf)
+      hf.defaultRenderer = htmlRender
+      htmlRender.render(editor.currentDocument)
+    })
 
     hf.editor.addListener('selectionchange', (editor) => {
       const cursor = editor.cursor
