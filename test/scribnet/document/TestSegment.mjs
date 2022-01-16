@@ -194,6 +194,21 @@ describe('ListSegment', function () {
     })
   })
 
+  describe('delete', function() {
+
+    it('removes the characters', function() {
+      const deleted = listSeg2.delete(17,22)
+      // const expected = 
+      assert(deleted.characters.join('') === "Test ContentBare thensome emphasisBUT not here")
+    })
+  })
+
+  describe('insert',function() {
+    it('writes the text', function() {
+      const inserted = listSeg2.insert(22, 'and this text, ')
+      assert(inserted.characters.join('') === "Test ContentBare text and this text, thensome emphasisBUT not here")
+    })
+  })
 
   describe('toggleTags', function() {
     it('applies tags if any component segment lacks the tag', function() {
