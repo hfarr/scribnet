@@ -342,6 +342,22 @@ export class ListSegment extends Segment {
     return [ segmentIndex, characterIndex ]
   }
 
+  /* Content mutators */
+  delete(start, end) {
+    const splitted = this.split(start).split(end).cutEmpty()
+    const [ [lb], [rb] ] = [ splitted._locateChr(start), splitted._locateChr(end) ]
+    const result = ListSegment.from(...[
+      ...splitted.segments.slice(0,lb),
+      ...splitted.segments.slice(rb)
+    ])
+    return result
+  }
+
+  insert(start, end) {
+
+  }
+
+  /* Tag mutators */
 
   applyTags(tags, start, end) {
     if (tags === undefined || tags.length === 0) return this
