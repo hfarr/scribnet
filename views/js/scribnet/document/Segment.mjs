@@ -198,7 +198,7 @@ export class Segment {
         return false
       }
       for (let i = 0; i < this.tags.length || i < other.tags.length; i++) {
-        if (! (this.tags.includes(other.tags[i]) && other.tags.includes(this.tags[i]) ) ) return false
+        if (! (this.hasTag(other.tags[i]) && other.hasTag(this.tags[i]) ) ) return false
       }
       return true
     }
