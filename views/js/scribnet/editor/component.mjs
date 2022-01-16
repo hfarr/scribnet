@@ -29,12 +29,77 @@ class EditorComponent extends HTMLElement {
     this.editor.reformat()
     this.editor.readDOM()
 
+    this.initListeners()
+
     // this.contentEditable = true // being more explicit. Not trying to store data on the object, but DOM interaction.
     // Maybe extend another class that has the state? a mix in? Then it can't interfere with the DOM accidentally
     this.setAttribute('contentEditable', true)
 
     // document.addEventListener('selectionchange', async (e) => this.editor.onSelectionChange(e))
+  }
+
+  initListeners() {
     this.editor.evtSelChg = async (e) => this.editor.onSelectionChange(e)
+
+    // currently, the input is not customizeable. That'll require more thunks
+    // I am thinking there will be one interface to handle taking in events
+    // and converting them to useful sequences. That can be customized on what
+    // gets intercepted. It will handle controlling the inputs to regulate the
+    // input. For example a key down event is fired repeatedly when the a key
+    // is held, so one step is to fire only once between key ups.
+    // The next step is mapping the events to editor actions. That will be the
+    // customized part, and can finesse, for example, preventing the default
+    // actions of keys (ctrl-l by default sets focus to the URL bar so we can
+    // stop that)
+    const keyState = {  // booleans indicating whether the key is down or not
+      'ctrl-KeyB': false,
+      'ctrl-KeyI': false,
+    }
+
+    const beforeInput = ie => {
+      // maybe, create a separate "blockOrNot" method that is async, then calls the beforeInput. blockOrNot then is
+      // the handler because I think we want syncrhronous handling in case afterInput fires. Unless there is a mechanism
+      // which blocks afterInput until all listeners are done. I am not sure.
+      // ie.preventDefault()
+      console.debug(ie)
+    }
+    const afterInput = async (afterInput) => {
+
+    }
+
+    // deprecated aw
+    const keyUp = async (keyUp) => {
+      if (keyUp.ctrlKey) {
+        const statekey = `ctrl-${keyUp.code}`
+        if (statekey in keyState) {
+          keyUp.preventDefault()
+          if (keyState[statekey]) {
+            keyState[statekey] = false // in our interface we'd probably implement the 'check&set' in one operation
+            console.log('up', statekey)
+          }
+        }
+      }
+
+    }
+    const keyDown = async (keyDown) => {
+      if (keyDown.ctrlKey) {
+        const statekey = `ctrl-${keyDown.code}`
+        if (statekey in keyState ) {
+          keyDown.preventDefault()
+          if (!keyState[statekey]) {
+            keyState[statekey] = true // in our interface we'd probably implement the 'check&set' in one operation
+            console.log('down',statekey)
+          }
+        }
+      }
+    }
+
+    this.editor.evtListeners = {
+      'keydown': keyDown,
+      'keyup': keyUp,
+      'beforeinput': beforeInput,
+      'input': afterInput,
+    }
 
   }
 
@@ -60,18 +125,6 @@ class EditorComponent extends HTMLElement {
   }
 
 
-  afterInput(inputEvent) {
-
-  }
-
-  onClick(mouseEvent) {
-
-  }
-
-
-  keyDown(keyPressEvent) {
-  }
-
   get observedAttributes() {
     return [ 'data' ]
   }
@@ -80,12 +133,20 @@ class EditorComponent extends HTMLElement {
     // console.debug("Editor added to DOM");
     this.editor.reformat()
     
+
     document.addEventListener('selectionchange', this.editor.evtSelChg)
+    // document.addEventListener('keydown')
+    for (const key in this.editor.evtListeners) {
+      this.addEventListener(key, this.editor.evtListeners[key])
+    }
 
   }
   disconnectedCallback() {
     
     document.removeEventListener('selectionchange', this.editor.evtSelChg)
+    for (const key in this.editor.evtListeners) {
+      this.removeEventListener(key, this.editor.evtListeners[key])
+    }
   }
 
   export(documentExporter) {
