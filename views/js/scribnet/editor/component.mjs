@@ -56,6 +56,20 @@ class EditorComponent extends HTMLElement {
       'ctrl-KeyI': false,
     }
 
+    // Note- I need to fix ctrl-a
+    // and, I can fix ctrl-a
+    // I can fix it by fixing the selection mechanism to recognize the selection
+    // of the entire outer element, and propogate the selection inward...
+    // or! I can intercept ctrl-a and re-select the window as a selection of all
+    // text. now. The "better" way? would be to fix the selection, ha.
+    // ctrl-a is not the only way to induce a selection on the entire node.
+    // In fact that might not be as hard as I'm thinking.
+
+    const actionsKeyDown = {
+      'ctrl-KeyB': () => { this.editor.toggleBold() },
+      'ctrl-KeyI': () => { this.editor.toggleItalic() },
+    }
+
     const beforeInput = ie => {
       // maybe, create a separate "blockOrNot" method that is async, then calls the beforeInput. blockOrNot then is
       // the handler because I think we want syncrhronous handling in case afterInput fires. Unless there is a mechanism
@@ -88,6 +102,7 @@ class EditorComponent extends HTMLElement {
           keyDown.preventDefault()
           if (!keyState[statekey]) {
             keyState[statekey] = true // in our interface we'd probably implement the 'check&set' in one operation
+            actionsKeyDown[statekey]()
             console.log('down',statekey)
           }
         }
