@@ -18,16 +18,11 @@ title: Testing
 
 <stack-l id="toolmark">
 </stack-l>
-<div style="display: flex;">
-  <button id="select">Select</button>|
-  <button id="bold">Bold</button>|
-  <button id="italic">Italic</button>
+<div>
+  <p>Deleting across multiple block elements will produce results out of sync with the document. contentEditable will add the remainder of the block element to the right of the selection before delete to the block element left of the selection, after delete.</p>
+  <button id="bug">Select here to see</button>
+  <p>note the structure of the segments shows, indeed, a p after h2. So, I must ask, why rendering doesn't. Work. hmm</p>
 </div>
-<div style="display: flex;">
-  <button id="togbold">Toggle Bold</button>|
-  <button id="togitalic">Toggle Italic</button>
-</div>
-<button id="bug">Low key, (used to be) a bug. No more.</button>
 
 <!-- <script type="module" src="js/modules/document/DOM.mjs"></script> -->
 <script>
@@ -103,12 +98,12 @@ title: Testing
       p1.innerHTML = label`DOM Offset ${cursor} DOM Selection ${selection} Length ${selection.length}`
     })
 
-    document.querySelector("#select").onclick = () => { editor.select(69, 96) }
-    document.querySelector("#bold").onclick = () => { editor.setBold() }
-    document.querySelector("#italic").onclick = () => { editor.setItalic() }
-    document.querySelector('#togbold').addEventListener('click', ()=>{ editor.toggleBold() })
-    document.querySelector('#togitalic').addEventListener('click', ()=>{ editor.toggleItalic() })
-    document.querySelector("#bug").onclick = () => { editor.select(96, 165), editor.toggleBold() }
+    document.querySelector("#bug").addEventListener('click', () => { 
+      editor.select(385, 388); 
+      hf.dispatchEvent(new InputEvent('beforeinput', {inputType: "deleteContentForward"}))
+      hf.render()
+    })
+
 
   })
 
