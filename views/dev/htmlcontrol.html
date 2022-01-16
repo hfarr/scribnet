@@ -32,7 +32,7 @@ title: Testing
 <!-- <script type="module" src="js/modules/document/DOM.mjs"></script> -->
 <script>
   const hf = document.querySelector('editor-hf')
-  let editor
+  let editor, ed
   const toolmark = document.querySelector("#toolmark")
 
   function label(fragments, ...values) {
@@ -93,6 +93,8 @@ title: Testing
       // htmlRender.setWrapper(hf)
       hf.defaultRenderer = htmlRender
       htmlRender.render(editor.currentDocument)
+
+      ed = editor.currentDocument
     })
 
     hf.editor.addListener('selectionchange', (editor) => {
