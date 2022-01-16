@@ -49,10 +49,10 @@ title: Testing
   // attention over to the editor capabilities
   const p1 = document.createElement('p')  // Label for DOM state
   // const p2 = document.createElement('p')  // Label for EditDoc state
-  // const p3 = document.createElement('p')  // EditRenderer
+  const p3 = document.createElement('p')  // EditRenderer
   const d4 = document.createElement('div')  // html render
   const d5 = document.createElement('div')
-  toolmark.append(p1, d4)
+  toolmark.append(p3)
   // p3.style = 'white-space: pre-wrap;'
 
 
@@ -83,8 +83,11 @@ title: Testing
 
     import('/js/scribnet/document/Renderer.mjs').then(m => {
       const { EditRenderer, HTMLRenderer } = m
-      // editDocRender = new EditRenderer()
-      // editDocRender.setWrapper(p3)
+      editDocRender = new EditRenderer()
+      editDocRender.setWrapper(p3)
+      editDocRender.setEditDoc(editor.currentDocument)
+      editDocRender.render(editor.currentDocument)
+
       htmlRender = new HTMLRenderer()
       // htmlRender.setWrapper(document.querySelector('.htmlrender'))
       // htmlRender.setWrapper(hf)
