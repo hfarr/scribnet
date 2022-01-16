@@ -398,19 +398,10 @@ export class ListSegment extends Segment {
     start = this._normalize(start)
     end = this._normalize(end)
 
-    // Technically this case shouldn't be necessary
-    if (start === 0 && end === this.length) {
-      return ListSegment.from(this.segments.map( seg => seg.removeTags(tags) ))
-    }
-
     let splegment = this.split(start).split(end).cutEmpty()
-    let [ leftBound ] = splegment._locateBoundary(start)
-    let [ rightBound ] = splegment._locateBoundary(end)
-    const removed = splegment.segments.map( (seg, idx) => {
-      if (leftBound + 1 <= idx && idx <= rightBound) return seg.removeTags(tags)
-      return seg
-    })
-    return ListSegment.from(...removed)
+    const [ [lb], [rb] ] = [ splegment._locateChr(start), splegment._locateChr(end) ]
+    return splegment._splice(lb, rb - lb, ...splegment.segments.slice(lb, rb).map( seg => seg.removeTags(tags)))
+
   }
 
   toggleTags(tags, start, end) {
