@@ -20,7 +20,8 @@
   },
   "homepage": "https://github.com/hfarr/scribnet#readme",
   "dependencies": {
-    "@11ty/eleventy": "^0.12.1"
+    "@11ty/eleventy": "^1.0.0",
+    "express": "^4.17.2"
   },
   "devDependencies": {
     "mocha": "^9.1.3"
