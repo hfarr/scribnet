@@ -2,11 +2,13 @@
   "name": "scribnet",
   "version": "1.0.0",
   "description": "Yet Another Notes App",
-  "main": "index.js",
+  "main": "./app/main.mjs",
   "scripts": {
+    "scrivener": "node scrivener/main.mjs",
     "test": "mocha test/**/*.mjs",
-    "clear": "rm -r ./site/*",
-    "serve": "npx @11ty/eleventy --serve"
+    "clear": "rm -r ./site/* && touch views/index.njk",
+    "serve": "npx @11ty/eleventy --serve",
+    "watch": "npx @11ty/eleventy --watch"
   },
   "repository": {
     "type": "git",

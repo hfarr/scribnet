@@ -1,0 +1,14 @@
+{
+  "name": "scrivener",
+  "version": "0.0.0",
+  "description": "Backend for scribnet",
+  "main": "main.mjs",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "server"
+  ],
+  "author": "Ohmsec",
+  "license": "ISC"
+}
