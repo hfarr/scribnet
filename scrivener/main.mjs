@@ -17,11 +17,15 @@ const DIR_ROOT = process.env.PWD
 const SITE_ROOT = path.resolve('site')  
 // const NOTES_ROOT = 'note'
 const NOTES_ROOT = ''
+const EDIT_ROOT = 'edit'
 
 const makeStatic = staticLocation(SITE_ROOT)
 // const staticApp = staticLocation('')
 const mainRouter = express.Router()
 const mainApp = express()
+
+const staticAll = makeStatic(NOTES_ROOT)
+const staticEdit = makeStatic(EDIT_ROOT)
 
 /* 
   Moving forward, will have to think about routing the app
@@ -33,16 +37,51 @@ const mainApp = express()
   think should be intuitive. To yield an informal framework
   of a kind.
 */
-mainApp.use(makeStatic(NOTES_ROOT))
+mainApp.use(staticAll)
 // mainApp.use(staticAppLocation(''))
 
-// could server render the page here..! instead, directing a static resource.
-// though, I could do, for example, check if the note exists or not, and provision
-// if it doesn't. I think I'd like to. TODO
+
+// I don't know, at the moment, the appropriate level of abstraction to handle params- like, if a router would fit the model better
+// mainRouter.param('notename')
+mainApp.param('notename', (req, res, next, noteName) => {
+  // TODO add code to handle checking if note exists,
+  // creating a new one if it doesn't...
+  console.log(`Establishing ${noteName}`)
+  req['noteName'] = noteName
+  next()
+}) 
+// '/edit/:notename'
+// What I'd like to do is offload the static fetching to a static app, for now, this has to suffice
+// mainApp.use('/edit/:notename', staticAll) 
 mainApp.get('/edit/:notename', async (req, res) => {
   console.log(`Requesting editor for ${req.params.notename}`)
-  res.send('blank')
+  res.sendFile(path.join(SITE_ROOT, EDIT_ROOT, "index.html"))  // TODO site organization. Can I finagle static renderer to work? I don't want it to request based on the parameter.
 
+})
+
+/*
+  ===============
+  !! API Stubs !!
+  ===============
+*/
+
+// mainApp.use('/api', express.json())
+mainApp.use('/api', (req, res, next) => {
+  res.set('Content-Type', 'text/json')
+  next()
+})
+mainApp.get('/api/notes', async (req, res) => {
+  // likely need to pass url-safe over these, so we can have all valid filenames (spaces come to mind)
+  res.status(200).send( ['test', 'a-note'] )
+})
+
+// Note that this request is also subject to 'param' above.
+// One thing using a router would get us is parameter name isolation,
+// right now I'm not sure if I want the "establishing" step for the
+// parameter to happen both above and here
+mainApp.get('/api/note/:notename', async(req, res) => {
+  // use the loader. Prework that in the param handler?
+  res.status(200).send( { name: req.noteName, content: `<h2>${req.noteName}</h2><p>Anynote</p>` } )
 })
 
 
