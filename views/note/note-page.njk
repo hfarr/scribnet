@@ -1,0 +1,29 @@
+---
+layout: note
+pagination:
+  data: notes
+  size: 1
+  alias: ne 
+permalink: "note/{{ ne.name | slug }}/"
+---
+{# only permalink and eleventyComputed can contain variables/shortcodes in this frontmatter format (and Im not sure I can work out pagination with a ---js frontmatter at the moment) #}
+{# title: "{{ ne.name | slug }}" #}
+{# eleventyComputed: #}
+
+{# 
+  This file, combined with note.11tydata.js, using data
+  computed from _data/notes.js, populates the note/
+  directory in the site output with note data from the
+  server. It is fetched at build time.
+  We could have this file in the root, because the 
+  permalink frontmatter data sets it to the note/ 
+  directory. The idea though is to group related information
+  together. Perhaps if we didn't need a note.11tydata.js, or
+  weren't planning an index page, then we might do that.
+#}
+
+{# Set header <title> here using note name #}
+{# <h1> #}
+{# <h1>Name: {{ ne.name }}</h1>
+<h2>{{ ne | access("name") }}</h2> #}
+{{ ne.content | safe }}
