@@ -4,11 +4,14 @@
   "description": "Yet Another Notes App",
   "main": "./app/main.mjs",
   "scripts": {
+    "build": "npx @11ty/eleventy",
+    "build-static": "DEV_STATIC_ONLY=true npx @11ty/eleventy",
+    "clean": "rm -r ./site/* && touch views/index.njk",
     "scrivener": "node scrivener/main.mjs",
+    "server": "node scrivener/main.mjs",
     "test": "mocha test/**/*.mjs",
-    "clear": "rm -r ./site/* && touch views/index.njk",
-    "serve": "npx @11ty/eleventy --serve",
-    "watch": "npx @11ty/eleventy --watch"
+    "build-serve": "npx @11ty/eleventy --serve",
+    "build-watch": "npx @11ty/eleventy --watch"
   },
   "repository": {
     "type": "git",

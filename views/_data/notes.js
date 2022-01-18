@@ -25,17 +25,25 @@ async function loadNote(name) {
   return axios(options)
 }
 
-// module.exports = function() {
-//   return [ { name: "Static 1", content: "Note content for you" } ]
-// }
+const { 
+  DEV_STATIC_ONLY: cancelFetch="false",
+  // Set DEV_FETCH_FAILS_BUILD to false if you want it to pull content when its available, and succeed otherwise
+  DEV_FETCH_FAILS_BUILD: failBuildOnFetchFailure="true"
+} = process.env
 
-module.exports = function() {
-  const options = {
-    method: "GET",
-    url: `${BASE_URL}/notes`
+if (cancelFetch === "true") {
+  module.exports = []
+} else {
+
+  module.exports = function() {
+    const options = {
+      method: "GET",
+      url: `${BASE_URL}/notes`
+    }
+    return axios(options)
+      .then(notes => Promise.all(notes.data.map(loadNote)))
+      .then(responses => responses.map(r=>r.data))
+      .catch(err => (failBuildOnFetchFailure === "true") ? err : [])
   }
-  return axios(options)
-    .then(notes => Promise.all(notes.data.map(loadNote)))
-    .then(responses => responses.map(r=>r.data))
-    // .then(noteList => { return { notes: noteList } } )
+
 }
