@@ -1,11 +1,13 @@
 'use strict'
 import path from 'path'
 import http from 'http'
+import fs from 'fs/promises'
 
 import express, { application } from 'express'
 
 import { staticLocation } from './static/Static.mjs'
-import Notes from './Notes.mjs'
+import { Notes } from './notes/NoteController.mjs'
+import RouteNoteController from './notes/NoteController.mjs'
 
 
 const PATH = '/'
@@ -26,6 +28,34 @@ const mainApp = express()
 
 const staticAll = makeStatic(NOTES_ROOT)
 const staticEdit = makeStatic(EDIT_ROOT)
+
+
+
+///// load all note files (for a premier vertical slice, all notes will be loaded, there is only one set of notes, viva la revolucion)
+const NOTE_FOLDER = "note-folder" 
+// mmmm yeah. This file (that is, main.mjs) is like the early editor.njk, a kinda grunge forceps
+// holding open meaty internals, taking whatever steps needed to exercise a maturing code base
+// const names = await fs.readdir(NOTE_FOLDER)  // yeah I could jsut use fs and not the promise version. oh well.
+// const notes = Notes.newNotes()
+// for (const noteName of names) {
+//   notes.update
+// }
+
+const pairEm = (name, promise) => Promise.all([Promise.resolve(name), promise])
+
+const notes = await fs.readdir(NOTE_FOLDER)
+  .then( noteNames => Promise.all(noteNames.map(name => pairEm(name, fs.readFile(`${NOTE_FOLDER}/${name}`, {encoding: "utf-8" })))) )
+  .then( notesList => Notes.fromNotesMap(new Map(notesList)) )
+
+const allNotesAPI = RouteNoteController.wrapNotes(notes)
+
+console.log("Notes loaded", notes)
+
+/////
+
+
+
+
 
 /* 
   Moving forward, will have to think about routing the app
@@ -70,19 +100,21 @@ mainApp.use('/api', (req, res, next) => {
   res.set('Content-Type', 'text/json')
   next()
 })
-mainApp.get('/api/notes', async (req, res) => {
-  // likely need to pass url-safe over these, so we can have all valid filenames (spaces come to mind)
-  res.status(200).send( ['test', 'a-note'] )
-})
+mainApp.use('/api', allNotesAPI.app)
+
+// mainApp.get('/api/notes', async (req, res) => {
+//   // likely need to pass url-safe over these, so we can have all valid filenames (spaces come to mind)
+//   res.status(200).send( ['test', 'a-note'] )
+// })
 
 // Note that this request is also subject to 'param' above.
 // One thing using a router would get us is parameter name isolation,
 // right now I'm not sure if I want the "establishing" step for the
 // parameter to happen both above and here
-mainApp.get('/api/note/:notename', async(req, res) => {
-  // use the loader. Prework that in the param handler?
-  res.status(200).send( { name: req.noteName, content: `<h2>${req.noteName}</h2><p>Anynote</p>` } )
-})
+// mainApp.get('/api/note/:notename', async(req, res) => {
+//   // use the loader. Prework that in the param handler?
+//   res.status(200).send( { name: req.noteName, content: `<h2>${req.noteName}</h2><p>Anynote</p>` } )
+// })
 
 
 try {

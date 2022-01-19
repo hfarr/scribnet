@@ -93,8 +93,14 @@ class Notes {
 
   }
 
-  get notes() {
-    return this.notes.keys()
+  static fromNotesMap(notes) {
+    const result = Notes.newNotes()
+    result.notes = notes
+    return result
+  }
+
+  listNotes() {
+    return [...this.notes.keys()]
   }
 
   /**
@@ -120,7 +126,7 @@ class Notes {
   create(noteName) {
     if (this.notes.has(noteName)) return false
 
-    this.notes.update(noteName, "")
+    this.update(noteName, "")
 
     return true
   }
@@ -196,17 +202,26 @@ class RouteNoteController {
 
     // app.param('noteName', (...)=>{...}) // do we need any pre-work? Not for this probably
 
-    app.use(/notes?/, express.json())
+    // app.use(/notes?/, express.json())
 
-    app.get('note/:noteName', (req, res) => {
+    app.param('noteName', (req, res, next) => {
+      if ('noteName' in req.params) {
+        next()
+      } else {
+        res.send(400)
+      }
+    })
+
+    app.get('/note/:noteName', (req, res) => {
 
       // maybe- check existence for the condition,
       // create if not and fetch if so? eh
 
+
       let noteText = this.notes.get(req.params.noteName)
 
       if (noteText === undefined) {
-        this.notes.create(noteName)
+        this.notes.create(req.params.noteName)
         noteText = ""
       }
 
@@ -214,11 +229,13 @@ class RouteNoteController {
         name: req.params.noteName,
         content: noteText
       }
-      res.send(responseBody)
+      res.status(200).send(responseBody)
     })
 
-    app.get('notes', (req, res) => {
-      res.send()
+    app.get('/notes', (req, res) => {
+      const result = this.notes.listNotes()
+      console.log("GET", result)
+      res.status(200).send(result)
     })
 
     this.app = app
