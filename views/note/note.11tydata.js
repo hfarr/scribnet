@@ -1,5 +1,5 @@
 module.exports = {
   eleventyComputed: {
-    title: data => data.ne.name
+    title: data => data.title ?? data.noteItem?.name
   }
 }

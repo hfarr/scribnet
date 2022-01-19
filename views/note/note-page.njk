@@ -3,11 +3,11 @@ layout: note
 pagination:
   data: notes
   size: 1
-  alias: ne 
-permalink: "note/{{ ne.name | slug }}/"
+  alias: noteItem
+permalink: "note/{{ noteItem.name | slug }}/"
 ---
 {# only permalink and eleventyComputed can contain variables/shortcodes in this frontmatter format (and Im not sure I can work out pagination with a ---js frontmatter at the moment) #}
-{# title: "{{ ne.name | slug }}" #}
+{# title: "{{ noteItem.name | slug }}" #}
 {# eleventyComputed: #}
 
 {# 
@@ -24,6 +24,6 @@ permalink: "note/{{ ne.name | slug }}/"
 
 {# Set header <title> here using note name #}
 {# <h1> #}
-{# <h1>Name: {{ ne.name }}</h1>
-<h2>{{ ne | access("name") }}</h2> #}
-{{ ne.content | safe }}
+{# <h1>Name: {{ noteItem.name }}</h1>
+<h2>{{ noteItem | access("name") }}</h2> #}
+{{ noteItem.content | safe }}
