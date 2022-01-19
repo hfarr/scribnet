@@ -234,6 +234,8 @@ class RouteNoteController {
 
 }
 
+export { Notes }
+
 export default RouteNoteController
 
 
