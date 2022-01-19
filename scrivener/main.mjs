@@ -5,7 +5,7 @@ import http from 'http'
 import express, { application } from 'express'
 
 import { staticLocation } from './static/Static.mjs'
-import Notes from './notes/Notes.mjs'
+import Notes from './Notes.mjs'
 
 
 const PATH = '/'
