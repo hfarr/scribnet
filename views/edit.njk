@@ -3,7 +3,51 @@ layout: note.njk
 title: Editing
 ---
 
+<a id="view-link" href="">View</a>
 <editor-hf style="white-space: pre-wrap;">
   <!-- Temporary until I get the component sorted -->
   <p>Enter some text</p>
 </editor-hf>
+
+<script>
+
+  // TODO right now, explicitly a note, but could be anything. later.
+  const update = async noteContents => {
+    const { name, content } = noteContents
+    const hf = document.querySelector('editor-hf')
+    hf.innerHTML = content // !!!!! Warning !!!!! Dangerous maybe!!!
+    hf.editor.readDOM()
+    // ah, maybe we just throw out the editor?
+  }
+
+  // const path = window.path
+  const resourceName = window.location.pathname.match(/[^\/]*$/)[0] // grabs the string in the url past the last forward slash
+  document.querySelector('#view-link').href=`/note/${resourceName}`
+  // const promise = 
+
+  window.addEventListener("load", async event => {
+    const hf = document.querySelector('editor-hf')
+    console.debug("Fetching", resourceName)
+    const fetched = fetch("/api/note/test")
+      .then(res => res.status === 200 ? res.json() : Promise.reject("Couldn't fetch"))
+      .then(body => update(body))
+      .catch(sad => console.warn(sad))
+
+    import('/js/scribnet/document/Renderer.mjs').then(async m => {
+      const { HTMLRenderer } = m
+      const htmlRender = new HTMLRenderer()
+
+      // TODO? make it a setter that automatically renders
+      await fetched
+      hf.editor.reformat()  // Not always going to take this step, but we might take a less severe step that cuts out, e.g, <br>? or not, honestly.
+
+      // TODO bug okay- the linebreaks are messing up the edit operations a bit, I think it's because I render them as newlines. Might have to cleave them out.
+      //    and, really, I should be loading a Document from the notes, but it's a fair ask to support HTML parsing. t'is how this started.
+      //    Right. We'll leave reformat on for now, which may destroy intentional whitepsace. To be addressed.
+      hf.editor.readDOM()
+      hf.defaultRenderer = htmlRender
+      hf.render()
+    })
+  })
+
+</script>

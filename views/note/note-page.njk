@@ -26,4 +26,18 @@ permalink: "note/{{ noteItem.name | slug }}/"
 {# <h1> #}
 {# <h1>Name: {{ noteItem.name }}</h1>
 <h2>{{ noteItem | access("name") }}</h2> #}
+
+{# later on this link might only appear in certain circumstances, based on what the server provides #}
+{# heck, it might even just drop-in add an editor-hf wrapping the contents - we have some options. #}
+{# I'm not sure I mind going to a different route or not, maybe I like the option to do that but also
+  have a component in place that can update in-place. Only available if you have permissions.
+  TODO iDEA for later 
+  #}
+<a href="/edit/{{ noteItem.name }}">Edit</a>
+<br>
 {{ noteItem.content | safe }}
+
+<!-- <script>
+
+  const resourceName = window.location.pathname.match(/[^\/]*$/)[0] // grabs the string in the url past the last forward slash
+</script> -->
