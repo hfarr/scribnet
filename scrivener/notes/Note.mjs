@@ -1,0 +1,8 @@
+
+class NoteList {
+
+}
+
+class Note {
+
+}
