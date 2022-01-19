@@ -221,6 +221,9 @@ class RouteNoteController {
       let noteText = this.notes.get(req.params.noteName)
 
       if (noteText === undefined) {
+        // I am no longer into creating notes on the fly, this should do something else.
+        // maybe we have a fallback case or do the 'not found' handling in app.param.
+        // not sure. Have a generic handler for all api routes to catch 404s?
         this.notes.create(req.params.noteName)
         noteText = ""
       }
