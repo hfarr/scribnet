@@ -8,7 +8,7 @@ import express, { application } from 'express'
 import { staticLocation } from './static/Static.mjs'
 import { Notes } from './notes/NoteController.mjs'
 import RouteNoteController from './notes/NoteController.mjs'
-
+import Authenticator from './authenticator/Authenticator.mjs'
 
 const PATH = '/'
 const BIND_IP = '127.0.0.1'
@@ -25,6 +25,7 @@ const makeStatic = staticLocation(SITE_ROOT)
 // const staticApp = staticLocation('')
 const mainRouter = express.Router()
 const mainApp = express()
+mainApp.use(mainRouter)
 
 const staticAll = makeStatic(NOTES_ROOT)
 const staticEdit = makeStatic(EDIT_ROOT)
@@ -65,7 +66,18 @@ console.log("Notes loaded", notes)
 
 /////
 
+// TODO eventually I'd like the frontend to be a little more responsive to authorization
+//  if user authorization fails it might take them to a dedicated page
+//  most authorization should take place on a static page, for which access to the static
+//  page itself is not blocked, but content that the page loads IS, in which case there are
+//  two kinda views for the page. I see this as being managed by a custom component.
+const authenticator = new Authenticator()
+mainRouter.use('/private', authenticator.authApp)
 
+console.log(`http://localhost:3000/private?${authenticator.accessParam}`)
+
+
+/////
 
 
 
@@ -79,13 +91,13 @@ console.log("Notes loaded", notes)
   think should be intuitive. To yield an informal framework
   of a kind.
 */
-mainApp.use(staticAll)
+mainRouter.use(staticAll)
 // mainApp.use(staticAppLocation(''))
 
 
 // I don't know, at the moment, the appropriate level of abstraction to handle params- like, if a router would fit the model better
 // mainRouter.param('notename')
-mainApp.param('notename', (req, res, next, noteName) => {
+mainRouter.param('notename', (req, res, next, noteName) => {
   // TODO add code to handle checking if note exists,
   // creating a new one if it doesn't...
   console.log(`Establishing ${noteName}`)
@@ -95,11 +107,12 @@ mainApp.param('notename', (req, res, next, noteName) => {
 // '/edit/:notename'
 // What I'd like to do is offload the static fetching to a static app, for now, this has to suffice
 // mainApp.use('/edit/:notename', staticAll) 
-mainApp.get('/edit/:notename', async (req, res) => {
+mainRouter.get('/edit/:notename', async (req, res) => {
   console.log(`Requesting editor for ${req.params.notename}`)
   res.sendFile(path.join(SITE_ROOT, EDIT_ROOT, "index.html"))  // TODO site organization. Can I finagle static renderer to work? I don't want it to request based on the parameter.
 
 })
+
 
 /*
   ===============
@@ -108,11 +121,11 @@ mainApp.get('/edit/:notename', async (req, res) => {
 */
 
 // mainApp.use('/api', express.json())
-mainApp.use('/api', (req, res, next) => {
+mainRouter.use('/api', (req, res, next) => {
   res.set('Content-Type', 'text/json')
   next()
 })
-mainApp.use('/api', allNotesAPI.app)
+mainRouter.use('/api', allNotesAPI.app)
 
 // mainApp.get('/api/notes', async (req, res) => {
 //   // likely need to pass url-safe over these, so we can have all valid filenames (spaces come to mind)

@@ -28,9 +28,10 @@
   "dependencies": {
     "@11ty/eleventy": "^1.0.0",
     "axios": "^0.24.0",
+    "cookie-parser": "^1.4.6",
     "express": "^4.17.2"
   },
   "devDependencies": {
-    "mocha": "^9.1.3"
+    "mocha": "^8.1.3"
   }
 }
