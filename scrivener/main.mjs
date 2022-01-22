@@ -47,6 +47,18 @@ const notes = await fs.readdir(NOTE_FOLDER)
   .then( noteNames => Promise.all(noteNames.map(name => pairEm(name, fs.readFile(`${NOTE_FOLDER}/${name}`, {encoding: "utf-8" })))) )
   .then( notesList => Notes.fromNotesMap(new Map(notesList)) )
 
+// I am thinking presently... yes, we don't want to organize by functionality, or by 'layer', it's all about capabilities
+// and interfaces. okay. So, a "notes controller" should probably own the responsibility of storing/saving notes. that in
+// turn might go to a content managing module, but again I am imagining that saving/loading, reading/writing is incidental
+// to a "Note", but a "Note" still knows it saves and loads. okay. So, some class might provide saving and loading 
+// capabilities and it would make sense to segment that out. As opposed to "This is the module that manages all resources,
+// when you register a resource you must also update these files xyz.." so we *will* split out handling i/o to a package
+// or module. Provided we don't violate capab*boundaries* (capability boundaries)
+// in other words, code like we have here - "wiring up" code - does violate that boundary. We're saying "A notes 
+// controller spontaneously comes into existence with this piece of data", that data being a collection of notes, but it
+// the 'wiring up' is, in my mind, notionally a part of a collection of notes. which might belong to something else, for
+// example *this* notes controller belongs to the "main app" which is why the main app will specify parameters for the
+// notes controller, but won't over-specify the details. Helpful for me to type it out.
 const allNotesAPI = RouteNoteController.wrapNotes(notes)
 
 console.log("Notes loaded", notes)
