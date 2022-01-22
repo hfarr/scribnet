@@ -57,8 +57,20 @@
   it out myself though is yielding tremendous insight. Or at worst it's just enjoyable.
 */
 'use strict'
+import fs from 'fs/promises'
+import path from 'path'
 
 import express from 'express'
+
+// right now only saves strings
+const fileSaver = location => (name, data) => {
+  return fs.writeFile(`${location}${path.sep}${name}`, data, 'utf-8')
+}
+
+const fileLoader = location => name => {
+
+  return fs.readFile(`${location}${path.sep}${name}`, 'utf-8')  // utf-8 can still encode... unicode chars? eghgnnn
+}
 
 /**
  * Eventually... (key word right there)
@@ -194,11 +206,28 @@ class Notes {
 
   or whatever the sql is. Or! leave less structured than that. but we
   can imagine it.
+
+  Okay. Another thought bubbled up. I can see a "JSON controller" that
+  perhaps an "HTTP controller" binds. So- 
+    send: {"name": "diary-10-7-1995", "content": "I think dogs are neat"} -> /user/henry/notes 
+  main controller activates notes controller activates json controller
+  The bound JSON controller respond on the name. It would be compatible with
+  the HTTP controller, meaning we can *mix* them if we're careful.
+  Above I indicated mixing wouldn't be feasible. But I don't think there's
+  anything wrong with that kind of pipelining action.
+
+  This I think would let us fluidly mix use of a "grapql" style access
+  (one endpoint, data parameterizes query) and "restful" access
+  (several endpoints which parameterize a query, data exclusively payload)
+  (provided my rough understanding of graphql is correct) (and REST for that matter lmao).
 */
 class RouteNoteController {
   constructor(notes) {
     const app = express()
     this.notes = notes
+
+    // TODO temporary
+    this.save = fileSaver('note-folder')
 
     // app.param('noteName', (...)=>{...}) // do we need any pre-work? Not for this probably
 
@@ -238,6 +267,9 @@ class RouteNoteController {
       res.status(200).send(responseBody)
     })
 
+    // TODO work out data management responsibilities. And hey! TODO! move off raw, text to the appropriate middle-ware for the data (probably mostly json)
+    //    having a very "gititdone" mood right now, which I feel is appropriate for early stages
+    app.use('/note/:noteName', express.text("utf-8"));
     app.put('/note/:noteName', (req, res) => {
       let note = this.notes.get(req.params.noteName)
 
@@ -249,10 +281,10 @@ class RouteNoteController {
       // see, not 'note.Update()' would make sense, but we have to access it through the collection. The content of a note is owned by the note.
       // Leaving this thought as a nudge-do (a soft TODO I guess). Assign ownership correctly. Harder TODO- test ya stuff.
       // note.update()
-      this.notes.update(req.params.noteName, req.body())
-
-      // TODO more on a PUT?
-      res.status(200).send('OK')
+      this.notes.update(req.params.noteName, req.body)
+      this.save(req.params.noteName, req.body)
+        .then(_ => res.status(200).send('OK'))
+        .catch(_ => res.status(500).send('Oops'))
       
     })
 
@@ -264,6 +296,9 @@ class RouteNoteController {
 
     this.app = app
   }
+
+  // static fromDirectory(directory) {
+  // }
 
   static newNotes() {
     return new RouteNoteController(new Notes())
