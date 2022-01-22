@@ -11,8 +11,12 @@ title: Editing
 
 <script>
 
+  // const path = window.path
+  const resourceName = window.location.pathname.match(/[^\/]*$/)[0] // grabs the string in the url past the last forward slash
+  document.querySelector('#view-link').href=`/note/${resourceName}`
+
   // TODO right now, explicitly a note, but could be anything. later.
-  const update = async noteContents => {
+  const updateFromHTML = async noteContents => {
     const { name, content } = noteContents
     const hf = document.querySelector('editor-hf')
     hf.innerHTML = content // !!!!! Warning !!!!! Dangerous maybe!!!
@@ -20,17 +24,22 @@ title: Editing
     // ah, maybe we just throw out the editor?
   }
 
-  // const path = window.path
-  const resourceName = window.location.pathname.match(/[^\/]*$/)[0] // grabs the string in the url past the last forward slash
-  document.querySelector('#view-link').href=`/note/${resourceName}`
-  // const promise = 
+  const saveHTML = async htmlContent => {
+
+    // hyeah. We're sending HTML but for now path of least resistance, PoLR, dragged me to uh, ill suited means. Really just want to see that read/write action you know?
+    // Not using proper string encoding yet
+    return fetch(`/api/note/${resourceName}`, { method: 'PUT', headers: { 'Content-Type': 'text/plain' }, body: htmlContent })
+      .then(resp => console.log(resp))
+      .catch(reason => console.warn(reason))
+  }
+
 
   window.addEventListener("load", async event => {
     const hf = document.querySelector('editor-hf')
     console.debug("Fetching", resourceName)
-    const fetched = fetch("/api/note/test")
+    const fetched = fetch(`/api/note/${resourceName}`)
       .then(res => res.status === 200 ? res.json() : Promise.reject("Couldn't fetch"))
-      .then(body => update(body))
+      .then(body => updateFromHTML(body)) // maybe good on initial load. Maybe not. I want to have the options for both, I reckon most back and forth data will be raw EditDocument though
       .catch(sad => console.warn(sad))
 
     import('/js/scribnet/document/Renderer.mjs').then(async m => {
@@ -47,6 +56,15 @@ title: Editing
       hf.editor.readDOM()
       hf.defaultRenderer = htmlRender
       hf.render()
+
+      hf.editor.currentDocument.addSelectListener(doc => {
+        // it's a little much to save /ALL THE TIME/ since.
+        // since it updates when basically /anything/ changes in the doc.
+        // I'd like to make a more sophisticated event system. For now....
+        const txt = htmlRender.toHTML(doc)
+        console.log(txt)
+        return saveHTML(htmlRender.toHTML(doc))
+      })
     })
   })
 
