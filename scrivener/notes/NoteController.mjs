@@ -212,6 +212,9 @@ class RouteNoteController {
       }
     })
 
+    // TODO "CRUDObject" abstraction? just make it really simple to have routes for an updateable resource? hm
+    //    incorporate w/the 'monadic' approach spelled out above?
+
     app.get('/note/:noteName', (req, res) => {
 
       // maybe- check existence for the condition,
@@ -233,6 +236,24 @@ class RouteNoteController {
         content: noteText
       }
       res.status(200).send(responseBody)
+    })
+
+    app.put('/note/:noteName', (req, res) => {
+      let note = this.notes.get(req.params.noteName)
+
+      if (note === undefined) {
+        res.status(404).send(`No note called '${req.params.noteName}'`)
+        return
+      }
+
+      // see, not 'note.Update()' would make sense, but we have to access it through the collection. The content of a note is owned by the note.
+      // Leaving this thought as a nudge-do (a soft TODO I guess). Assign ownership correctly. Harder TODO- test ya stuff.
+      // note.update()
+      this.notes.update(req.params.noteName, req.body())
+
+      // TODO more on a PUT?
+      res.status(200).send('OK')
+      
     })
 
     app.get('/notes', (req, res) => {
