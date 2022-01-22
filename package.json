@@ -11,7 +11,8 @@
     "server": "node scrivener/main.mjs",
     "test": "mocha test/**/*.mjs",
     "build-serve": "npx @11ty/eleventy --serve",
-    "build-watch": "npx @11ty/eleventy --watch"
+    "build-watch": "npx @11ty/eleventy --watch",
+    "build-watch-flexible": "DEV_FETCH_FAILS_BUILD=false npx @11ty/eleventy --watch"
   },
   "repository": {
     "type": "git",
