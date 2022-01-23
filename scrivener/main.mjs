@@ -71,11 +71,48 @@ console.log("Notes loaded", notes)
 //  most authorization should take place on a static page, for which access to the static
 //  page itself is not blocked, but content that the page loads IS, in which case there are
 //  two kinda views for the page. I see this as being managed by a custom component.
-const authenticator = new Authenticator()
+
+// authenticator that controls access to static resources
+
+// TODO might be nice to decouple an authenticators actions for a given path from the authenticator
+//  itself. That's a bit confusing, consider this example-
+//  I log in to my account. I get a userAuthenticator. Access to my resources are controlled by that
+//  authenticator. If it's a page resource, say I am an Admin user, then the authenticator might
+//  default to returning pages on a failure. If it's an API resource, say my user data, then the auth
+//  fail responses should be in JSON. But I'd like to log in with just /one/ authenticator and then
+//  the resource access guides the actions. for now, auth will send a page, and if we hit with API
+//  the reader will have to work off the response code.
+
+const StaticAuthenticator = class extends Authenticator {
+  constructor() {
+    super()
+
+    const setUnauthPage = string => this.unauthPage = string
+
+    fs.readFile(`${SITE_ROOT}/unauthorized/index.html`)
+      .then(buf => buf.toString())
+      .then(setUnauthPage)
+  }
+  invalidCredentialResponse() {
+    return this.unauthPage
+  }
+  invalidSessionResponse() {
+    return this.unauthPage
+  }
+}
+const authenticator = new StaticAuthenticator()
+// const authenticator = new Authenticator()
 mainRouter.use('/private', authenticator.authApp)
+mainRouter.use('/edit', authenticator.authApp)  // should actually be an API thing
+mainRouter.use('/login', authenticator.authApp)
+mainRouter.get('/login', (req, res) => {
+  res.redirect(301, "/")
+})
 
-console.log(`http://localhost:3000/private?${authenticator.accessParam}`)
-
+// supplying a redirect param essentially prevents the default action. I think it would behoove me to
+// make that a part of the Authenticator, which right now offloads a lot of work to a helper function
+// that assigns all the routes.
+console.log(`http://localhost:3000/login?${authenticator.accessParam}&redirect=note`)
 
 /////
 

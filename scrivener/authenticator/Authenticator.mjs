@@ -50,7 +50,7 @@ function tokenAuth(authenticator) {
   // parse out cookies
   authenticator.authApp.use(cookieParser())
   authenticator.authApp.use('/', (req, res, next) => {
-    const { accessSecret } = req.query
+    const { accessSecret, redirect } = req.query
     if (accessSecret !== undefined) {
       if (authenticator.urlLogin(accessSecret)) {
         const tok = authenticator.generateToken()
@@ -67,17 +67,23 @@ function tokenAuth(authenticator) {
         //  actually I think fetch might let us do user login without page reloads. Gotta explore.
 
         // may not want to redirect for a capability URL. or use a smarter redirect mechanism.
-        res.redirect(302, 'http://localhost:3000/private')
-        return
+        if (redirect !== undefined) {
+          res.redirect(302, redirect)
+          return
+        }
+        // Maybe default to an a redirect specified by authenticator? Probably 'next' is best, more
+        // composable.
+        next()
       } else {
         res.status(403)
-        res.send("Invalid credential")
-        return
+        res.send(authenticator.invalidCredentialResponse())
       }
+      return
     }
 
     // otherwise...
 
+    // TODO separate middleware?
     const sessionSecret = req.cookies[COOKIE_NAME]
     if (sessionSecret !== undefined) {  // We have a cookie
       if (authenticator.authorize(sessionSecret)) {
@@ -85,7 +91,7 @@ function tokenAuth(authenticator) {
         return
       }
     }
-    res.status(401).send("Invalid session")
+    res.status(401).send(authenticator.invalidSessionResponse())
   })
 
 }
@@ -109,6 +115,15 @@ export default class Authenticator {
 
   get accessParam() {
     return `accessSecret=${this.accessKey.toString()}`
+  }
+
+  // Want to override with, like. A page.
+  invalidSessionResponse() {
+    return "Invalid session"
+  }
+
+  invalidCredentialResponse() {
+    return "Invalid credential"
   }
 
   /**
