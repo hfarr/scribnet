@@ -8,7 +8,7 @@ import express, { application } from 'express'
 import { staticLocation } from './static/Static.mjs'
 import { Notes } from './notes/NoteController.mjs'
 import RouteNoteController from './notes/NoteController.mjs'
-import Authenticator from './authenticator/Authenticator.mjs'
+import Authenticator from './scopes/Access.mjs'
 
 const PATH = '/'
 const BIND_IP = '127.0.0.1'
