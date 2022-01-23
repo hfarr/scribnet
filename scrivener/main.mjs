@@ -103,7 +103,7 @@ const StaticAuthenticator = class extends Authenticator {
 const authenticator = new StaticAuthenticator()
 // const authenticator = new Authenticator()
 mainRouter.use('/private', authenticator.authApp)
-mainRouter.use('/edit', authenticator.authApp)  // should actually be an API thing
+// mainRouter.use('/edit', authenticator.authApp)  // should actually be an API thing
 mainRouter.use('/login', authenticator.authApp)
 mainRouter.get('/login', (req, res) => {
   res.redirect(301, "/")

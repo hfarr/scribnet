@@ -62,6 +62,8 @@ import path from 'path'
 
 import express from 'express'
 
+import { authorize } from '../authenticator/Authenticator.mjs'
+
 // right now only saves strings
 const fileSaver = location => (name, data) => {
   return fs.writeFile(`${location}${path.sep}${name}`, data, 'utf-8')
@@ -269,7 +271,7 @@ class RouteNoteController {
 
     // TODO work out data management responsibilities. And hey! TODO! move off raw, text to the appropriate middle-ware for the data (probably mostly json)
     //    having a very "gititdone" mood right now, which I feel is appropriate for early stages
-    app.use('/note/:noteName', express.text("utf-8"));
+    app.use('/note/:noteName', authorize("Unauthorized!"), express.text("utf-8"));
     app.put('/note/:noteName', (req, res) => {
       let note = this.notes.get(req.params.noteName)
 

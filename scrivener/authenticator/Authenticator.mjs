@@ -46,71 +46,104 @@ const createSessionSecret = () => {
 
 const COOKIE_NAME = '__scrivener_sessionSecret'
 
-function tokenAuth(authenticator) {
-  // parse out cookies
-  authenticator.authApp.use(cookieParser())
-  authenticator.authApp.use('/', (req, res, next) => {
-    const { accessSecret, redirect } = req.query
-    if (accessSecret !== undefined) {
-      if (authenticator.urlLogin(accessSecret)) {
-        const tok = authenticator.generateToken()
-        res.cookie(COOKIE_NAME, tok, { httpOnly: true })
-        // TODO a better redirect? maybe in the query param.
-        //  also, we might have different kinds of authorizations, this is authorization of the
-        //  user. It implicitly authorizes their javascript.
-        //  My gripe right now is that we don't have a way to configure auth flows, and I think
-        //  I want some flexibility. For example a JS authorization without reloading a page,
-        //  so the client javascript knows the secret. Hmm. Need to think on it more.
-        //  This "low-friction" account style works well for my main access control use case, I
-        //  think it's okay to keep it.
-        //  Hmm, does "fetch" automatically use the httpOnly cookies?
-        //  actually I think fetch might let us do user login without page reloads. Gotta explore.
 
-        // may not want to redirect for a capability URL. or use a smarter redirect mechanism.
-        if (redirect !== undefined) {
-          res.redirect(302, redirect)
-          return
-        }
-        // Maybe default to an a redirect specified by authenticator? Probably 'next' is best, more
-        // composable.
-        next()
-      } else {
-        res.status(403)
-        res.send(authenticator.invalidCredentialResponse())
-      }
-      return
-    }
+// TODO a better redirect? maybe in the query param.
+//  also, we might have different kinds of authorizations, this is authorization of the
+//  user. It implicitly authorizes their javascript.
+//  My gripe right now is that we don't have a way to configure auth flows, and I think
+//  I want some flexibility. For example a JS authorization without reloading a page,
+//  so the client javascript knows the secret. Hmm. Need to think on it more.
+//  This "low-friction" account style works well for my main access control use case, I
+//  think it's okay to keep it.
+//  Hmm, does "fetch" automatically use the httpOnly cookies?
+//  actually I think fetch might let us do user login without page reloads. Gotta explore.
 
-    // otherwise...
-
-    // TODO separate middleware?
-    const sessionSecret = req.cookies[COOKIE_NAME]
-    if (sessionSecret !== undefined) {  // We have a cookie
-      if (authenticator.authorize(sessionSecret)) {
-        next()
-        return
-      }
-    }
-    res.status(401).send(authenticator.invalidSessionResponse())
-  })
-
+const checkAuthorized = sessionSecret => {
+  if (sessionSecret !== undefined) {  // We have a cookie
+    return Authenticator.authorize(sessionSecret)
+  }
+  return false
 }
 
+const authenticator = authenticator => (req, res, next) => {
+  const sessionSecret = req.cookies[COOKIE_NAME]
+  const { accessSecret, redirect } = req.query
+
+  if (checkAuthorized(sessionSecret)) {
+    if (redirect !== undefined) {
+      res.redirect(302, redirect)
+    } else {
+      next()
+    }
+    return
+  }
+  if (accessSecret !== undefined && authenticator.urlLogin(accessSecret)) {
+    const tok = authenticator.generateToken()
+    res.cookie(COOKIE_NAME, tok, { httpOnly: true })
+
+    // may not want to redirect for a capability URL. or use a smarter redirect mechanism.
+    if (redirect !== undefined) {
+      res.redirect(302, redirect)
+      return
+    }
+    // Maybe default to an a redirect specified by authenticator? Probably 'next' is best, more
+    // composable.
+    next()
+    return
+  }
+  // should probably distinguish 401, 403
+  res.status(401)
+  res.send(authenticator.invalidCredentialResponse())
+  return
+}
+
+export const authorize = (invalidResponse = "Unauthorized") => (req, res, next) => {
+  if (req.cookies === undefined) {
+    cookieParser()(req, res, ()=>{})
+  }
+
+  const sessionSecret = req.cookies[COOKIE_NAME]
+  if (checkAuthorized(sessionSecret)) {
+    next()
+    return
+  }
+  res.status(401).send(invalidResponse)
+}
+
+
+// TODO okay. With a move to a static "Authenticator" a lot of code doesn't make sense now.
+// For example each authenticator instance has its own login token but they all create new
+// sessions on a global list of sessions. Not getting closer to my vision on how Auth can be
+// hooked up so I'm leaving as is. Presently Authorization is a binary state, you either are
+// or are not authorized, without any association to identity. This is sufficient for now.
+// N.B  I should sort through the vocabularly between Authorize and Authenticate which are
+//      different ideas. 
+// Moreover I need to take a good think about what I want this to look like. I like the idea
+// of flexibility creating/revoking capability URLs. And I to create a system that supports
+// a simple interface for a data & access model. Im not on track for either of those as I'm
+// still also concerned with the front end. For now I'm okay with the binary model.
 export default class Authenticator {
+
+  static activeTokens = new Map()
 
   constructor() {
 
     // this.sessions = {}
     // stateless sessions. if the client has the cookie they can access the resources. Simplistic. 
     // Do a security analysis at some point.
-    this.activeTokens = new Map()
+    // this.activeTokens = new Map()
     this.accessKey = createAccessKey()
 
 
     // console.log("Login url", `http://localhost:3000/scrivener/?accessSecret=${this.accessKey.toString()}`)
 
     this.authApp = express()
-    tokenAuth(this)
+    this.authApp.use(cookieParser(), authenticator(this))
+    // tokenAuth(this)
+  }
+
+  static authorize(token) {
+    return this.activeTokens.has(token)
   }
 
   get accessParam() {
@@ -137,15 +170,17 @@ export default class Authenticator {
     // we would store the hashed token (a secret) in case of a leak. for in memory
     // I'm going to insecurely store it plain.
     // using a map, not a set, in case I wan't to put some metadata like expiration.
-    this.activeTokens.set(token, "")
+    Authenticator.activeTokens.set(token, "")
 
     return token
   }
 
-  authorize(token) {
+  isAuthorized(token) {
 
     // crypto secure surely :I
-    return this.activeTokens.has(token)
+    // return this.activeTokens.has(token)
+
+    return Authenticator.authorize(token)
 
   }
 
