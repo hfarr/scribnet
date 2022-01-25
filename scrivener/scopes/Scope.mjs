@@ -1,3 +1,4 @@
+'use strict'
 /**
  * Scope access model
  * 
@@ -99,3 +100,78 @@
  * what you can do, like even if you have access to a post you might not have
  * access to post.update, only post.read, or an idea to this affect.
  */
+
+class Scope {
+
+  constructor() {
+    // kinda want to define the toString Symbol thing, later
+    this.parent = undefined   // intrusive stack
+    this.bindings = {}        // bound names to values
+  }
+
+  copy() {
+    const clone = new Scope()
+    // s.name = this.name
+    clone.parent = this.parent
+    clone.bindings = { ...this.bindings }
+
+    return clone
+  }
+
+  inherit(parentScope) {
+    const inheritor = this.copy()   // golly Im starting to think I'm fearful of state. I consider state an 'enhancement' for the purposes of new data, I suppose.
+    inheritor.parent = parentScope
+
+    return inheritor
+  }
+
+  bind(name, value) {
+    // it is prudent to expect 'value' to comply to an interface, defined when a Scope is created (before values are bound).
+    // the use of a scope is to find all values and do something with them so we will expect them to all comply. In this way
+    // scope has type polymorphism and we could declare scopes that are crawled for different uses. In practice the type
+    // will be varied so it can 'export' in many ways. Until we see a reason for explicit scoping for other uses I won't
+    // levy any requirements on scope's clients.
+    // one thought- values should be functions. Scope clients can distinguish ones with args/ones without? or maybe just the
+    // "actions" should be? hmm
+    // here's one thought on restrictions- we can use an "attributed scope" to set "attributes" on the bindings, much like...
+    // well, property attributes on objects. Basic ones would be like "get" and "set", extensible to "delete" or possibly
+    // something much more nuanced. Then scopes define the level of access, taking it a step beyond which names are available
+    // and closer to the vision. To get more advanced each "value" might have its own set of attributes. To manage this
+    // complexity I'd avoid requiring all "bindable" values to "know" their own attributes so they can be used in different
+    // scopes in different ways. Scopes is an external system that serves the wider app, it's not intrusive, and we'd like to
+    // exhibit that with the code.
+
+    const s = this.copy()
+    s.bindings = { [name]: value, ...s.bindings }
+
+    return s
+  }
+
+  // Could make scope an extension of Maps and get a lot of nice benefits as a direct result
+  // for now I want to explicitly specify its behavior
+  lookup(name) {
+    if (!Boolean(name)) {
+      // covered by the other cases, but we "fail early" instead, and convey a restriction on whats an acceptable name
+      return undefined
+    }
+    if (name in this.bindings) {
+      return this.bindings[name]
+    } else if (this.parent !== undefined) {
+      return this.parent.lookup(name)
+    }
+
+    return undefined
+  }
+}
+
+class NamedScope extends Scope {
+  constructor(name) {
+    super()
+    this.name = name
+  }
+  copy() {
+    const clone = super.copy()
+    clone.name = this.name
+    return clone
+  }
+}
