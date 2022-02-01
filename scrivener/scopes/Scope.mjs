@@ -175,3 +175,7 @@ class NamedScope extends Scope {
     return clone
   }
 }
+
+
+
+export { Scope, NamedScope }
