@@ -2,6 +2,9 @@
 
 import fs from 'fs/promises'
 
+// TODO work out a long term location for this symbol, if it should exist at all.
+// e.g should it belong to the Datable class?
+//    will datable even be a class long term?
 const datable = Symbol('datable')
 
 // Golly I have so much I want to write. A lot of grief over...
@@ -14,7 +17,13 @@ class Database {
   static async initFileDB(filename) {
     const db = new Database()
     db.filename = filename
-    return db.loadDB()
+    db.dataTable = new Map()  // maps position to data at that location
+    db.loadDB()
+    return db
+  }
+
+  async saveDB() {
+
   }
 
   async loadDB() {
@@ -24,7 +33,7 @@ class Database {
 
     // might be able to do it faster if I do a "seek/scan" type situation but we simply... won't for now.
     // the memory is temporary, the performance cost infrequent
-    return fs.readFile(this.filename, { encoding: 'utf16', flag: 'a+' })
+    fs.readFile(this.filename, { encoding: 'utf16', flag: 'a+' })
       .then(doLoad) // 'this' within a callback here, could be pain, so I bind it outside just to be safe. I might inline the lambda if I go back and read through the promise api again
 
     // below: wanted to "seek" over the file encoded char by encoded char.
@@ -43,47 +52,32 @@ class Database {
   }
 
   loadDBFromString(string) {
-    this.data = new Map()  // maps position to data at that location
-    // this.storedTypes = new Map()  // metadata- the positions for all 'like types'
 
     // const matchData = /(?<class>\w+[^{])(?<data>{[^\n]*})/g
-    let ids = 0;
+    let lineNumber = 0
     const datables = string.split('\n')
 
     for (const datum of datables) {
-      const { class: className, data: data } = matched
-
-      const position = matched.index + className.length // position of the data, not its meta data
-      this.positionTable.set(position, data)
-      // this.push(className, data) // eh. we'll derive it after the fact. If it's slow, I can then optimize.
-      // honestly I could just serialize as  {class: '...', data:'...' } ? yeah. that would be a "Datable".
-      // mmmmmmmmmmmmmmm
+      this.dataTable.set(lineNumber, datum)
+      lineNumber++
     }
   }
 
-  // push(type, data) {
+  async save(content /* Datable */) {
 
-  //   if (!this.storedTypes.has(type)) this.storedTypes.set(type, [])
-  //   this.storedTypes.get(type).push(data)
-  // }
-  initAll(constructor) {
-    const className = constructor.name
-
-
-  }
-
-
-  save(content /* Datable */) {
-    if (!(content instanceof Datable)) {
+    if (!(isDatable(content))) {
       throw new Error("Could not save object (Not serializeable):", content)
     }
 
-    const promise = fs.open(this.filename)
-      .then(file => {
+    // const promise = fs.open(this.filename)
+    //   .then(file => {
 
-      })
+    //   })
+    this.dataTable.set(content[datable].id, content)
 
-    // return fs.
+    // save DB on each write? likely expensive. For a dev db not an issue majeur,
+    // we should at least support updating only part of it.
+    // I kinda want to look at DB implementations now :S
   }
   load(content /* Datable */) {
 
@@ -91,27 +85,53 @@ class Database {
 }
 
 const isDatable = obj => {
-  return false
-  if (datable in obj) {
-    return true
-  }
+  // longer term, we might enable other types to be 'datable'.
+  // particularly strings and arrays.
+  // maybe we chill our jets. Hmm. well. Regardless there is
+  // room for enhancement.
+  if (typeof obj !== 'object') return false
 
-  if (Object.getPrototypeOf(obj) !== Object.prototype) {
-    return isDatable(Object.getPrototypeOf(obj))
-  }
-
-  return false
+  // 'in' operator essentially means, for the below, obj[Symbol.hasInstance](datable)
+  // if 'obj' doesn't support 'in', it won't have Symbol.hasInstance defined.
+  // then that is an error of sorts. Not so good! hence the check above.
+  return datable in obj
 }
 
 class Dataccess {
   constructor() {
     this.constructors = {}
+
+    // for now primitive incremental ID functionality
+    // this attribute indicates the next ID to be used
+    this.nextID = 0
+  }
+
+  static initFileDataccess(filename) {
+    const datacc = new Dataccess()
+    datacc.setDatabase(Database.initFileDB(filename))
+    this.nextID = this.db
+    return datacc
+  }
+
+  setDatabase(db) {
+    this.db = db
+  }
+
+  newID() {
+    return this.nextID++
   }
 
   register(constructorFunc) {
     const consProto = Object.getPrototypeOf(constructorFunc.prototype)
+
+    // maybe use Object.create, and maybe match IDs to existing protos? e.g on serde
+    // I'm getting a bit fast and loose with my prototype hackery, we should settle
+    // on the capabilities.
+
     // const newProto = (class extends Datable { static sym = Symbol('datableID') }).prototype
-    const newProto = (class extends Datable { get constructorFunc() { return constructorFunc } }).prototype
+    const idFunc = this.newID.bind(this)
+    const newProto = (class extends Datable { get newID() { return idFunc() } }).prototype
+    // newProto[newID] = idFunc
     // Object.setPrototypeOf(newProto, consProto)
     Object.setPrototypeOf(constructorFunc.prototype, newProto)
 
@@ -129,8 +149,8 @@ class Dataccess {
   loadInstance(stringData) {
     const { class: className } = JSON.parse(stringData)  // TODO unsafe, be warned. Or, verify safety. Strings are dangerous.
 
-    if (!(className in this.constructors)) {  
-      throw new (class DeserializationError extends Error {})(`Cannot load instance of '${className}', the class is not registered.`)
+    if (!(className in this.constructors)) {
+      throw new (class DeserializationError extends Error { })(`Cannot load instance of '${className}', the class is not registered.`)
     }
     // Create the object with the appropriate prototype (instance of a class)
     const obj = Object.create(this.constructors[className].prototype)
@@ -138,11 +158,20 @@ class Dataccess {
 
     return obj
   }
+
+  loadAllInstances(constructor) {
+    const className = constructor.name
+    const classData = this.dataTable?.entries
+      .filter(entry => entry[1]['class'] === className)
+      .map(classEntry => this.loadInstance(classEntry[1]['data']))
+    return classData
+  }
 }
 
 
 class Datable {
 
+  static attrs = Symbol('attributes')
   constructor() { // constructor is not called. 'Datable' in concept exists only to conveniently name the prototype
 
   }
@@ -156,8 +185,15 @@ class Datable {
 
   // }
 
-  // eh. Doesn't seem useful for deserialization.
-  get constructorFunc() {}
+  get [datable]() { 
+    const attrs = this[Datable.attrs]
+    if (attrs === undefined) {
+      this[Datable.attrs] = {
+        id: this.newID,
+      }
+    }
+    return this[Datable.attrs] 
+  }
 
   serialize() {
 
@@ -167,24 +203,30 @@ class Datable {
         data[name] = 'placeholder'
       else
         data[name] = this[name]
-      
+
     }
 
-    return JSON.stringify({ class: this.constructor.name, data: data })
+    const objData = {
+      id: this[datable].id,
+      class: this.constructor.name, 
+      data: data
+    }
+
+    return JSON.stringify(objData)
   }
 
   // thought: deserialized object, return an existing object if they are the same? (that is, mem location?)
   // requires ID'ing by instance. could be fruitful. but could also lead to super unexpected results. Let
   // that behavior fall out through composition of capabilities. I suppose.
   deserialize(stringData) {
-    // const constructorFunc = this.constructor()
     // Note bien that this deserialize function is destructive, it replaces state of an object. it doesn't produce
     // a new one. Again we might change that but I don't have the "feel" of this system yet.
-    const { class: className, data } = JSON.parse(stringData)  // TODO unsafe, be warned. Or, verify safety. Strings are dangerous.
+    const { id: idNum, class: className, data: data } = JSON.parse(stringData)  // TODO unsafe, be warned. Or, verify safety. Strings are dangerous.
+    this[Datable.attrs] = { id: idNum }
 
     // would be okay if className is a subclass of this.constructor
-    if (className !== this.constructor.name) {  
-      throw new (class DeserializationError extends Error {})(`Cannot create ${this.constructor.name} from '${className}'`)
+    if (className !== this.constructor.name) {
+      throw new (class DeserializationError extends Error { })(`Cannot create ${this.constructor.name} from '${className}'`)
     }
     // Create the object with the appropriate prototype (instance of a class)
     // const obj = Object.create(this.constructors[className].prototype)
