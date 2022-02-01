@@ -30,8 +30,6 @@ mainApp.use(mainRouter)
 const staticAll = makeStatic(NOTES_ROOT)
 const staticEdit = makeStatic(EDIT_ROOT)
 
-
-
 ///// load all note files (for a premier vertical slice, all notes will be loaded, there is only one set of notes, viva la revolucion)
 const NOTE_FOLDER = "note-folder" 
 // mmmm yeah. This file (that is, main.mjs) is like the early editor.njk, a kinda grunge forceps
@@ -82,6 +80,29 @@ console.log("Notes loaded", notes)
 //  fail responses should be in JSON. But I'd like to log in with just /one/ authenticator and then
 //  the resource access guides the actions. for now, auth will send a page, and if we hit with API
 //  the reader will have to work off the response code.
+
+//////
+import { Scope, NamedScope } from './scopes/Scope.mjs'
+
+// Scope will serve an API showing your level of resource access
+// for public, its all routes, as good as a site map-
+// 11ty can use it to build its content dynamically, I won't even
+// have to specify which specific resources. Just grab all the public ones.
+// So far restricting myself to 'scoping' the API, the rest will come as
+// enhancements
+
+// resources... am I binding actions, independent of the data? (control vs data, I sure do love citing whatever I've most recently read. Thanks G. Hutton)
+// or are the 'bindable' resources have a common understanding of what it means to be fetched? I want a mix- fetching the 
+// resource ought to be as good as referencing it from the client side by name. its the restrictions on actions, like read
+// only, that I'm not sure how to tackle. Maybe its the projection of scopes into, say, an HTTP controller API that gets
+// into the specification.
+let publicScope = new NamedScope('Public')
+publicScope.bind("notes", notes)
+
+
+
+
+
 
 const StaticAuthenticator = class extends Authenticator {
   constructor() {
