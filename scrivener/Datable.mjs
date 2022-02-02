@@ -164,15 +164,15 @@ class Dataccess {
   }
 
   // TODO shoud load by ID? hm
-  loadInstance(stringData) {
-    const { class: className } = JSON.parse(stringData)  // TODO unsafe, be warned. Or, verify safety. Strings are dangerous.
+  loadInstance(packedData) {
+    const { class: className } = packedData  // TODO unsafe, be warned. Or, verify safety. Strings are dangerous.
 
     if (!(className in this.constructors)) {
       throw new (class DeserializationError extends Error { })(`Cannot load instance of '${className}', the class is not registered.`)
     }
     // Create the object with the appropriate prototype (instance of a class)
     const obj = Object.create(this.constructors[className].prototype)
-    obj.deserialize(stringData)
+    obj.deserialize(packedData)
 
     return obj
   }
@@ -180,9 +180,9 @@ class Dataccess {
   // should fetch the IDs?
   loadAllInstances(constructor) {
     const className = constructor.name
-    const classData = this.dataTable?.entries
+    const classData = [...this.db.dataTable?.entries()] // accept a filter in Database? move the responsibility there? it's a query you know, of a kind. Seems to be a Datasytem responsibility
       .filter(entry => entry[1]['class'] === className)
-      .map(classEntry => this.loadInstance(classEntry[1]['data']))
+      .map(classEntry => this.loadInstance(classEntry[1]))
     return classData
   }
 }
