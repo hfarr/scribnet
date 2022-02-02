@@ -7,6 +7,7 @@ const PATH = "../../../scrivener/Datable.mjs"
 import { Datable, Dataccess, Database } from "../../scrivener/Datable.mjs"
 
 const testFilePath = 'data-folder/testdbfile'
+const testFilePersistentPath = 'data-folder/testdbfilepersistent'
 class SimpleDoc {
   constructor(title, content) {
     this.title = title
@@ -68,5 +69,20 @@ describe('Dataccess', function() {
       .then(str => assert(str.length > 0))
   })
 
+  it('loads data from a file', async function() {
+    let dacc = await Dataccess.initFromFile(testFilePersistentPath)
+    dacc.register(SimpleDoc)
+    dacc.register(SimpleAuthor)
+
+    // this is a bit prescriptive, "loads data from a file" doesn't necessarily mean we just test loadAllInstances
+    // will likely need to iterate on these tests too. For example put these in a test of specifically the
+    // loadAllInstances method
+    let simDocs = dacc.loadAllInstances(SimpleDoc)
+    let simAuthor = dacc.loadAllInstances(SimpleAuthor)
+
+    assert(simDocs.every( obj => obj instanceof SimpleDoc))
+    assert(simAuthor.every( obj => obj instanceof SimpleAuthor))
+    
+  })
 
 })
