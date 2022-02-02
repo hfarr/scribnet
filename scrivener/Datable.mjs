@@ -1,6 +1,7 @@
 'use strict';
 
 import fs from 'fs/promises'
+import path from 'path'
 
 // TODO work out a long term location for this symbol, if it should exist at all.
 // e.g should it belong to the Datable class?
@@ -17,49 +18,53 @@ class Database {
   static async initFileDB(filename) {
     const db = new Database()
     db.filename = filename
+    // Too redundant to create new objects here? (They will be created in loadDB)
     db.dataTable = new Map()  // maps position to data at that location
-    db.loadDB()
-    return db
+    db.locations = new Map()  // should keep sorted by location. It will start that way and if I control updates it will stay that way but as access gets more complicated we'll see.
+    return db.loadDB()
+      .then( _ => db)
   }
 
-  async saveDB() {
+  get length() {
+    return this.dataTable.length
+  }
 
+  /**
+   * Save to file, truncating & overwriting existing file. This is destructive.
+   */
+  async saveDB() {
+    const dataStrings = []
+    for (const [ id, data ] of this.dataTable.entries()) {
+      dataStrings.push(JSON.stringify(data))
+    }
+    return fs.writeFile(this.filename, dataStrings.join('\n'), { encoding: 'utf8' })
   }
 
   async loadDB() {
-    // ;(await fs).open()
-
-    const doLoad = s => this.loadDBFromString(s)
 
     // might be able to do it faster if I do a "seek/scan" type situation but we simply... won't for now.
     // the memory is temporary, the performance cost infrequent
-    fs.readFile(this.filename, { encoding: 'utf16', flag: 'a+' })
-      .then(doLoad) // 'this' within a callback here, could be pain, so I bind it outside just to be safe. I might inline the lambda if I go back and read through the promise api again
-
-    // below: wanted to "seek" over the file encoded char by encoded char.
-    // thing is, the performance gain isn't superb and while I would need
-    // less memory, I will replace this with a proper database anyway.
-    // and I can re-do it later if I want.
-    // fs.open(this.filename, 'a+')
-    //   .then(fh => {
-    //     let position = 0;
-    //     let buf = Buffer.alloc(2)
-
-    //     let bytesRead = -1;
-    //     while(bytesRead !== 0) {
-    //       ({ bytesRead } = await fh.rea)
-    //     }
+    return fs.open(this.filename, 'a+')
+      .then(f => f.readFile({ encoding: 'utf8', flag: 'a+' }))
+      .then(s => this.loadDBFromString(s))
   }
 
   loadDBFromString(string) {
+    this.dataTable = new Map()
+    this.locations = new Map()
 
+    if (string.length === 0) return
     // const matchData = /(?<class>\w+[^{])(?<data>{[^\n]*})/g
     let lineNumber = 0
     const datables = string.split('\n')
 
-    for (const datum of datables) {
-      this.dataTable.set(lineNumber, datum)
+    for (const raw of datables) {
       lineNumber++
+      const datum = JSON.parse(raw)
+      const idNumber = datum.id
+
+      this.dataTable.set(idNumber, datum)
+      this.locations.set(idNumber, lineNumber)
     }
   }
 
@@ -69,15 +74,15 @@ class Database {
       throw new Error("Could not save object (Not serializeable):", content)
     }
 
-    // const promise = fs.open(this.filename)
-    //   .then(file => {
-
-    //   })
+    const lineNumber = this.locations.get(content.id)
     this.dataTable.set(content[datable].id, content)
 
-    // save DB on each write? likely expensive. For a dev db not an issue majeur,
-    // we should at least support updating only part of it.
-    // I kinda want to look at DB implementations now :S
+    // for now all saves go to disk immediately
+    this.saveDB()
+
+    // would like a write buffer
+    // on load, we can force a write first if the data requested is in the buffer
+    // or just serve the in-memory content
   }
   load(content /* Datable */) {
 
@@ -106,10 +111,12 @@ class Dataccess {
     this.nextID = 0
   }
 
-  static initFileDataccess(filename) {
+  static async initFromFile(filename) {
     const datacc = new Dataccess()
-    datacc.setDatabase(Database.initFileDB(filename))
-    this.nextID = this.db
+    const db = await Database.initFileDB(filename)
+    datacc.setDatabase(db)
+    datacc.nextID = datacc.db.length
+
     return datacc
   }
 
@@ -121,6 +128,11 @@ class Dataccess {
     return this.nextID++
   }
 
+  /**
+   * Register a class for serialization to this Dataccess
+   * 
+   * @param constructorFunc Class to register
+   */
   register(constructorFunc) {
     const consProto = Object.getPrototypeOf(constructorFunc.prototype)
 
@@ -144,6 +156,12 @@ class Dataccess {
     // one-name-one-constructor then. Hmm.
     // TODO handle the above situation.
     this.constructors[constructorFunc.name] = constructorFunc
+  }
+
+  saveInstance(datable) {
+    // TODO check if it is a Datable
+    const stringData = datable.serialize()
+    this.db.save
   }
 
   loadInstance(stringData) {
@@ -260,3 +278,5 @@ let doc = new Document()
 // console.log(doc.serialize())
 let hoc = dacc.loadInstance(doc.serialize())
 console.log("done")
+
+export { Database, Datable, Dataccess }
