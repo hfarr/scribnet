@@ -25,8 +25,8 @@ class Database {
       .then( _ => db)
   }
 
-  get length() {
-    return this.dataTable.length
+  get size() {
+    return this.dataTable.size
   }
 
   /**
@@ -44,9 +44,12 @@ class Database {
 
     // might be able to do it faster if I do a "seek/scan" type situation but we simply... won't for now.
     // the memory is temporary, the performance cost infrequent
+    let fileHandle
     return fs.open(this.filename, 'a+')
-      .then(f => f.readFile({ encoding: 'utf8', flag: 'a+' }))
+      .then(f => fileHandle = f)
+      .then(_ => fileHandle.readFile({ encoding: 'utf8', flag: 'a+' }))
       .then(s => this.loadDBFromString(s))
+      .then(_ => fileHandle.close())
   }
 
   loadDBFromString(string) {
@@ -68,17 +71,14 @@ class Database {
     }
   }
 
-  async save(content /* Datable */) {
+  async save(id, content /* Datable */) {
 
-    if (!(isDatable(content))) {
-      throw new Error("Could not save object (Not serializeable):", content)
-    }
-
-    const lineNumber = this.locations.get(content.id)
-    this.dataTable.set(content[datable].id, content)
+    const lineNumber = this.locations.get(id)
+    // this.dataTable.set(content[datable].id, content)
+    this.dataTable.set(id, content)
 
     // for now all saves go to disk immediately
-    this.saveDB()
+    return this.saveDB()
 
     // would like a write buffer
     // on load, we can force a write first if the data requested is in the buffer
@@ -115,7 +115,7 @@ class Dataccess {
     const datacc = new Dataccess()
     const db = await Database.initFileDB(filename)
     datacc.setDatabase(db)
-    datacc.nextID = datacc.db.length
+    datacc.nextID = datacc.db.size
 
     return datacc
   }
@@ -158,12 +158,12 @@ class Dataccess {
     this.constructors[constructorFunc.name] = constructorFunc
   }
 
-  saveInstance(datable) {
+  async saveInstance(data) {
     // TODO check if it is a Datable
-    const stringData = datable.serialize()
-    this.db.save
+    return this.db.save(data[datable].id, data.serialize())
   }
 
+  // TODO shoud load by ID? hm
   loadInstance(stringData) {
     const { class: className } = JSON.parse(stringData)  // TODO unsafe, be warned. Or, verify safety. Strings are dangerous.
 
@@ -177,6 +177,7 @@ class Dataccess {
     return obj
   }
 
+  // should fetch the IDs?
   loadAllInstances(constructor) {
     const className = constructor.name
     const classData = this.dataTable?.entries
@@ -187,6 +188,13 @@ class Dataccess {
 }
 
 
+// maybe being 'datable' is more like a pointer to a struct in C
+// id is the value of the pointer referencing the memory location
+// in whichever scheme. In a program that's your program memory,
+// and for us now that's the location in the file.
+// in fact, that's kinda what we're doing isn't it? I plan to
+// have "datable" members of other datables be replaced by their
+// IDs in serialization. hmm!
 class Datable {
 
   static attrs = Symbol('attributes')
@@ -213,6 +221,12 @@ class Datable {
     return this[Datable.attrs] 
   }
 
+  /**
+   * Return the representation of the payload of this datable 
+   * structured with metadata
+   * 
+   * @returns An "object serialization"
+   */
   serialize() {
 
     const data = {}
@@ -230,16 +244,16 @@ class Datable {
       data: data
     }
 
-    return JSON.stringify(objData)
+    return objData
   }
 
   // thought: deserialized object, return an existing object if they are the same? (that is, mem location?)
   // requires ID'ing by instance. could be fruitful. but could also lead to super unexpected results. Let
   // that behavior fall out through composition of capabilities. I suppose.
-  deserialize(stringData) {
+  deserialize(structuredData) {
     // Note bien that this deserialize function is destructive, it replaces state of an object. it doesn't produce
     // a new one. Again we might change that but I don't have the "feel" of this system yet.
-    const { id: idNum, class: className, data: data } = JSON.parse(stringData)  // TODO unsafe, be warned. Or, verify safety. Strings are dangerous.
+    const { id: idNum, class: className, data: data } = structuredData
     this[Datable.attrs] = { id: idNum }
 
     // would be okay if className is a subclass of this.constructor
@@ -270,13 +284,13 @@ class Document {
   }
 }
 
-let dacc = new Dataccess()
-dacc.register(Document)
+// let dacc = new Dataccess()
+// dacc.register(Document)
 
-let doc = new Document()
+// let doc = new Document()
 
 // console.log(doc.serialize())
-let hoc = dacc.loadInstance(doc.serialize())
-console.log("done")
+// let hoc = dacc.loadInstance(doc.serialize())
+// console.log("done")
 
 export { Database, Datable, Dataccess }

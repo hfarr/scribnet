@@ -6,7 +6,7 @@ import fs from 'fs/promises';
 const PATH = "../../../scrivener/Datable.mjs"
 import { Datable, Dataccess, Database } from "../../scrivener/Datable.mjs"
 
-const testFilePath = 'data-folder/dbfile'
+const testFilePath = 'data-folder/testdbfile'
 class SimpleDoc {
   constructor(title, content) {
     this.title = title
@@ -44,6 +44,10 @@ describe('Dataccess', function() {
 
   })
 
+  this.afterAll(function() {
+    fs.rm(testFilePath)
+  })
+
   it('loads data from a file', async function() {
     let dacc = await Dataccess.initFromFile(testFilePath)
     dacc.register(SimpleDoc)
@@ -59,7 +63,9 @@ describe('Dataccess', function() {
       new SimpleDoc("How to get away with murder in 3 easy steps", "Step 1: Look behind you right now"),
       new SimpleAuthor("Henry", "Bloggeur. Farrfetched.")
     ]
-    values.forEach(v => dacc.saveInstance(v))
+    Promise.all(values.map( v => dacc.saveInstance(v)) )
+      .then(_ => fs.readFile(testFilePath, { flag: 'r+' } ))
+      .then(str => assert(str.length > 0))
   })
 
 
