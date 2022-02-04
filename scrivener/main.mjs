@@ -6,9 +6,11 @@ import fs from 'fs/promises'
 import express, { application } from 'express'
 
 import { staticLocation } from './static/Static.mjs'
-import { Notes } from './notes/NoteController.mjs'
+// import { Notes } from './notes/NoteController.mjs'
+import Note from './notes/Note.mjs'
 import RouteNoteController from './notes/NoteController.mjs'
 import Authenticator from './scopes/Access.mjs'
+import datasytem, { Dataccess, Datable } from './Datable.mjs'
 
 const PATH = '/'
 const BIND_IP = '127.0.0.1'
@@ -32,6 +34,8 @@ const staticEdit = makeStatic(EDIT_ROOT)
 
 ///// load all note files (for a premier vertical slice, all notes will be loaded, there is only one set of notes, viva la revolucion)
 const NOTE_FOLDER = "note-folder" 
+const DATA_FOLDER = "data-folder"
+const DATA_DB_FILE = `${DATA_FOLDER}/dbfile`
 // mmmm yeah. This file (that is, main.mjs) is like the early editor.njk, a kinda grunge forceps
 // holding open meaty internals, taking whatever steps needed to exercise a maturing code base
 // const names = await fs.readdir(NOTE_FOLDER)  // yeah I could jsut use fs and not the promise version. oh well.
@@ -39,12 +43,16 @@ const NOTE_FOLDER = "note-folder"
 // for (const noteName of names) {
 //   notes.update
 // }
+const dacc = await Dataccess.initFromFile(DATA_DB_FILE)
+dacc.register(Note)
+const notes = dacc.loadAllInstances(Note)
 
-const pairEm = (name, promise) => Promise.all([Promise.resolve(name), promise])
+// const pairEm = (name, promise) => Promise.all([Promise.resolve(name), promise])
 
-const notes = await fs.readdir(NOTE_FOLDER)
-  .then( noteNames => Promise.all(noteNames.map(name => pairEm(name, fs.readFile(`${NOTE_FOLDER}/${name}`, {encoding: "utf-8" })))) )
-  .then( notesList => Notes.fromNotesMap(new Map(notesList)) )
+// const notes = await fs.readdir(NOTE_FOLDER)
+  // .then( noteNames => Promise.all(noteNames.map(name => pairEm(name, fs.readFile(`${NOTE_FOLDER}/${name}`, {encoding: "utf-8" })))) )
+  // .then( notesList => Notes.fromNotesMap(new Map(notesList)) )
+
 
 // I am thinking presently... yes, we don't want to organize by functionality, or by 'layer', it's all about capabilities
 // and interfaces. okay. So, a "notes controller" should probably own the responsibility of storing/saving notes. that in
@@ -180,10 +188,72 @@ mainRouter.get('/edit/:notename', async (req, res) => {
 
 // mainApp.use('/api', express.json())
 mainRouter.use('/api', (req, res, next) => {
-  res.set('Content-Type', 'text/json')
+  // probably don't need this because I think express adds it automatically
+  res.set('Content-Type', 'application/json')
   next()
 })
-mainRouter.use('/api', allNotesAPI.app)
+// mainRouter.use('/api', allNotesAPI.app)
+
+// temp
+const publicNotes = express.Router()
+publicNotes.use('/', (req, res, next) =>{
+  console.log("Request received", req.method, req.originalUrl)
+  next()
+})
+publicNotes.use('/', express.json())
+publicNotes.get('/notes', (req, res) => {
+  res.status(200).send(notes.map(n => n.name))
+})
+publicNotes.use('/note/:noteName', 
+  (req, res, next) => {
+    const replaced = req.params.noteName.replace(/%20/g, "-")
+    req.params.noteName = replaced
+    next()
+  }, 
+  express.text('utf-8')
+  )
+publicNotes.get('/note/:noteName', (req, res) => {
+  const note = notes.find( n => n.name === req.params.noteName)
+  if (note === undefined) {
+    res.status(404).send(`No note called '${req.params.noteName}'`)
+    return
+  }
+  // const respBody = note  // maybe do this?
+  const respBody = {
+    name: note.name,
+    content: note.content
+  }
+  res.status(200).send(respBody)
+})
+publicNotes.put('/note/:noteName', (req, res) => {
+  const note = notes.find( n => n.name === req.params.noteName)
+
+  if (note === undefined) {
+    res.status(404).send(`No note called '${req.params.noteName}'`)
+    return
+  }
+
+  const { content = undefined } = req.body
+  if (content !== undefined)
+    note.content = content
+
+  dacc.saveInstance(note)
+    .then(_ => res.status(200).send('OK'))
+    .catch(_ => res.status(500).send('Oops'))
+})
+publicNotes.post('/note/:noteName', (req, res) => {
+  const { content = "blank" } = req.body ?? undefined
+  const note = new Note(req.params.noteName, content)
+  notes.push(note)
+  // ^^^^ Instead of that, we could also refresh the 'notes' from the list. Or, when 'notes' itself becomes a saved object, if something is not in memory then it would load from dataccess. Implicitly!
+  // we'd still need to associate it though. It would fall through out of scopes. Visiting a set of API routes implicitly yields a scope of, say, 'public'. Then we'd do 'notes.create' or rather the
+  // operations performed are performed on public. When a new note is added to public that 'scope' entity does the wiring up, we might not even know it has a list internally.
+  dacc.saveInstance(note)
+    .then(_ => res.status(200).send('OK'))
+    .catch(_ => res.status(500).send('Oops'))
+})
+mainRouter.use('/api', publicNotes)
+
 
 // mainApp.get('/api/notes', async (req, res) => {
 //   // likely need to pass url-safe over these, so we can have all valid filenames (spaces come to mind)

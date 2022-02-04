@@ -33,7 +33,7 @@ permalink: "note/{{ noteItem.name | slug }}/"
   have a component in place that can update in-place. Only available if you have permissions.
   TODO iDEA for later 
   #}
-<a href="/edit/{{ noteItem.name }}">Edit</a>
+<a href="/edit/{{ noteItem.name | slug }}">Edit</a>
 <br>
 {{ noteItem.content | safe }}
 

@@ -293,4 +293,6 @@ class Document {
 // let hoc = dacc.loadInstance(doc.serialize())
 // console.log("done")
 
+export default { Dataccess }
+
 export { Database, Datable, Dataccess }

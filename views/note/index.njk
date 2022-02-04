@@ -7,6 +7,6 @@ title: All notes
 
 <ul>
 {%- for note in notes -%}
-  <li><a href="./{{ note.name }}">{{ note.name }}</a></li>
+  <li><a href="./{{ note.name | slug }}">{{ note.name }}</a></li>
 {%- endfor -%}
 </ul>
