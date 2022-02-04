@@ -29,6 +29,10 @@ class Database {
     return this.dataTable.size
   }
 
+  get allIDs() {
+    return [...this.dataTable.keys()]
+  }
+
   /**
    * Save to file, truncating & overwriting existing file. This is destructive.
    */
@@ -115,8 +119,11 @@ class Dataccess {
     const datacc = new Dataccess()
     const db = await Database.initFileDB(filename)
     datacc.setDatabase(db)
-    datacc.nextID = datacc.db.size
 
+    const max = (a,b) => a >= b ? a : b
+    const maxID = datacc.db.allIDs.reduce(max, 0)
+
+    datacc.nextID = maxID + 1
     return datacc
   }
 
