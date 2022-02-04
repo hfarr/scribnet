@@ -62,7 +62,7 @@ import path from 'path'
 
 import express from 'express'
 
-import { authorize } from '../authenticator/Authenticator.mjs'
+import { authorize } from '../scopes/Access.mjs'
 
 // right now only saves strings
 const fileSaver = location => (name, data) => {
