@@ -24,12 +24,12 @@ title: Editing
     // ah, maybe we just throw out the editor?
   }
 
-  const saveHTML = async htmlContent => {
+  const saveHTML = async content => {
 
     // hyeah. We're sending HTML but for now path of least resistance, PoLR, dragged me to uh, ill suited means. Really just want to see that read/write action you know?
     // Not using proper string encoding yet
     return Promise.resolve()
-      .then(_ => fetch(`/api/note/${resourceName}`, { method: 'PUT', headers: { 'Content-Type': 'text/plain' }, body: htmlContent }))
+      .then(_ => fetch(`/api/note/${resourceName}`, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(content) }))
       // .then(resp =>  {if (!resp.ok) return Promise.reject(resp.status)})
       // .catch(reason => console.warn("hi", reason))
   }
@@ -64,7 +64,7 @@ title: Editing
         // I'd like to make a more sophisticated event system. For now....
         const txt = htmlRender.toHTML(doc)
         // console.log(txt)
-        return saveHTML(htmlRender.toHTML(doc))
+        return saveHTML({ content: htmlRender.toHTML(doc) })
       })
     })
   })
