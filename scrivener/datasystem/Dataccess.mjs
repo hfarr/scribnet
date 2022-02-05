@@ -72,6 +72,16 @@ export default class Dataccess {
     return this.db.save(data.serialize())
   }
 
+  // Alright. So, I'm thinking, rather than have intermediate dataformats
+  // (the result of data.serialize(), and what we pass to data.deserialize)
+  // we oughta just send 'data' to the DB. Hear me out. We have a contract
+  // with the DB where we tell it how data are constructed, meta data, etc.
+  // That is, we tell it how data are serialized/deserialized- really, that
+  // knowledge is above the paygrade of Dataccess. What would that look
+  // like? Database just takes in the Datable, and knows that it has
+  // serialize/deserialize constructs.
+  // we kinda still have the intermediate format, though, but it's not
+  // passed through Dataccess
   async loadInstance(data) {
     const loaded = await this.db.load(data)
     // Destructive. Deserialize replaces items in data.
