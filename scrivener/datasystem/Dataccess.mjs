@@ -17,12 +17,13 @@ export default class Dataccess {
   static async initFromFile(filename) {
     const datacc = new Dataccess()
     const db = await Database.initFileDB(filename)
+    db.idAccessor = data => data[datable].id
     datacc.setDatabase(db)
 
-    const max = (a,b) => a >= b ? a : b
-    const maxID = datacc.db.allIDs.reduce(max, 0)
+    // const max = (a,b) => a >= b ? a : b
+    // const maxID = datacc.db.allIDs.reduce(max, 0)
 
-    datacc.nextID = maxID + 1
+    // datacc.nextID = maxID + 1
     return datacc
   }
 
@@ -30,9 +31,6 @@ export default class Dataccess {
     this.db = db
   }
 
-  newID() {
-    return this.nextID++
-  }
 
   /**
    * Register a class for serialization to this Dataccess
@@ -48,8 +46,12 @@ export default class Dataccess {
 
     // idFunc might depend on the underlying database, eventually. My adhoc dependency injection approach supports that.
     // In principle Datables don't manage their own metadata, it's up to the surrounding system
-    const idFunc = this.newID.bind(this)  
+    const idFunc = this.db.idFunc
+
+    // we create the prototype by extending Datable, and not just Datable.prototype, because we might
+    // do things with one Datable that we don't want reflected to all of them.
     const newProto = (class extends Datable { get newID() { return idFunc() } }).prototype
+
     // newProto[newID] = idFunc
     // Object.setPrototypeOf(newProto, consProto)
     Object.setPrototypeOf(constructorFunc.prototype, newProto)
@@ -67,11 +69,17 @@ export default class Dataccess {
 
   async saveInstance(data) {
     // TODO check if it is a Datable
-    return this.db.save(data[datable].id, data.serialize())
+    return this.db.save(data.serialize())
+  }
+
+  async loadInstance(data) {
+    const loaded = await this.db.load(data)
+    // Destructive. Deserialize replaces items in data.
+    data.deserialize(loaded)
   }
 
   // TODO shoud load by ID? hm
-  loadInstance(packedData) {
+  fromPacked(packedData) {
     const { class: className } = packedData  // TODO unsafe, be warned. Or, verify safety. Strings are dangerous.
 
     if (!(className in this.constructors)) {
@@ -87,9 +95,10 @@ export default class Dataccess {
   // should fetch the IDs?
   loadAllInstances(constructor) {
     const className = constructor.name
-    const classData = [...this.db.dataTable?.entries()] // accept a filter in Database? move the responsibility there? it's a query you know, of a kind. Seems to be a Datasytem responsibility
-      .filter(entry => entry[1]['class'] === className)
-      .map(classEntry => this.loadInstance(classEntry[1]))
+    const classData = this.db.all
+      .filter(packedData => packedData?.class === className)
+      // .filter(entry => entry[1]['class'] === className)
+      .map(packedData => this.fromPacked(packedData))
     return classData
   }
 }

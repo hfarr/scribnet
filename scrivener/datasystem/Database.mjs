@@ -3,6 +3,8 @@
 import fs from 'fs/promises'
 // import path from 'path'
 
+const DBPrivate = Symbol('DB')
+
 // Golly I have so much I want to write. A lot of grief over...
 // rapid decisions in favor of moving forward but with untouched
 // depths of consideration that'd be more appropriate to ponder
@@ -10,14 +12,26 @@ import fs from 'fs/promises'
 export default class Database {
   // filesystem DB for now. And largely in-memory I'll note.
 
-  static async initFileDB(filename) {
+  constructor() {
+    this[DBPrivate] = Symbol('DBInstance')
+
+    // TODO by default says that an ID is a direct attribute on the item
+    this.idAccessor = data => data.id
+    // this.nextID = 0
+  }
+  static async initFileDB(filename) { // I smell subclass potential
     const db = new Database()
     db.filename = filename
     // Too redundant to create new objects here? (They will be created in loadDB)
     db.dataTable = new Map()  // maps position to data at that location
     db.locations = new Map()  // should keep sorted by location. It will start that way and if I control updates it will stay that way but as access gets more complicated we'll see.
-    return db.loadDB()
-      .then( _ => db)
+    await db.loadDB()
+
+    const max = (a, b) => a >= b ? a : b
+    const maxID = db.allIDs.reduce(max, 0)
+    db.nextID = maxID + 1
+
+    return db
   }
 
   get size() {
@@ -28,12 +42,31 @@ export default class Database {
     return [...this.dataTable.keys()]
   }
 
+  get all() {
+    return [...this.dataTable.values()]
+  }
+
+  newID() {
+    return this.nextID++
+  }
+
+  get idFunc() {
+    return this.newID.bind(this)
+  }
+
+  // TODO maybe accept a "Schematica", an object that controls data & metadata?
+  // This would be the injected dependency. The DB can concoct a rudimentary one,
+  // or require it be supplied.
+  set idAccessor(func) {
+    this.accessIDOf = func
+  }
+
   /**
    * Save to file, truncating & overwriting existing file. This is destructive.
    */
   async saveDB() {
     const dataStrings = []
-    for (const [ id, data ] of this.dataTable.entries()) {
+    for (const [id, data] of this.dataTable.entries()) {
       dataStrings.push(JSON.stringify(data))
     }
     return fs.writeFile(this.filename, dataStrings.join('\n'), { encoding: 'utf8' })
@@ -70,10 +103,26 @@ export default class Database {
     }
   }
 
-  async save(id, content /* Datable */) {
+  // TODO since Dataccess (probably) needs insight into the IDs, especially for
+  // ref/deref, do I move responsibility back there? Or, perhaps. And better yet,
+  // I do the ref/deref from the DB. Maybe as a "Memory" class. I do like that.
+  // Only thing, it isn't as 'exposed' to the outside, and we'd have a parallel
+  // system of Datables relating to Datables if we do ~all~ the management on the
+  // inside of the DB. The kinda thing that couples and maybe decoheres.
+  // Or maybe that's OK. We aren't there yet, so worrying a little too early.
+  // ...
+  // Update: we have a mix going on. Database supplies the id function, but Dataccess
+  // supplies the means to access it. What's left though is we don't guaranteed
+  // storing the content with it's identification. It would seem to make sense that
+  // DB would be in charge of that. Maybe controlling an 'id' attribute. And maybe
+  // it can access meta fields as well. Mer, i might be going overboard. Gotta 
+  // move on, get that vertical slice. That capability.
 
-    const lineNumber = this.locations.get(id)
-    // this.dataTable.set(content[datable].id, content)
+  async save(content) {
+
+    // const metaAccess = this[DBPrivate]
+    let id = this.accessIDOf(content)
+
     this.dataTable.set(id, content)
 
     // for now all saves go to disk immediately
@@ -83,15 +132,30 @@ export default class Database {
     // on load, we can force a write first if the data requested is in the buffer
     // or just serve the in-memory content
   }
-  // load(content /* Datable */) {
-  // }
-  async load(id) {
+  async load(content) { // TODO Not destructive for now. The interface is a bit strange- pass an object to load that object? I would think that load(...) would alter it's argument. Something to be considered later on.
 
-    // longer term, loading the entire db each time is excessive
-    // we'd only scan over the parts of the underlying file (or,
-    // underlying other implementation) that are needed for the
-    // load of the given resource.
     await this.loadDB()
-    return this.dataTable.get(id)
+    const metaAccess = this[DBPrivate]
+    const id = this.accessIDOf(content)
+    const loaded = this.dataTable.get(id)
+    // loaded[metaAccess] = { id: id }
+    return loaded
+
   }
+
+  // We could say, this is the only form of querying on offer. Saying that at least helps me 
+  // reason about the role Database fills.
+  // async loadByID(id) {
+
+  //   // longer term, loading the entire db each time is excessive
+  //   // we'd only scan over the parts of the underlying file (or,
+  //   // underlying other implementation) that are needed for the
+  //   // load of the given resource.
+  //   await this.loadDB()
+  //   const metaAccess = this[DBPrivate]
+  //   const content = this.dataTable.get(id)
+  //   content[metaAccess] = { id: id }  // slap some meta data on
+  //   // return this.load({ [metaAccess]: { id: id } })
+  //   return content
+  // }
 }

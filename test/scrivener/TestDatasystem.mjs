@@ -75,8 +75,8 @@ describe('Datasystem', function () {
         // about when to write/load to the disk, buffering, managing live memory vs only loading if it's marked for
         // needing an update.
         await Promise.resolve()
-          .then(_ => db.save(data1.id, data1))
-          .then(_ => db.save(data2.id, data2))
+          .then(_ => db.save(data1))
+          .then(_ => db.save(data2))
 
         const contents = await fs.readFile(writeLoc, { encoding: 'utf8', flag: 'r+' })
         assert.strictEqual(contents, writtenContents)
@@ -86,7 +86,7 @@ describe('Datasystem', function () {
     describe('load', function () {
       it('loads data from a file', async function () {
         const db = await Database.initFileDB(testFilePathDatabase)
-        const [d1, d2] = await Promise.all([await db.load(1), await (db.load(2))])
+        const [d1, d2] = await Promise.all([await db.load(data1), await (db.load(data2))])
         assert(data1.random === d1?.random)
         assert(data2.something === d2?.something)
       })
