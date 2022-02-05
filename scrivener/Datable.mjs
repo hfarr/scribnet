@@ -280,26 +280,9 @@ class Datable {
 }
 
 
-class Document {
-  constructor() {
-    this.title = "My post"
-    this.content = "my words"
-  }
-
-  publish() {
-    console.log("nyoooom", this.title)
-  }
-}
-
-// let dacc = new Dataccess()
-// dacc.register(Document)
-
-// let doc = new Document()
-
-// console.log(doc.serialize())
-// let hoc = dacc.loadInstance(doc.serialize())
-// console.log("done")
-
 export default { Dataccess }
 
 export { Database, Datable, Dataccess }
+
+// For testing
+export { isDatable, datable }
