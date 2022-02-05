@@ -14,9 +14,9 @@ import datasytem, { Dataccess, Datable } from './Datable.mjs'
 
 const PATH = '/'
 const BIND_IP = '127.0.0.1'
-const PORT = 3000
+const BIND_PORT = 3000
 const DIR_ROOT = process.env.PWD
-// const SITE_ROOT = path.resolve('../site')
+
 // TODO think about allocating a 'public' directory? for resource acquisition without needing authoriziation?
 const SITE_ROOT = path.resolve('site')  
 // const NOTES_ROOT = 'note'
@@ -272,7 +272,7 @@ mainRouter.use('/api', publicNotes)
 
 try {
   // mainApp.bind()
-  http.createServer(mainApp).listen(3000, BIND_IP)
+  http.createServer(mainApp).listen(BIND_PORT, BIND_IP)
 
 } catch (e) {
   console.error(e)
