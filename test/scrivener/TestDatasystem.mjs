@@ -2,10 +2,10 @@
 
 import assert from 'assert';
 import fs from 'fs/promises';
-import { isDatable } from '../../scrivener/Datable.mjs';
 
 const PATH = "../../../scrivener/Datable.mjs"
-import { Datable, Dataccess, Database } from "../../scrivener/Datable.mjs"
+import { isDatable } from '../../scrivener/datasystem/Datable.mjs';
+import { Datable, Dataccess, Database } from "../../scrivener/datasystem/Datable.mjs"
 
 const testFilePath = 'data-folder/testdbfile'
 const testFilePersistentPath = 'data-folder/testdbfilepersistent'

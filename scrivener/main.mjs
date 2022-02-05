@@ -10,7 +10,7 @@ import { staticLocation } from './static/Static.mjs'
 import Note from './notes/Note.mjs'
 import RouteNoteController from './notes/NoteController.mjs'
 import Authenticator from './scopes/Access.mjs'
-import datasytem, { Dataccess, Datable } from './Datable.mjs'
+import datasytem, { Dataccess, Datable } from './datasystem/Datable.mjs'
 
 const PATH = '/'
 const BIND_IP = '127.0.0.1'
