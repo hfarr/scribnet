@@ -41,6 +41,10 @@ export default class Datable {
 
   // }
 
+  // Another TODO for consideration
+  // the 'newID' getter is an injected dependency. It would be nice, I think, if Datable at least
+  // declared what dependencies it was expecting to receive. That might just be me though.
+
   get [datable]() { 
     const attrs = this[Datable.attrs]
     if (attrs === undefined) {
@@ -62,12 +66,15 @@ export default class Datable {
     const data = {}
     for (const name of Object.getOwnPropertyNames(this)) {
       if (isDatable(this[name]))
-        data[name] = 'placeholder'
+        data[name] = 'placeholder'  // maybe store references on the meta data
       else
         data[name] = this[name]
 
     }
 
+    // TODO include metadata? is Datable responsible for its metadata?
+    // OO thoughts get hard with the meta approach I'm using. I need
+    // new mental models.
     const objData = {
       id: this[datable].id,
       class: this.constructor.name, 
@@ -94,9 +101,10 @@ export default class Datable {
     // const obj = Object.create(this.constructors[className].prototype)
 
     // may need to use getPropertyDescriptors in case of privacy or summat
-    // for (const name of Object.getOwnPropertyNames(obj)) {
-    for (const prop in data)
-      this[prop] = data[prop]
+    for (const name of Object.getOwnPropertyNames(this))
+      delete this[name]
+    for (const name in data)
+      this[name] = data[name]
 
     // return obj
   }
