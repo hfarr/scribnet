@@ -83,7 +83,15 @@ export default class Database {
     // on load, we can force a write first if the data requested is in the buffer
     // or just serve the in-memory content
   }
-  load(content /* Datable */) {
+  // load(content /* Datable */) {
+  // }
+  async load(id) {
 
+    // longer term, loading the entire db each time is excessive
+    // we'd only scan over the parts of the underlying file (or,
+    // underlying other implementation) that are needed for the
+    // load of the given resource.
+    await this.loadDB()
+    return this.dataTable.get(id)
   }
 }
