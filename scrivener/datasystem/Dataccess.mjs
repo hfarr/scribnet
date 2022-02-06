@@ -17,7 +17,25 @@ export default class Dataccess {
   static async initFromFile(filename) {
     const datacc = new Dataccess()
     const db = await Database.initFileDB(filename)
+
+    // this is the accessor I want
     db.idAccessor = data => data[datable].id
+
+    // this is the accessor I am using
+    db.idAccessor = data => data.id
+    // Why? Because Database and Dataccess communicate with a shared 
+    // contract. It's a bit incoherent, Dataccess has too much knowledge.
+    // Or maybe it has the right amount of knowledge. WHatever is the case
+    // the coupling between the two classes is a bit abused. I think Dataccess
+    // should supply an interface to Database, cleanly supplying all of the
+    // capabilities Database needs. Wrap up the dependency injection.
+    // Curiously- we have that. That is what I think Datable should be for.
+    // Or, we could decouple Datable/Database and have Database specify
+    // it's interface requirements. I'm not sure.
+    // That's a TODO. I am enhancing Datasystem as a whole when I want ought
+    // to shift my focus back to the capabilities I've been trying to implement
+    // since like, mid january or earlier.
+
     datacc.setDatabase(db)
 
     // const max = (a,b) => a >= b ? a : b
