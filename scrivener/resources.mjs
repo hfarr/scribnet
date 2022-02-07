@@ -50,17 +50,18 @@ const gql = (fragments, ...values) => {
   for (let i = 0; i < values.length; i++) {
     result += `${values[i]}${fragments[i + 1]}`
   }
-  return buildSchema(result)
+  return result
 }
 
-const schema = gql`
+const schema = buildSchema(gql`
   type Query {
     hello: String
     quoteOfTheDay: String
     random: Float!
     rollThreeDice: [Int]
+    rollDice(numDice: Int!, numSides: Int): [Int]
   }
-`
+`)
 
 const rootValue = {
   hello() {
@@ -72,8 +73,12 @@ const rootValue = {
   random() {
     return Math.random()
   },
-  rollThreeDice() {
-    return [1, 2, 3].map(_ => 1 + Math.floor(Math.random() * 6))
+  rollDice({ numDice, numSides = 6}) {
+    const diceGenerator = function*(max) { 
+      while (numDice-- > 0)
+        yield 1 + Math.floor(Math.random() * max) 
+    }
+    return [...diceGenerator(numSides)]
   }
 }
 
