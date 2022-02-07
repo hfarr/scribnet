@@ -4,6 +4,7 @@ import http from 'http'
 import fs from 'fs/promises'
 
 import express, { application } from 'express'
+import { graphqlHTTP } from 'express-graphql'
 
 import { staticLocation } from './static/Static.mjs'
 // import { Notes } from './notes/NoteController.mjs'
@@ -189,15 +190,20 @@ mainRouter.get('/edit/:notename', async (req, res) => {
 
 // mainApp.use('/api', express.json())
 mainRouter.use('/api', (req, res, next) => {
-  // probably don't need this because I think express adds it automatically
-  res.set('Content-Type', 'application/json')
+  // res.set('Content-Type', 'application/json')
   next()
 })
-// mainRouter.use('/api', allNotesAPI.app)
 
+import gqlObj from './resources.mjs'
+console.log(process.env.DEVELOPMENT)
+const gqlArgs = { ...gqlObj, graphiql: process.env.DEVELOPMENT === 'true' }
+mainRouter.use('/api/graphql', graphqlHTTP(gqlArgs))
+
+// mainRouter.use('/api', allNotesAPI.app)
 // temp
 const publicNotes = express.Router()
 publicNotes.use('/', (req, res, next) =>{
+  res.set('Content-Type', 'application/json')
   console.log("Request received", req.method, req.originalUrl)
   next()
 })

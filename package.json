@@ -7,7 +7,7 @@
     "build": "npx @11ty/eleventy",
     "build-static": "DEV_STATIC_ONLY=true npx @11ty/eleventy",
     "clean": "rm -r ./site/* && touch views/index.njk",
-    "scrivener": "node scrivener/main.mjs",
+    "scrivener": "DEVELOPMENT=true node scrivener/main.mjs",
     "server": "node scrivener/main.mjs",
     "test": "mocha test/**/*.mjs",
     "build-serve": "npx @11ty/eleventy --serve",
@@ -29,7 +29,9 @@
     "@11ty/eleventy": "^1.0.0",
     "axios": "^0.24.0",
     "cookie-parser": "^1.4.6",
-    "express": "^4.17.2"
+    "express": "^4.17.2",
+    "express-graphql": "^0.12.0",
+    "graphql": "^15.3.0"
   },
   "devDependencies": {
     "mocha": "^8.1.3"
