@@ -5,6 +5,18 @@ import fs from 'fs/promises'
 
 const DBPrivate = Symbol('DB')
 
+class Index {
+  // ...can be persisted as meta data
+  // ...can be composed as "virtual indices" to implement data fetches
+  constructor(className, field) {
+    this.className = className
+    this.field = field
+  }
+  get hash() {
+    return `${className}:${field}`
+  }
+}
+
 // Golly I have so much I want to write. A lot of grief over...
 // rapid decisions in favor of moving forward but with untouched
 // depths of consideration that'd be more appropriate to ponder
@@ -134,28 +146,12 @@ export default class Database {
   }
   async load(content) { // TODO Not destructive for now. The interface is a bit strange- pass an object to load that object? I would think that load(...) would alter it's argument. Something to be considered later on.
 
-    await this.loadDB()
-    const metaAccess = this[DBPrivate]
-    const id = this.accessIDOf(content)
-    const loaded = this.dataTable.get(id)
-    // loaded[metaAccess] = { id: id }
-    return loaded
-
+    return this.loadByID(this.accessIDOf(content))
   }
 
-  // We could say, this is the only form of querying on offer. Saying that at least helps me 
-  // reason about the role Database fills.
-  // async loadByID(id) {
+  async loadByID(id) {
 
-  //   // longer term, loading the entire db each time is excessive
-  //   // we'd only scan over the parts of the underlying file (or,
-  //   // underlying other implementation) that are needed for the
-  //   // load of the given resource.
-  //   await this.loadDB()
-  //   const metaAccess = this[DBPrivate]
-  //   const content = this.dataTable.get(id)
-  //   content[metaAccess] = { id: id }  // slap some meta data on
-  //   // return this.load({ [metaAccess]: { id: id } })
-  //   return content
-  // }
+    await this.loadDB()
+    return this.dataTable.get(id)
+  }
 }

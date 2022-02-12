@@ -46,7 +46,8 @@ const DATA_DB_FILE = `${DATA_FOLDER}/dbfile`
 //   notes.update
 // }
 const dacc = await Dataccess.initFromFile(DATA_DB_FILE)
-dacc.register(Note)
+// dacc.register(Note)
+dacc.registerWithIndex(Note, "name", String)
 const notes = dacc.loadAllInstances(Note)
 
 // const pairEm = (name, promise) => Promise.all([Promise.resolve(name), promise])
@@ -68,7 +69,6 @@ const notes = dacc.loadAllInstances(Note)
 // the 'wiring up' is, in my mind, notionally a part of a collection of notes. which might belong to something else, for
 // example *this* notes controller belongs to the "main app" which is why the main app will specify parameters for the
 // notes controller, but won't over-specify the details. Helpful for me to type it out.
-const allNotesAPI = RouteNoteController.wrapNotes(notes)
 
 console.log("Notes loaded", notes)
 
@@ -92,27 +92,6 @@ console.log("Notes loaded", notes)
 //  the reader will have to work off the response code.
 
 //////
-import { Scope, NamedScope } from './scopes/Scope.mjs'
-
-// Scope will serve an API showing your level of resource access
-// for public, its all routes, as good as a site map-
-// 11ty can use it to build its content dynamically, I won't even
-// have to specify which specific resources. Just grab all the public ones.
-// So far restricting myself to 'scoping' the API, the rest will come as
-// enhancements
-
-// resources... am I binding actions, independent of the data? (control vs data, I sure do love citing whatever I've most recently read. Thanks G. Hutton)
-// or are the 'bindable' resources have a common understanding of what it means to be fetched? I want a mix- fetching the 
-// resource ought to be as good as referencing it from the client side by name. its the restrictions on actions, like read
-// only, that I'm not sure how to tackle. Maybe its the projection of scopes into, say, an HTTP controller API that gets
-// into the specification.
-let publicScope = new NamedScope('Public')
-publicScope.bind("notes", notes)
-
-
-
-
-
 
 const StaticAuthenticator = class extends Authenticator {
   constructor() {
@@ -209,7 +188,8 @@ publicNotes.use('/', (req, res, next) =>{
 })
 publicNotes.use('/', express.json())
 publicNotes.get('/notes', (req, res) => {
-  res.status(200).send(notes.map(n => n.name))
+  const data = dacc.getIndexList(Note)
+  res.status(200).send(data)
 })
 publicNotes.use('/note/:noteName', 
   (req, res, next) => {

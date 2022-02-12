@@ -8,6 +8,7 @@ export default class Dataccess {
     // would we be better off stuffing the constructors in the Database? like "here, you track this"
     // then we can pass DBs around. hmm. Have to see where the natural boundaries of the design fall
     this.constructors = {}
+    this.indices = {}
 
     // for now primitive incremental ID functionality
     // this attribute indicates the next ID to be used
@@ -85,6 +86,42 @@ export default class Dataccess {
     this.constructors[constructorFunc.name] = constructorFunc
   }
 
+  createIndex(constructorFunc, indexField, indexType) {
+
+    const entries = this.loadAllInstances(constructorFunc)
+      .filter( ({ [indexField]: entryName }) => entryName !== undefined )
+      .map( ({ [indexField]: entryName, [datable]: { id: entryVal } }) => [ entryName, entryVal ])
+
+    this.indices[constructorFunc.name] = {
+      field: indexField,
+      type: indexType,
+      idxMap: new Map(entries)
+    }
+
+  }
+
+
+  registerWithIndex(constructorFunc, indexField, indexType) {
+    this.register(constructorFunc)
+    this.createIndex(constructorFunc, indexField, indexType)
+  }
+
+  getIndexList(constructorFunc) {
+    if (!(constructorFunc.name in this.indices)){
+      return undefined
+    }
+    return [...this.indices[constructorFunc.name].idxMap.keys()]
+  }
+  async get(constructorFunc, indexKey) {
+    if (!(constructorFunc.name in this.indices)){
+      return undefined
+    }
+    const index = this.indices[constructorFunc.name].idxMap
+    const id = index[indexKey]
+    const data = await this.db.loadByID(id)
+    return this.fromPacked(data)
+  }
+
   async saveInstance(data) {
     // TODO check if it is a Datable
     return this.db.save(data.serialize())
@@ -121,6 +158,7 @@ export default class Dataccess {
   }
 
   // should fetch the IDs?
+  // refresh the index?
   loadAllInstances(constructor) {
     const className = constructor.name
     const classData = this.db.all
