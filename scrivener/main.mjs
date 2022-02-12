@@ -48,7 +48,6 @@ const DATA_DB_FILE = `${DATA_FOLDER}/dbfile`
 const dacc = await Dataccess.initFromFile(DATA_DB_FILE)
 // dacc.register(Note)
 dacc.registerWithIndex(Note, "name", String)
-const notes = dacc.loadAllInstances(Note)
 
 // const pairEm = (name, promise) => Promise.all([Promise.resolve(name), promise])
 
@@ -70,7 +69,7 @@ const notes = dacc.loadAllInstances(Note)
 // example *this* notes controller belongs to the "main app" which is why the main app will specify parameters for the
 // notes controller, but won't over-specify the details. Helpful for me to type it out.
 
-console.log("Notes loaded", notes)
+console.log("Notes loaded")
 
 /////
 
@@ -174,7 +173,7 @@ mainRouter.use('/api', (req, res, next) => {
 })
 
 import gqlObj from './resources.mjs'
-console.log(process.env.DEVELOPMENT)
+console.log(`DEVELOPMENT: ${process.env.DEVELOPMENT}`)
 const gqlArgs = { ...gqlObj, graphiql: process.env.DEVELOPMENT === 'true' }
 mainRouter.use('/api/graphql', graphqlHTTP(gqlArgs))
 
@@ -199,45 +198,32 @@ publicNotes.use('/note/:noteName',
   }, 
   express.text('utf-8')
   )
-publicNotes.get('/note/:noteName', (req, res) => {
-  const note = notes.find( n => n.name === req.params.noteName)
-  if (note === undefined) {
-    res.status(404).send(`No note called '${req.params.noteName}'`)
+publicNotes.get('/note/:noteName', async (req, res) => {
+  const data = await dacc.get(Note, req.params.noteName)
+  if (data === undefined) {
+    res.status(404).send({ error: `No note called '${req.params.noteName}'` })
     return
   }
-  // const respBody = note  // maybe do this?
-  const respBody = {
-    name: note.name,
-    content: note.content
-  }
-  res.status(200).send(respBody)
+  res.status(200).send(data)
 })
-publicNotes.put('/note/:noteName', (req, res) => {
-  const note = notes.find( n => n.name === req.params.noteName)
+publicNotes.put('/note/:noteName', async (req, res) => {
+  const data = dacc.update(Note, req.params.noteName, req.body)
 
-  if (note === undefined) {
+  if (data === undefined) {
     res.status(404).send(`No note called '${req.params.noteName}'`)
     return
   }
 
-  const { content = undefined } = req.body
-  if (content !== undefined)
-    note.content = content
-
-  dacc.saveInstance(note)
-    .then(_ => res.status(200).send('OK'))
-    .catch(_ => res.status(500).send('Oops'))
+  res.status(200).send('OK')
 })
-publicNotes.post('/note/:noteName', (req, res) => {
-  const { content = "blank" } = req.body ?? undefined
-  const note = new Note(req.params.noteName, content)
-  notes.push(note)
-  // ^^^^ Instead of that, we could also refresh the 'notes' from the list. Or, when 'notes' itself becomes a saved object, if something is not in memory then it would load from dataccess. Implicitly!
-  // we'd still need to associate it though. It would fall through out of scopes. Visiting a set of API routes implicitly yields a scope of, say, 'public'. Then we'd do 'notes.create' or rather the
-  // operations performed are performed on public. When a new note is added to public that 'scope' entity does the wiring up, we might not even know it has a list internally.
-  dacc.saveInstance(note)
-    .then(_ => res.status(200).send('OK'))
-    .catch(_ => res.status(500).send('Oops'))
+publicNotes.post('/note/:noteName', async (req, res) => {
+  // shenanigans would ensue if names disagreed, we override it.
+  // in another world we would just post('/note') and take the
+  // name from the body. Might prefer that.
+  const data = { ...req.body, name: req.params.noteName }
+
+  await dacc.create(Note, data)
+  res.status(200).send('OK')
 })
 mainRouter.use('/api', publicNotes)
 

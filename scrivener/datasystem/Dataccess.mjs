@@ -95,7 +95,11 @@ export default class Dataccess {
     this.indices[constructorFunc.name] = {
       field: indexField,
       type: indexType,
-      idxMap: new Map(entries)
+      idxMap: new Map(entries),
+      set(instance, id) {
+        const { [this.field]: indexKey } = instance
+        this.idxMap.set(indexKey, id)
+      }
     }
 
   }
@@ -112,16 +116,67 @@ export default class Dataccess {
     }
     return [...this.indices[constructorFunc.name].idxMap.keys()]
   }
+  // index functions, should maybe spin out to another class
   async get(constructorFunc, indexKey) {
     if (!(constructorFunc.name in this.indices)){
       return undefined
     }
     const index = this.indices[constructorFunc.name].idxMap
-    const id = index[indexKey]
+    const id = index.get(indexKey)
+    if (id === undefined) return undefined
+
+    // As a note: if data are recent, we may want to instead check a cache.
+    // E.g save the "update time" of an item, in Dataccess. Invalidate all
+    // caches of that datable, by ID. If valid cache, fetch and return that
+    // instead.
+    // And, with that in place, longer term when you fetch a datable it
+    // will only "lazy load" it. Accessing a property on the datable  will 
+    // prompt a cache check but until then it's just the metadata, id and
+    // classname.
     const data = await this.db.loadByID(id)
+
     return this.fromPacked(data)
   }
+  async update(constructorFunc, indexKey, data) {
+    const index = this.indices[constructorFunc.name]
+    const { [index.field]: newName, ...rest } = data
 
+    let instance = await this.get(constructorFunc, indexKey)
+    if (instance === undefined) return undefined
+    // update everything but the index field, in case of dire shenanigans
+    // instance.data = { ...instance.data, ...rest }
+    // instance = { ...instance, ...rest }
+    for (const key in rest) { instance[key] = rest[key] }
+
+    // If the update includes a change to the index key, update the index.
+    if (newName !== undefined && newName !== indexKey) {
+      index.set(instance.data)
+      instance[index[field]] = newName
+      index.idxMap.delete(indexKey)
+    }
+    await this.saveInstance(instance)
+    return instance
+  }
+  async create(constructorFunc, data) {
+    // TODO validations: this is an "index function" so we should check that the data has an expected index field 
+    //  or, we don't validate- leave it as a client decision. Perhaps offer an interface. Or multiple kinds of
+    //  indices, e.g a "validating" index.
+    const instance = Object.create(constructorFunc.prototype, Object.getOwnPropertyDescriptors(data))
+    const { [datable]: { id } } = instance
+
+    this.indices[constructorFunc.name].set(instance, id)
+
+    // Here's an awkward thought- we update the index before we save the new data
+    // someone tries to fetch this, it loads bunk.
+    // Likely? no, possible? I think so.
+    // Will I do anything about it? I doubt it, not right now. so.. TODO
+    await this.saveInstance(instance)
+    return instance
+    // return id
+  }
+
+  /////////////////////////////
+  // Data management functions
   async saveInstance(data) {
     // TODO check if it is a Datable
     return this.db.save(data.serialize())
