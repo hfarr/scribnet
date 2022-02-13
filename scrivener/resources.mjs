@@ -72,6 +72,7 @@ const DataInterface = dataccess => (constructorFunc, indexField) => {
     },
     [`get${typeName}`]: async function ({ [`${indexField}`]: val }) {
       const instance = await dataccess.get(constructorFunc, val)
+      if (instance === undefined) throw new Error(`Instance of ${constructorFunc.name} not found`)
       return serialize(instance)
     },
     [`update${typeName}`]: async function ({ [`${indexField}`]: val, input }) {
@@ -79,6 +80,7 @@ const DataInterface = dataccess => (constructorFunc, indexField) => {
       // const instance = dataccess.update(constructorFunc, val, data)
       const data = JSON.parse(input.data)
       const instance = await dataccess.update(constructorFunc, val, data)
+      if (instance === undefined) throw new Error(`Instance of ${constructorFunc.name} not found`)
       return serialize(instance)
     },
   }

@@ -96,8 +96,8 @@ export default class Dataccess {
       field: indexField,
       type: indexType,
       idxMap: new Map(entries),
-      set(instance, id) {
-        const { [this.field]: indexKey } = instance
+      set(instance) {
+        const { [this.field]: indexKey, [datable]: { id } } = instance
         this.idxMap.set(indexKey, id)
       }
     }
@@ -149,9 +149,13 @@ export default class Dataccess {
     for (const key in rest) { instance[key] = rest[key] }
 
     // If the update includes a change to the index key, update the index.
+    // On the fence about allowing this special case. if the user wants to
+    // rename, that's one thing, it causes a bit of API havoc but I'm not...
+    // as worried about that? does feel maybe we should coach the user to
+    // delete/recreate instead? maybe
     if (newName !== undefined && newName !== indexKey) {
-      index.set(instance.data)
-      instance[index[field]] = newName
+      instance[index.field] = newName
+      index.set(instance)
       index.idxMap.delete(indexKey)
     }
     await this.saveInstance(instance)
@@ -162,7 +166,7 @@ export default class Dataccess {
     //  or, we don't validate- leave it as a client decision. Perhaps offer an interface. Or multiple kinds of
     //  indices, e.g a "validating" index.
     const instance = Object.create(constructorFunc.prototype, Object.getOwnPropertyDescriptors(data))
-    const { [datable]: { id } } = instance
+    // const { [datable]: { id } } = instance
 
     this.indices[constructorFunc.name].set(instance, id)
 
