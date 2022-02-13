@@ -86,7 +86,7 @@ export default class Dataccess {
     this.constructors[constructorFunc.name] = constructorFunc
   }
 
-  createIndex(constructorFunc, indexField, indexType) {
+  setIndex(constructorFunc, indexField, indexType) {
 
     const entries = this.loadAllInstances(constructorFunc)
       .filter( ({ [indexField]: entryName }) => entryName !== undefined )
@@ -107,7 +107,7 @@ export default class Dataccess {
 
   registerWithIndex(constructorFunc, indexField, indexType) {
     this.register(constructorFunc)
-    this.createIndex(constructorFunc, indexField, indexType)
+    this.setIndex(constructorFunc, indexField, indexType)
   }
 
   getIndexList(constructorFunc) {
@@ -141,7 +141,7 @@ export default class Dataccess {
     const index = this.indices[constructorFunc.name]
     const { [index.field]: newName, ...rest } = data
 
-    let instance = await this.get(constructorFunc, indexKey)
+    const instance = await this.get(constructorFunc, indexKey)
     if (instance === undefined) return undefined
     // update everything but the index field, in case of dire shenanigans
     // instance.data = { ...instance.data, ...rest }
