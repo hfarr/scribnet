@@ -139,7 +139,7 @@ export default class Dataccess {
   }
   async update(constructorFunc, indexKey, data) {
     const index = this.indices[constructorFunc.name]
-    const { [index.field]: newName, ...rest } = data
+    const { [index.field]: newIndexKey, ...rest } = data
 
     const instance = await this.get(constructorFunc, indexKey)
     if (instance === undefined) return undefined
@@ -153,10 +153,18 @@ export default class Dataccess {
     // rename, that's one thing, it causes a bit of API havoc but I'm not...
     // as worried about that? does feel maybe we should coach the user to
     // delete/recreate instead? maybe
-    if (newName !== undefined && newName !== indexKey) {
-      instance[index.field] = newName
-      index.set(instance)
-      index.idxMap.delete(indexKey)
+    if (newIndexKey !== undefined && newIndexKey !== indexKey) {
+      /* Removing this code makes updates idempotent
+        we cannot change the index of a datable, we see it as
+        part of its identity.
+        a "change" would have to be a delete and a re-create
+        with the same data.
+        or, we provide an 'unsafe' update op that doesn't
+        guarantee idempotency.
+      */
+      // instance[index.field] = newIndexKey
+      // index.set(instance)
+      // index.idxMap.delete(indexKey)
     }
     await this.saveInstance(instance)
     return instance
