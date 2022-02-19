@@ -81,7 +81,7 @@ if (cancelFetch === "true") {
   console.log("exporting")
   module.exports = function() {
     // return obbo.notes
-    return query(`{ notes { data } }`).then(({ notes }) => notes.map( ({ data }) =>  JSON.parse(data) )).catch(e => { throw Error(e) })
+    return query(`{ notes { data } }`).then(({ notes }) => notes.map( ({ data }) =>  JSON.parse(data) )).catch(err => { (failBuildOnFetchFailure === "true") ? err : [] })
     // return {
     //   // notes: async() => query(`{ notes { data } }`).then(({ notes: { data }}) => (console.log(data), JSON.parse(data))),
     //   // notes: async() => query(`{ notes { data } }`).then(({ notes: [...notes] }) => (console.log(notes, notes.data), JSON.parse(data))),
