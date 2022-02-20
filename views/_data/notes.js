@@ -48,25 +48,7 @@ async function query(queryString, variables) {
   }
   return axios(options)
     .then(({ data: { data } }) => data)
-    .catch(e => { console.log('Bad request', e); return undefined})
-  // return fetch('/api/graphql', {
-  //   method: 'POST',
-  //   headers: {
-  //     'Content-Type': 'application/json',
-  //     'Accept': 'application/json'
-  //   },
-  //   body: JSON.stringify(requestBody)
-  // })
-  // .then(r => r.json())
-  // .then(obj => obj.data)
-  
-
-
-  // .then(({ data=undefined, ...rest }) => {
-  //   const parsed = data !== undefined ? JSON.parse(data) : {}
-
-  //   return { ...rest, ...parsed }
-  // })
+    .catch(e => { console.log('Bad request', e); return Promise.reject()})
 }
 
 const { 
@@ -75,35 +57,15 @@ const {
   DEV_FETCH_FAILS_BUILD: failBuildOnFetchFailure="true"
 } = process.env
 
+// Available under "notes" in data https://www.11ty.dev/docs/data-global/. The key follows the directory structure, generally.
 if (cancelFetch === "true") {
   module.exports = []
 } else {
   console.log("exporting")
   module.exports = function() {
     // return obbo.notes
-    return query(`{ notes { data } }`).then(({ notes }) => notes.map( ({ data }) =>  JSON.parse(data) )).catch(err => { (failBuildOnFetchFailure === "true") ? err : [] })
-    // return {
-    //   // notes: async() => query(`{ notes { data } }`).then(({ notes: { data }}) => (console.log(data), JSON.parse(data))),
-    //   // notes: async() => query(`{ notes { data } }`).then(({ notes: [...notes] }) => (console.log(notes, notes.data), JSON.parse(data))),
-    //   // notes: async() => query(`{ notes { data } }`).then(({ notes: [...notes] }) => notes.map( ({ data }) => (console.log(data), JSON.parse(data)) )) // (console.log(notes, notes.data), JSON.parse(data))),
-    //   // notes: async() => query(`{ notes { data } }`).then(({ notes }) => notes.map( ({ data }) => (console.log(data), JSON.parse(data)) )) // (console.log(notes, notes.data), JSON.parse(data))),
-    //   notes: async () => query(`{ notes { data } }`).then(({ notes }) => notes.map( ({ data }) =>  JSON.parse(data) )), // (console.log(notes, notes.data), JSON.parse(data))),
-    //   h: "okay"
-    // }
+    return query(`{ notes { data } }`)
+      .then(({ notes }) => notes.map( ({ data }) =>  JSON.parse(data) ))
+      .catch(err => (failBuildOnFetchFailure === "true") ? err : [] )
   }
 }
-
-// await ax(options).then(({ data: { data } }) => data).then(( { notes }) => notes.map( ({ data }) => JSON.parse(data)) )
-
-//   module.exports = function() {
-//     const options = {
-//       method: "GET",
-//       url: `${BASE_URL}/notes`
-//     }
-//     return axios(options)
-//       .then(notes => Promise.all(notes.data.map(loadNote)))
-//       .then(responses => responses.map(r=>r.data))
-//       .catch(err => (failBuildOnFetchFailure === "true") ? err : [])
-//   }
-
-// }
