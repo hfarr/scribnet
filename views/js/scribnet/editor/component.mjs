@@ -37,7 +37,7 @@ class EditorComponent extends HTMLElement {
 
     // this.contentEditable = true // being more explicit. Not trying to store data on the object, but DOM interaction.
     // Maybe extend another class that has the state? a mix in? Then it can't interfere with the DOM accidentally
-    this.setAttribute('contentEditable', true)
+    // this.setAttribute('contentEditable', true)  // might eventually become a part of "renderers" or view/controllers
 
     // document.addEventListener('selectionchange', async (e) => this.editor.onSelectionChange(e))
   }
@@ -196,7 +196,9 @@ class EditorComponent extends HTMLElement {
 
   connectedCallback() {
     // console.debug("Editor added to DOM");
-    this.editor.reformat()
+    this.editor.reformat()  // Doesn't update internal state
+    this.editor.readDOM()   // Updates internal state - reads the DOM
+    this.setAttribute("contentEditable", "true")
     
 
     document.addEventListener('selectionchange', this.editor.evtSelChg)

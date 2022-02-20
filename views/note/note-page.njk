@@ -24,8 +24,13 @@ permalink: "note/{{ noteItem.name | slug }}/"
 
 {# Set header <title> here using note name #}
 {# <h1> #}
-{# <h1>Name: {{ noteItem.name }}</h1>
-<h2>{{ noteItem | access("name") }}</h2> #}
+{# <h1>Name: {{ noteItem.name }}</h1> #}
+{# <h2>Whoa</h2> #}
+{# <h2>{{ noteItem | access("name") }}</h2> #}
+
+{# resourceName is computed. noteItem.name is provided by _data/notes.js #}
+<!-- <h2>{{ resourceName }}</h2> -->
+<h2>{{ noteItem.name }}</h2>
 
 {# later on this link might only appear in certain circumstances, based on what the server provides #}
 {# heck, it might even just drop-in add an editor-hf wrapping the contents - we have some options. #}
@@ -33,11 +38,61 @@ permalink: "note/{{ noteItem.name | slug }}/"
   have a component in place that can update in-place. Only available if you have permissions.
   TODO iDEA for later 
   #}
-<a href="/edit/{{ noteItem.name | slug }}">Edit</a>
+<a id="edit-button" href="/edit/{{ noteItem.name | slug }}">Edit</a>
+<a id="view-button" href="/note/{{ noteItem.name | slug }}">View</a>
+<!-- <a id="edit-button" onclick="return false;" href="#">Edit</a> -->
+<!-- <button id="edit-button" -->
 <br>
-{{ noteItem.content | safe }}
+<!-- <div id="doc" data=""></div> -->
+<div id="content"> <!-- viewRenderer html? -->
+  {{ noteItem.content | safe }}
+</div>
 
-<!-- <script>
+<script>
+  // const resourceName = window.location.pathname.match(/[^\/]*$/)[0] // grabs the string in the url past the last forward slash
+  const resourceName = "{{ noteItem.name }}"
+  const slugName = "{{ noteItem.name | slug }}"
+  console.debug(resourceName)
 
-  const resourceName = window.location.pathname.match(/[^\/]*$/)[0] // grabs the string in the url past the last forward slash
-</script> -->
+  const contentWrapper = document.querySelector("#content")
+  const editButton = document.querySelector("#edit-button")
+  const viewButton = document.querySelector("#view-button")
+
+  console.log("State", window.history.state)
+  hideButtons = () => {
+    if (window.history.state?.editing === true) {
+      editButton.setAttribute("style", "display: none;")
+    } else {
+      viewButton.setAttribute("style", "display: none;")
+    }
+  }
+
+  window.onpopstate = (event) => {
+    const { editing = "unset" } = event
+    console.log("State (pop event)", event.state, editing)
+  }
+
+  // setState - pushes context for a state
+  // engageState - set page to display current state
+
+  function engageEditMode() {
+    const editor = document.createElement("editor-hf")
+    editor.setAttribute("style", "white-space: pre-wrap;")  // auto part of editor? :S. use that shadow dom?
+    editor.append(...contentWrapper.childNodes)
+    contentWrapper.after(editor)
+
+    // TODO: Handle onpopstate to elegantly "reset" the page to the '/note/'
+    window.history.pushState({ editing: true }, undefined, `/edit/${slugName}`)
+    // window.history.pushState({ count: ((window.history.state?.count ?? 0) + 1) }, undefined, `/edit/${slugName}`)
+  }
+  function engageViewMode() {
+    
+  }
+
+  editButton.addEventListener("click", (evt) => { 
+    evt.preventDefault(); 
+    engageEditMode(); 
+  })
+
+
+</script>

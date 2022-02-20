@@ -1,3 +1,4 @@
+{#
 ---
 layout: note.njk
 title: Editing
@@ -11,8 +12,14 @@ title: Editing
 
 <script>
 
+  // TODO I want to make this page behave like the "note" layout. Which needs to be finished still.
+  // The intent: hitting 'edit' really sends you to the note page, toggling it's 'edit' behavior,
+  // moreover clicking "edit" doesn't truly navigate away, it only switches to edit mode when
+  // viewing a note
+
   // const path = window.path
   const resourceName = window.location.pathname.match(/[^\/]*$/)[0] // grabs the string in the url past the last forward slash
+  const url = '/api/graphql'
   document.querySelector('#view-link').href=`/note/${resourceName}`
 
   // TODO right now, explicitly a note, but could be anything. later.
@@ -24,14 +31,44 @@ title: Editing
     // ah, maybe we just throw out the editor?
   }
 
+  const query = (content,variables) => {
+
+    const requestBody = {
+      query: content, 
+      variables: variables ?? {}
+    }
+    const options = {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Accept': 'application/json'
+      },
+      body: JSON.stringify(requestBody)
+    }
+
+    return fetch(url, options)
+  }
+
   const saveHTML = async content => {
 
+    return await query(`mutation { updateNote(name: ${resourceName}, input: { data: "${JSON.stringify(content)}" }) { name } `)
+
+    // const options = {
+    //   method: 'POST',
+    //   headers: {
+    //     'Content-Type': 'application/json',
+    //     'Accept': 'application/json'
+    //   },
+    //   body: JSON.stringify(querBody)
+    // }
     // hyeah. We're sending HTML but for now path of least resistance, PoLR, dragged me to uh, ill suited means. Really just want to see that read/write action you know?
     // Not using proper string encoding yet
-    return Promise.resolve()
-      .then(_ => fetch(`/api/note/${resourceName}`, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(content) }))
+    // return Promise.resolve()
+      // .then(_ => fetch(`/api/note/${resourceName}`, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(content) }))
       // .then(resp =>  {if (!resp.ok) return Promise.reject(resp.status)})
       // .catch(reason => console.warn("hi", reason))
+    // return fetch(url, options)
+    //   .then(r => r.json())
   }
 
 
@@ -69,4 +106,10 @@ title: Editing
     })
   })
 
+</script>
+#}
+<script>
+  window.location=`/note/${window.location.pathname.match(/[^\/]*$/)[0]}`
+  // TODO- maybe "push history, then 'go'. Pushing an edit state."
+  // window.location=""
 </script>
