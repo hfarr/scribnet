@@ -59,40 +59,73 @@ permalink: "note/{{ noteItem.name | slug }}/"
   const viewButton = document.querySelector("#view-button")
 
   console.log("State", window.history.state)
-  hideButtons = () => {
-    if (window.history.state?.editing === true) {
-      editButton.setAttribute("style", "display: none;")
-    } else {
-      viewButton.setAttribute("style", "display: none;")
+
+  // Toggle functionality- opportunity for a component. TODO
+
+  applyState = () => {
+    const { currentState = "viewing" } = window.history.state ?? {}
+    viewButton.removeAttribute("style")
+    editButton.removeAttribute("style")
+    switch(currentState) {
+      case "editing": {
+        const editor = document.createElement("editor-hf")
+        editor.setAttribute("style", "white-space: pre-wrap;")  // auto part of editor? :S. use that shadow dom?
+        editor.append(...contentWrapper.childNodes)
+        contentWrapper.after(editor)
+        contentWrapper.parentNode.removeChild(contentWrapper)
+
+        editButton.setAttribute("style", "display: none;")
+        break;
+      }
+      case "viewing": {
+        const editor = document.querySelector("editor-hf")
+        if (editor !== null) {
+          contentWrapper.append(...editor.childNodes)
+          editor.after(contentWrapper)
+          editor.parentNode.removeChild(editor)  // unnecessary, but eh.
+        }
+      }
+      default: {
+        viewButton.setAttribute("style", "display: none;")
+      }
     }
   }
 
+  transitionState = (newState, url) => {
+    window.history.pushState({ currentState: newState }, undefined, url )
+    applyState()
+  }
+
   window.onpopstate = (event) => {
-    const { editing = "unset" } = event
-    console.log("State (pop event)", event.state, editing)
+    console.log("State (pop event)", event.state)
+    applyState()
   }
 
   // setState - pushes context for a state
   // engageState - set page to display current state
 
   function engageEditMode() {
-    const editor = document.createElement("editor-hf")
-    editor.setAttribute("style", "white-space: pre-wrap;")  // auto part of editor? :S. use that shadow dom?
-    editor.append(...contentWrapper.childNodes)
-    contentWrapper.after(editor)
 
     // TODO: Handle onpopstate to elegantly "reset" the page to the '/note/'
-    window.history.pushState({ editing: true }, undefined, `/edit/${slugName}`)
+    window.history.pushState({ currentState: "editing" }, undefined, `/edit/${slugName}`)
     // window.history.pushState({ count: ((window.history.state?.count ?? 0) + 1) }, undefined, `/edit/${slugName}`)
+    applyState()
   }
   function engageViewMode() {
     
+    window.history.pushState({ currentState: "viewing" }, undefined, `/note/${slugName}`)
+    applyState()
   }
 
   editButton.addEventListener("click", (evt) => { 
     evt.preventDefault(); 
     engageEditMode(); 
   })
+  viewButton.addEventListener("click", (evt) => {
+    evt.preventDefault()
+    engageViewMode();
+  })
 
+  applyState()
 
 </script>
