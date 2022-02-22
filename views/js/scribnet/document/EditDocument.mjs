@@ -81,7 +81,7 @@ function charOffset(rootElement, node, nodeOffset) {
 
 // Would be scoped to another module likely
 function renderHTML(doc) {
-
+  // TODO remove, deprecate
 }
 
 
@@ -149,7 +149,8 @@ const compose = (f => {
 // I like 'overdoing' it. Why the hell not
 const pad = segments => {
   // const seg = segments.at(-1).push(' ')
-  const seg = segments.at(-1).push('\n')
+  if (segments.length === 0) return []
+  const seg = segments.at(-1).push('\n') // would love if I remembered / documented why I do things. Or refactored when I move in for changes.
   // segments.splice(-1,1,seg)
   // Yeah I know. Very into "creating new objects" instead of "mutating"
   return [...segments.slice(0,-1), seg]
