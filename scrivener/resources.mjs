@@ -172,11 +172,14 @@ class Aggregate {
   }
   of(constructorFunc, plural, getter/*, indexType*/) {
     // const query = gql`${plural}: [${indexType.name}]`
-    const query = gql`${plural}: [${constructorFunc.name}]`
+    const query = gql`${plural}: [${constructorFunc.name}]!`
+    const numericGet = gql`${plural}Get(index: Int): ${constructorFunc.name}`
     // const func = { [plural]: async () => Promise.all(dataccess.getIndexList(constructorFunc).map(name => dataccess.get(constructorFunc,name).then(inst => ({name, data: JSON.stringify(inst)})))) } //promises({name, dataccess.get(constructorFunc, name)]))) }
     // const func = { [plural]: async () => dataccess.getIndexList(constructorFunc).map(async name=> ({name, data: JSON.stringify(await dataccess.get(constructorFunc, name))})) }
     const func = { [plural]: async () => Promise.all(dataccess.getIndexList(constructorFunc).map(getter)) }
+    const funcGet = { [`${plural}Get`]: async({ index }) => getter(dataccess.getIndexList(constructorFunc).at(index)) } // TODO I need an interface for aggregating data in Dataccess
     this.pushup(query, func)
+    this.pushup(numericGet, funcGet)
   }
 }
 
