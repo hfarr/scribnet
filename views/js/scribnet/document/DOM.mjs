@@ -28,6 +28,7 @@ function collapseBreaking(string) {
 function empty(node) {
 
   if (node?.tagName === 'P') {
+    // TODO update the definition of 'empty'. A blank paragraph is still semantically valid.
     // console.debug(node.innerText === '', `<|${node.innerText}|>`, `<|${node.innerHTML}|>` )
     return node.innerText === ''
   }
@@ -39,6 +40,14 @@ const blockNodes = /^(p(re)?|h[1-6])$/i
 const blockSet = new Set(
   ["p", "h1", "h2", "h3", "div", "pre", "editor-hf"]
 )
+
+
+function allWhiteSpace(string) {
+
+  // string consists of all whitespace that aren't &nbsp;
+  // this doesn't work for new lines
+  return /^[^\P{White_Space}\u{00A0}]*$/u.test(string)
+}
 
 /**
  * Recursive function to walk a node and compute the "user rendered"
@@ -103,12 +112,6 @@ function processText(node, children, childrenNodes) {
       return " "
     }
     return ""
-  }
-  function allWhiteSpace(string) {
-
-    // string consists of all whitespace that aren't &nbsp;
-    // this doesn't work for new lines
-    return /^[^\P{White_Space}\u{00A0}]*$/u.test(string)
   }
 
   // The zip is "eager", it will fill in undefineds for remaining resources
@@ -397,6 +400,12 @@ export function renderTextFold(rootElement, node) {
   return result
 }
 
+const nodeWrap = node => {
+  if (node.nodeType !== Node.TEXT_NODE) return node
+  const wrapper = document.createElement('p')
+  wrapper.append(node.cloneNode())
+  return wrapper
+}
 
 /**
  * Normalizes HTML
@@ -454,10 +463,15 @@ export function formatDocument(documentRoot) {
   // If we copy children into res first and then use that as the root innerText
   // is empty because it hasn't been flowed over the document, and we aren't
   // keen to do that either.
-  [...documentRoot.childNodes].filter(x => x?.nodeType === Node.ELEMENT_NODE)
+  [...documentRoot.childNodes]
+    // .filter(x => (x?.nodeType === Node.TEXT_NODE) ? !(allWhiteSpace(x.textContent)) : true) // filter non-whitespace only text nodes
+    // .map(x => nodeWrap(x))
+    .filter(x => x?.nodeType === Node.ELEMENT_NODE)
     .map(cn => treeTraverse(cull, cn))
     .filter(Boolean)
     .forEach(child => res.appendChild(child))
+
+  if (res.childElementCount === 0) res.append(document.createElement('p'))
 
   return res
 
