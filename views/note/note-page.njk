@@ -44,10 +44,9 @@ permalink: "note/{{ noteItem.name | slug }}/"
 <!-- <button id="edit-button" -->
 <br>
 <!-- <div id="doc" data=""></div> -->
-<div id="content"> <!-- viewRenderer html? -->
-  {{ noteItem.content | safe }}
-</div>
+<div id="content" style="white-space: pre-wrap;">{{ noteItem.content | safe }}</div>
 
+<!-- <script type="module" src="/js/scribnet/document/Renderer.mjs"></script> -->
 <script>
   // const resourceName = window.location.pathname.match(/[^\/]*$/)[0] // grabs the string in the url past the last forward slash
   const resourceName = "{{ noteItem.name }}"
@@ -68,11 +67,21 @@ permalink: "note/{{ noteItem.name | slug }}/"
     editButton.removeAttribute("style")
     switch(currentState) {
       case "editing": {
+        
         const editor = document.createElement("editor-hf")
         editor.setAttribute("style", "white-space: pre-wrap;")  // auto part of editor? :S. use that shadow dom?
         editor.append(...contentWrapper.childNodes)
         contentWrapper.after(editor)
         contentWrapper.parentNode.removeChild(contentWrapper)
+
+        // contentWrapper.
+
+        import('/js/scribnet/document/Renderer.mjs').then(m => {
+          const { HTMLRenderer } = m;
+          htmlRenderer = new HTMLRenderer()
+          editor.defaultRenderer = htmlRenderer
+          htmlRenderer.render(editor.editor.currentDocument)
+        })
 
         editButton.setAttribute("style", "display: none;")
         break;
