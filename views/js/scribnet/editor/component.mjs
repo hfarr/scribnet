@@ -20,6 +20,9 @@ import { Editor } from './editor.mjs'
 // TODO we need to handle nested block elements, or make a distinction between block elements that
 // nest and ones that don't. That is, recursively generate "block" contexts, where we imagine right
 // now the editor only has one block context, and it is also a 'base case'.
+
+const initialized = Symbol("initialized")
+
 class EditorComponent extends HTMLElement {
 
   constructor() {
@@ -27,13 +30,9 @@ class EditorComponent extends HTMLElement {
 
     // I'm concerned about overriding attributes. It's fragile. unfortunately I don't know if there's any handy piece
     // of state I can repurpose, like a global WeakMap
-    this.data = { counter: 0 }
+    // this.data = { counter: 0 }
 
-    this.editor = new Editor(this);
-    this.editor.reformat()
-    this.editor.readDOM()
 
-    this.initListeners()
 
     // this.contentEditable = true // being more explicit. Not trying to store data on the object, but DOM interaction.
     // Maybe extend another class that has the state? a mix in? Then it can't interfere with the DOM accidentally
@@ -41,6 +40,18 @@ class EditorComponent extends HTMLElement {
 
     // document.addEventListener('selectionchange', async (e) => this.editor.onSelectionChange(e))
   }
+
+  init() {
+    if (initialized in this) return
+
+    this.editor = new Editor(this);
+    // this.editor.reformat()
+    this.editor.readDOM()
+    
+    this.initListeners()
+    
+  }
+
 
   initListeners() {
     this.editor.evtSelChg = async (e) => this.editor.onSelectionChange(e)
@@ -196,7 +207,9 @@ class EditorComponent extends HTMLElement {
 
   connectedCallback() {
     // console.debug("Editor added to DOM");
-    this.editor.reformat()  // Doesn't update internal state
+    this.init()
+
+    // this.editor.reformat()  // Doesn't update internal state
     this.editor.readDOM()   // Updates internal state - reads the DOM
     this.setAttribute("contentEditable", "true")
     
