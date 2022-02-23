@@ -57,11 +57,36 @@ permalink: "note/{{ noteItem.name | slug }}/"
   const editButton = document.querySelector("#edit-button")
   const viewButton = document.querySelector("#view-button")
 
-  console.log("State", window.history.state)
+  const url = "/api/graphql"
+
+  const query = (content,variables) => {
+
+    const requestBody = {
+      query: content, 
+      variables: variables ?? {}
+    }
+    const options = {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Accept': 'application/json'
+      },
+      // body: JSON.stringify(requestBody)
+      body: requestBody
+    }
+
+    return fetch(url, options)
+  }
+  
+  const saveContent = async data => {
+  // const saveHTML = async content => {
+    // likely, a function that "saves html" would first render it into html rather than assume "content" is html. so we'll call it saveContent for now
+    return await query(`mutation { updateNote(name: "${resourceName}", input: { data: "${JSON.stringify({ content: data })}" }) { name } } `)
+  }
 
   // Toggle functionality- opportunity for a component. TODO
 
-  applyState = () => {
+  const applyState = () => {
     const { currentState = "viewing" } = window.history.state ?? {}
     viewButton.removeAttribute("style")
     editButton.removeAttribute("style")
@@ -80,7 +105,16 @@ permalink: "note/{{ noteItem.name | slug }}/"
           const { HTMLRenderer } = m;
           htmlRenderer = new HTMLRenderer()
           editor.defaultRenderer = htmlRenderer
-          htmlRenderer.render(editor.editor.currentDocument)
+          editor.render()
+          // htmlRenderer.render(editor.editor.currentDocument)
+
+          editor.editor.currentDocument.addSelectListener(doc => {
+            // yeah it's still /too much/ to submit updates eagerly, owing to the fact that 
+            // some triggers of this command don't even update content (it's a "select" listener).
+            // Naming is wrong too really it should just be "addListener" because it listens for
+            // nearly all state changes of an EditDocument.
+            return saveContent(htmlRenderer.toHTML(doc))
+          })
         })
 
         editButton.setAttribute("style", "display: none;")
@@ -100,7 +134,7 @@ permalink: "note/{{ noteItem.name | slug }}/"
     }
   }
 
-  transitionState = (newState, url) => {
+  const transitionState = (newState, url) => {
     window.history.pushState({ currentState: newState }, undefined, url )
     applyState()
   }
