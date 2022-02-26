@@ -63,7 +63,7 @@ permalink: "note/{{ noteItem.name | slug }}/"
 
     const requestBody = {
       query: content, 
-      variables: variables ?? {}
+      variables: variables ?? null
     }
     const options = {
       method: 'POST',
@@ -72,7 +72,7 @@ permalink: "note/{{ noteItem.name | slug }}/"
         'Accept': 'application/json'
       },
       // body: JSON.stringify(requestBody)
-      body: requestBody
+      body: JSON.stringify(requestBody)
     }
 
     return fetch(url, options)
@@ -81,7 +81,8 @@ permalink: "note/{{ noteItem.name | slug }}/"
   const saveContent = async data => {
   // const saveHTML = async content => {
     // likely, a function that "saves html" would first render it into html rather than assume "content" is html. so we'll call it saveContent for now
-    return await query(`mutation { updateNote(name: "${resourceName}", input: { data: "${JSON.stringify({ content: data })}" }) { name } } `)
+
+    return await query(`mutation { updateNote(name: "${resourceName}", input: { data: ${JSON.stringify(JSON.stringify(data))} }) { name } } `)
   }
 
   // Toggle functionality- opportunity for a component. TODO
@@ -113,7 +114,8 @@ permalink: "note/{{ noteItem.name | slug }}/"
             // some triggers of this command don't even update content (it's a "select" listener).
             // Naming is wrong too really it should just be "addListener" because it listens for
             // nearly all state changes of an EditDocument.
-            return saveContent(htmlRenderer.toHTML(doc))
+            const data={ content: htmlRenderer.toHTML(doc) }
+            return saveContent(data)
           })
         })
 
