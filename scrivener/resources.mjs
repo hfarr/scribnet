@@ -66,16 +66,24 @@ const DataInterface = dataccess => (constructorFunc, indexField) => {
   const serialize = instance => ({ [indexField]: instance[indexField], data: JSON.stringify(instance) })
   return {
     [`create${typeName}`]: async function ({ input }) {
-      const data = JSON.parse(input)
-      const instance = await dataccess.create(constructorFunc, data)
-      return serialize(instance)
+      if (process.env.DEVELOPMENT === 'true') console.log(`create${typeName}`, input)
+      try {
+        const data = JSON.parse(input.data)
+        const instance = await dataccess.create(constructorFunc, data)
+        return serialize(instance)
+      } catch (err) {
+        console.log(err)
+        throw new Error("Can't parse json")
+      }
     },
     [`get${typeName}`]: async function ({ [`${indexField}`]: val }) {
+      if (process.env.DEVELOPMENT === 'true') console.log(`get${typeName}`, val)
       const instance = await dataccess.get(constructorFunc, val)
       if (instance === undefined) throw new Error(`Instance of ${constructorFunc.name} not found`)
       return serialize(instance)
     },
     [`update${typeName}`]: async function ({ [`${indexField}`]: val, input }) {
+      if (process.env.DEVELOPMENT === 'true') console.log(`update${typeName}`, val, input.data)
       // const data = JSON.parse(input)
       // const instance = dataccess.update(constructorFunc, val, data)
       const data = JSON.parse(input.data)
@@ -154,6 +162,8 @@ class Unstructured {
 // const promises = list => Promise.all(list.map(i => Promise.resolve(i)))
 // const promises = list => Promise.all([ Promise.resolve(list[0]), list[1]])
 
+// TODO This is more like a "Global Aggregator" as it aggregates all Datables. This is an implicit behavior because it offloads the work to Dataccess, which has global access to data.
+// TODO We will support arbitrary aggregators so items can group other items on a smaller scale. The principle is close to the principle of scopes.
 class Aggregate {
   constructor(dataccess) {
     this.dataccess = dataccess
@@ -165,8 +175,8 @@ class Aggregate {
   pushup(query, funcObj) {
     this.unstructures.push({
       types: [],
-      queries:[query],
-      mutations:[],
+      queries: [query],
+      mutations: [],
       funcs: funcObj
     })
   }
@@ -177,7 +187,7 @@ class Aggregate {
     // const func = { [plural]: async () => Promise.all(dataccess.getIndexList(constructorFunc).map(name => dataccess.get(constructorFunc,name).then(inst => ({name, data: JSON.stringify(inst)})))) } //promises({name, dataccess.get(constructorFunc, name)]))) }
     // const func = { [plural]: async () => dataccess.getIndexList(constructorFunc).map(async name=> ({name, data: JSON.stringify(await dataccess.get(constructorFunc, name))})) }
     const func = { [plural]: async () => Promise.all(dataccess.getIndexList(constructorFunc).map(getter)) }
-    const funcGet = { [`${plural}Get`]: async({ index }) => getter(dataccess.getIndexList(constructorFunc).at(index)) } // TODO I need an interface for aggregating data in Dataccess
+    const funcGet = { [`${plural}Get`]: async ({ index }) => getter(dataccess.getIndexList(constructorFunc).at(index)) } // TODO I need an interface for aggregating data in Dataccess
     this.pushup(query, func)
     this.pushup(numericGet, funcGet)
   }
@@ -218,7 +228,7 @@ const schemaStr = gql`
     ${sc.fmtQueries()}
   }`
 
-const root = { 
+const root = {
   ...sc.rootObj(),
   // notes() { dataccess.getIndexList(Note) }
 }
