@@ -102,12 +102,9 @@ class Section {
   /* Content mutators */
   delete(start, end) {
     const [ startSection, _, __, endSection ] = [ ...this.split(start), ...this.split(end) ]
-    // TODO should update splice to work on atoms, not sections :S
+    // TODO should update splice to work on atoms, not sections ?
     const result = this.constructor.from(...startSection.subPieces, ...endSection.subPieces).cutEmpty()
 
-    // const splitSec = this.split(start).split(end).cutEmpty()
-    // const [ [lb], [rb] ] = [ splitSec._locateAtom(start), splitSec._locateAtom(end) ]
-    // const result = splitSec.splice(lb, rb - lb)
     return result
   }
 
@@ -136,11 +133,6 @@ class Section {
     ).cutEmpty()
 
     return result
-
-    // const splitSection = this.split(start).split(end).cutEmpty()
-    // const [ [startIndex], [endIndex] ] = [ splitSection._locateAtom(start), splitSection._locateAtom(end) ]
-    // const affectedSection = this.constructor.from(...this.subPieces.slice(startIndex, endIndex))
-    // return splitSection.splice(startIndex, endIndex - startIndex, affectedSection.map(func) )
   }
 
   /**
