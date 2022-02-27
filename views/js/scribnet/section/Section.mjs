@@ -77,13 +77,13 @@ class Section {
    * @param characterIndex 
    * @return Address of the character in terms of segment and character offset
    */
-  _locateAtom(characterIndex) {
-    let segmentIndex = 0
-    while (segmentIndex < this.segments.length && characterIndex >= this.segments[segmentIndex].length) {  // Jumps over empty segments
-      characterIndex -= this.segments[segmentIndex].length; // length of a segment expresses # characters so this is still valid
-      segmentIndex++;
+  _locateAtom(atomIndex) {
+    let sectionIndex = 0
+    while (sectionIndex < this.subPieces.length && atomIndex >= this.subPieces[sectionIndex].length) {  // Jumps over empty subPieces
+      atomIndex -= this.subPieces[sectionIndex].length; // length of a section expresses # atoms so this is still valid
+      sectionIndex++;
     }
-    return [ segmentIndex, characterIndex ]
+    return [ sectionIndex, atomIndex ]
   }
   //===================================================
 
