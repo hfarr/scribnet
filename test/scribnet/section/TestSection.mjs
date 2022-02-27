@@ -51,7 +51,7 @@ describe(`${MODULE} module`, function () {
 
     it('is equal to its split', function () {
       for (let i = 0; i < basicAtomicSection.length; i++) {
-        assert(basicAtomicSection.split(i).eq(basicAtomicSection))
+        assert(Section.from(...basicAtomicSection.split(i)).eq(basicAtomicSection))
       }
     })
 
@@ -91,10 +91,10 @@ describe(`${MODULE} module`, function () {
     })
     it('is equal to its split', function () {
       for (let i = 0; i < basicSection.length; i++) {
-        assert(basicSection.split(i).eq(basicSection))
+        assert(Section.from(...basicSection.split(i)).eq(basicSection))
       }
       for (let i = 0; i < nestedSection.length; i++) {
-        assert(nestedSection.split(i).eq(nestedSection))
+        assert(Section.from(...nestedSection.split(i)).eq(nestedSection))
       }
     })
 
@@ -142,8 +142,12 @@ describe(`${MODULE} module`, function () {
   
   describe('operate', function() {
     it('applies correctly', function() {
+      const originalString = nestedSection.atoms.join('')
+      const expectedString = originalString.substring(0, 50) + originalString.substring(50,80).toUpperCase() + originalString.substring(80)
+
       const result = nestedSection.operate(a => a.toUpperCase(), 50, 80)
-      assert(true)
+      const expected = AtomicSection.from(...expectedString)
+      assert(result.eq(expected))
     })
   })
 })

@@ -19,7 +19,7 @@ class Section {
   split(index) {
     const [ splitSecIndex, offset ] = this._locateBoundary(index)
     const splitSections = this.subPieces[splitSecIndex].split(offset, this.constructor)
-    return this.splice(splitSecIndex, 1, ...splitSections.subPieces)
+    // return this.splice(splitSecIndex, 1, ...splitSections.subPieces)
     // TODO work out whether we want to go with 'wrapping'. Splicing is great, but it also has a flattening effect.
     //    this change might need to be made there. As an example, say we have
     //    [ AtomicSec, AtomicSec, Sec, AtomicSec, AtomicSec ] then splitting on "Sec" will apply
@@ -28,10 +28,10 @@ class Section {
     //    implemented split.
     // const splitSections = this.subPieces[splitSecIndex].split(offset, this.constructor).subPieces
     // return this.splice(splitSecIndex, 1, ...splitSections.subPieces)
-    // return this.constructor.from(
-    //   this.constructor.from(...this.subPieces.slice(0, splitSecIndex), splitSections[0]),
-    //   this.constructor.from(splitSections[1], this.subPieces.slice(splitSecIndex + 1))
-    // )
+    return [
+      this.constructor.from(...this.subPieces.slice(0, splitSecIndex), splitSections[0]),
+      this.constructor.from(splitSections[1], ...this.subPieces.slice(splitSecIndex + 1))
+    ]
   }
 
   splice(start, length, ...sections) {
@@ -101,9 +101,13 @@ class Section {
 
   /* Content mutators */
   delete(start, end) {
-    const splitSec = this.split(start).split(end).cutEmpty()
-    const [ [lb], [rb] ] = [ splitSec._locateAtom(start), splitSec._locateAtom(end) ]
-    const result = splitSec.splice(lb, rb - lb)
+    const [ startSection, _, __, endSection ] = [ ...this.split(start), ...this.split(end) ]
+    // TODO should update splice to work on atoms, not sections :S
+    const result = this.constructor.from(...startSection.subPieces, ...endSection.subPieces).cutEmpty()
+
+    // const splitSec = this.split(start).split(end).cutEmpty()
+    // const [ [lb], [rb] ] = [ splitSec._locateAtom(start), splitSec._locateAtom(end) ]
+    // const result = splitSec.splice(lb, rb - lb)
     return result
   }
 
@@ -122,10 +126,21 @@ class Section {
    * @param end End index
    */
   operate(func, start, end) {
-    const splitSection = this.split(start).split(end).cutEmpty()
-    const [ [startIndex], [endIndex] ] = [ splitSection._locateAtom(start), splitSection._locateAtom(end) ]
-    const affectedSection = this.constructor.from(...this.subPieces.slice(startIndex, endIndex))
-    return splitSection.splice(startIndex, endIndex - startIndex, affectedSection.map(func) )
+    const [ startSection, startMid ] = [ ...this.split(start) ]
+    const [ endMid, endSection ] = [ ...startMid.split(end - start) ]
+
+    const result = this.constructor.from(
+      ...startSection.subPieces, 
+      endMid.map(func),
+      ...endSection.subPieces
+    ).cutEmpty()
+
+    return result
+
+    // const splitSection = this.split(start).split(end).cutEmpty()
+    // const [ [startIndex], [endIndex] ] = [ splitSection._locateAtom(start), splitSection._locateAtom(end) ]
+    // const affectedSection = this.constructor.from(...this.subPieces.slice(startIndex, endIndex))
+    // return splitSection.splice(startIndex, endIndex - startIndex, affectedSection.map(func) )
   }
 
   /**
@@ -171,11 +186,11 @@ class AtomicSection extends Section {
     return AtomicSection.from(this.subPieces.slice(start, end))
   }
 
-  split(index, sectionConstructor = Section) {
-    return sectionConstructor.from( 
-      AtomicSection.from(...this.subPieces.slice(0, index)), 
-      AtomicSection.from(...this.subPieces.slice(index)) 
-    )
+  split(index) {
+    return [
+      this.constructor.from(...this.subPieces.slice(0, index)), 
+      this.constructor.from(...this.subPieces.slice(index)) 
+    ]
   }
 
   splice(start, length, ...sections) {
@@ -197,7 +212,7 @@ class AtomicSection extends Section {
   }
 
   map(func) {
-    return AtomicSection.from( this.subPieces.map(func) )
+    return this.constructor.from( ...this.subPieces.map(func) )
   }
 
 }
