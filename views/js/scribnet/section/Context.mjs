@@ -63,7 +63,7 @@
  * Not feeling it /immediately/ but it should be within grasp.
  */
 
-import { ListSegment } from "./Segment.mjs"
+import { ListSegment } from "../document/Segment.mjs"
 
 const BLOCKS = ['p', 'h1', 'h2', 'h3', 'pre']
 
@@ -148,4 +148,11 @@ class Context {
     return false
   }
 
+}
+
+class ListContext {
+  constructor() {
+    super()
+    this.segments = []
+  }
 }
