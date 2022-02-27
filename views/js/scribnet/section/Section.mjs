@@ -3,22 +3,22 @@
 class Section {
 
   constructor() {
-    this.subsections = []
+    this.subPieces = []
   }
 
-  static from(...sections) {
-    const section = new Section()
-    section.subsections = sections
+  static from(...pieces) {
+    const section = new this()
+    section.subPieces = pieces
     return section
   }
 
   copy() {
-    return Section.from(...this.subsections)
+    return this.constructor.from(...this.subPieces)
   }
 
   split(index) {
     const [ splitSecIndex, offset ] = this._locateBoundary(index)
-    const splitSections = this.subsections[splitSecIndex].split(offset).sections
+    const splitSections = this.subPieces[splitSecIndex].split(offset, this.constructor)
     return this.splice(splitSecIndex, 1, ...splitSections)
   }
 
@@ -28,20 +28,20 @@ class Section {
     // characters. There is value in manipulating the ListSegment
     // at its own comfortable level of abstraction.
     const newSection = this.copy()
-    newSection.sections.splice(start, length, ...sections)
+    newSection.subPieces.splice(start, length, ...sections)
     return newSection
   }
 
   get atoms() {
     if (this._atoms === undefined) {
-      this._atoms = this.subsections.map(section => section.atoms ).flat()
+      this._atoms = this.subPieces.map(section => section.atoms ).flat()
     }
     return this._atoms
   }
 
   get length() {
     if (this._length === undefined) {
-      this._length = this.subsections.reduce((lengthSoFar, section) => lengthSoFar + section.length, 0)
+      this._length = this.subPieces.reduce((lengthSoFar, section) => lengthSoFar + section.length, 0)
     }
     return this._length
   }
@@ -51,7 +51,7 @@ class Section {
   }
 
   cutEmpty() {
-    return Section.from(...this.subsections.filter(sec => !sec.empty()))
+    return Section.from(...this.subPieces.filter(sec => !sec.empty()))
   }
 
   //===================================================
@@ -97,7 +97,7 @@ class Section {
 
   insert(location, atoms) {
     const [ sectionIndex, sectionOffset ] = this._locateAtom(location)
-    const newSecs = this.subsections[sectionIndex].insert(sectionOffset, atoms)
+    const newSecs = this.subPieces[sectionIndex].insert(sectionOffset, atoms)
     const result = this.splice(sectionIndex, 1, newSecs)
     return result
   }
@@ -112,7 +112,7 @@ class Section {
   operate(func, start, end) {
     const splitSection = this.split(start).split(end).cutEmpty()
     const [ [startIndex], [endIndex] ] = [ splitSection._locateAtom(start), splitSection._locateAtom(end) ]
-    const affectedSection = Section.from(...this.subsections.slice(startIndex, endIndex))
+    const affectedSection = this.constructor.from(...this.subPieces.slice(startIndex, endIndex))
     return splitSection.splice(sectionIndex, endIndex - startIndex, affectedSection.map(func) )
   }
 
@@ -122,7 +122,7 @@ class Section {
    * @param func Function to apply
    */
   map(func) {
-    return Section.from(...this.subsections.map(func))
+    return this.constructor.from(...this.subPieces.map(func))
   }
 
   at(offset) {
@@ -141,4 +141,42 @@ class Section {
   }
 }
 
+class AtomicSection extends Section {
+  constructor() {
+    super()
+  }
+  cutEmpty() {
+    return this
+  }
+  get atoms() {
+    return this.subPieces
+  }
+  get length() {
+    return this.subPieces.length
+  }
+
+  slice(start, end) {
+    return AtomicSection.from(this.subPieces.slice(start, end))
+  }
+
+  split(index, sectionConstructor = Section) {
+    return sectionConstructor.from( 
+      AtomicSection.from(...this.subPieces.slice(0, index)), 
+      AtomicSection.from(...this.subPieces.slice(index)) 
+    )
+  }
+
+  splice(start, length, ...sections) {
+    // TODO maybe- we support splicing at the level of "Section" but not "Atoms". But, if I am thinking of Sections as an "Arraylike" structure that lets you treat nested arrays like normal arrays, we should
+    //  rethink our approach, and implement all the way down. That might be a longer term enhancement, then we can get into species and all of the nice metaprogramming.
+    return this
+  }
+
+  map(func) {
+    return AtomicSection.from( this.subPieces.map(func) )
+  }
+
+}
+
+export { AtomicSection }
 export default Section
