@@ -63,7 +63,7 @@ class Section {
   }
 
   cutEmpty() {
-    return Section.from(...this.subPieces.filter(sec => !sec.empty()))
+    return this.constructor.from(...this.subPieces.filter(sec => !sec.empty()))
   }
 
   //===================================================

@@ -39,6 +39,13 @@ describe(`${MODULE} module`, function () {
   const basicSection = Section.from(...listSections)
   const nestedSection = Section.from(...complexSections)
 
+  const SectionSubclassA = class extends Section {}
+  const SectionSubclassB = class extends Section {}
+
+  const AtomicSectionSubclassA = class extends AtomicSection {}
+
+  const mixedSection = SectionSubclassA.from(...complexSections)
+
 
   describe('AtomicSection', function () {
     it('equals itself', function () {
@@ -148,6 +155,15 @@ describe(`${MODULE} module`, function () {
       const result = nestedSection.operate(a => a.toUpperCase(), 50, 80)
       const expected = AtomicSection.from(...expectedString)
       assert(result.eq(expected))
+    })
+  })
+
+  describe('split', function() {
+
+    it('preserves class', function() {
+      const [ start, end ] = mixedSection.split(10)
+      assert(start instanceof SectionSubclassA)
+      assert(end instanceof SectionSubclassA)
     })
   })
 })
