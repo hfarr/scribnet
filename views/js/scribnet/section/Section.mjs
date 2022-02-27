@@ -19,7 +19,7 @@ class Section {
   split(index) {
     const [ splitSecIndex, offset ] = this._locateBoundary(index)
     const splitSections = this.subPieces[splitSecIndex].split(offset, this.constructor)
-    return this.splice(splitSecIndex, 1, ...splitSections)
+    return this.splice(splitSecIndex, 1, ...splitSections.subPieces)
   }
 
   splice(start, length, ...sections) {
@@ -60,8 +60,8 @@ class Section {
     // this method needs a revisit because it mixes "boundary points" and "character points",
     // yielding the wrong addresses m' fraid
     let sectionIndex = 0
-    while (atomIndex > this.segments[sectionIndex].length) {
-      atomIndex -= this.segments[sectionIndex].length;
+    while (atomIndex > this.subPieces[sectionIndex].length) {
+      atomIndex -= this.subPieces[sectionIndex].length;
       sectionIndex++;
     }
     return [ sectionIndex, atomIndex ]
