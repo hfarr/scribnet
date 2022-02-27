@@ -98,6 +98,20 @@ class EditorComponent extends HTMLElement {
           // this.render(); so long as I'm reasonably convinced this works then I'm not going 
           break;
         }
+        case 'insertParagraph': {
+          // Newline chars will construct paragraphs
+          this.editor.write('\n')
+          break
+        }
+        case 'insertFromPaste': {
+          // TODO can also get text/html, which will preserve styling from source. then we can, for example, parse it and keep compatible stylings.
+          const data = ie.dataTransfer.getData('text/plain')
+          if (data.length > 0)
+            this.editor.write(data)
+          ie.preventDefault()
+          this.render()
+          break
+        }
         case 'deleteContentBackward': {
           this.editor.backspace(); 
           // WORKAROUND: Firefox bug causes certain input events to fail to fire when delete key is pressed. Described in htmlcontrol.html
