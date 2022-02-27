@@ -34,6 +34,18 @@ describe(`${MODULE} module`, function () {
         assert(basicAtomicSection.split(i).eq(basicAtomicSection))
       }
     })
+
+    it('deletes correctly', function() {
+      const result = basicAtomicSection.delete(2,7)
+      const expected = AtomicSection.from(..."A section")
+      assert(result.eq(expected))
+    })
+
+    it('inserts correctly', function() {
+      const result = basicAtomicSection.insert(2, "new ")
+      const expected = AtomicSection.from(..."A new test section")
+      assert(result.eq(expected))
+    })
   })
 
 
