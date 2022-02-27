@@ -139,4 +139,11 @@ describe(`${MODULE} module`, function () {
       })
     })
   })
+  
+  describe('operate', function() {
+    it('applies correctly', function() {
+      const result = nestedSection.operate(a => a.toUpperCase(), 50, 80)
+      assert(true)
+    })
+  })
 })

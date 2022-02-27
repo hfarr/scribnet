@@ -20,6 +20,18 @@ class Section {
     const [ splitSecIndex, offset ] = this._locateBoundary(index)
     const splitSections = this.subPieces[splitSecIndex].split(offset, this.constructor)
     return this.splice(splitSecIndex, 1, ...splitSections.subPieces)
+    // TODO work out whether we want to go with 'wrapping'. Splicing is great, but it also has a flattening effect.
+    //    this change might need to be made there. As an example, say we have
+    //    [ AtomicSec, AtomicSec, Sec, AtomicSec, AtomicSec ] then splitting on "Sec" will apply
+    //    split on "sec" then spread out its internals in the wrapper. I think we want it to 
+    //    produce two "sec" each taking half. which I think is close to how we originally
+    //    implemented split.
+    // const splitSections = this.subPieces[splitSecIndex].split(offset, this.constructor).subPieces
+    // return this.splice(splitSecIndex, 1, ...splitSections.subPieces)
+    // return this.constructor.from(
+    //   this.constructor.from(...this.subPieces.slice(0, splitSecIndex), splitSections[0]),
+    //   this.constructor.from(splitSections[1], this.subPieces.slice(splitSecIndex + 1))
+    // )
   }
 
   splice(start, length, ...sections) {
@@ -113,7 +125,7 @@ class Section {
     const splitSection = this.split(start).split(end).cutEmpty()
     const [ [startIndex], [endIndex] ] = [ splitSection._locateAtom(start), splitSection._locateAtom(end) ]
     const affectedSection = this.constructor.from(...this.subPieces.slice(startIndex, endIndex))
-    return splitSection.splice(sectionIndex, endIndex - startIndex, affectedSection.map(func) )
+    return splitSection.splice(startIndex, endIndex - startIndex, affectedSection.map(func) )
   }
 
   /**
@@ -122,7 +134,7 @@ class Section {
    * @param func Function to apply
    */
   map(func) {
-    return this.constructor.from(...this.subPieces.map(func))
+    return this.constructor.from(...this.subPieces.map( sec => sec.map(func)))
   }
 
   at(offset) {
