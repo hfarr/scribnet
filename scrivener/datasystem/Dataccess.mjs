@@ -174,7 +174,7 @@ export default class Dataccess {
     //  or, we don't validate- leave it as a client decision. Perhaps offer an interface. Or multiple kinds of
     //  indices, e.g a "validating" index.
     const instance = Object.create(constructorFunc.prototype, Object.getOwnPropertyDescriptors(data))
-    // const { [datable]: { id } } = instance
+    const { [datable]: { id } } = instance
 
     this.indices[constructorFunc.name].set(instance, id)
 
