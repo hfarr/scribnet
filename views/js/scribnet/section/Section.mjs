@@ -128,7 +128,7 @@ class Section {
 
     const result = this.constructor.from(
       ...startSection.subPieces, 
-      endMid.map(func),
+      endMid.map(func), // TODO Flatten? that is, not quite "explode", but we know there is probably an extra layer of wrapping here
       ...endSection.subPieces
     ).cutEmpty()
 
