@@ -1,6 +1,7 @@
 'use strict'
 
 import fs from 'fs/promises'
+import { writeFileSync } from 'fs'
 // import path from 'path'
 
 const DBPrivate = Symbol('DB')
@@ -77,11 +78,12 @@ export default class Database {
    * Save to file, truncating & overwriting existing file. This is destructive.
    */
   async saveDB() {
+    // todo move to streaming, event emitter API? to buffer?
     const dataStrings = []
     for (const [id, data] of this.dataTable.entries()) {
       dataStrings.push(JSON.stringify(data))
     }
-    return fs.writeFile(this.filename, dataStrings.join('\n'), { encoding: 'utf8' })
+    writeFileSync(this.filename, dataStrings.join('\n'), { encoding: 'utf8' })
   }
 
   async loadDB() {
