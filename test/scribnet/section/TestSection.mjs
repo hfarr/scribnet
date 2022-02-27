@@ -1,5 +1,6 @@
 'use strict'
 import assert from 'assert';
+import { secureHeapUsed } from 'crypto';
 
 const PATH = "/home/henry/dev/scribnet/views"
 const MODULE = "Section"
@@ -9,25 +10,42 @@ describe(`${MODULE} module`, function () {
 
   const testString1 = "A test section"
 
-  const basicSection = AtomicSection.from(...testString1)
-  const basicSection_split6 = Section.from(AtomicSection.from(..."A test"), AtomicSection.from(..." section"))
+  const basicAtomicSection = AtomicSection.from(...testString1)
+  const listSections = [
+    AtomicSection.from(..."Some cool text"),
+    AtomicSection.from(..."Sections don't have to be just text though"),
+    AtomicSection.from(..."technically it's \"atoms\", loosely defined as indivisible"),
+    AtomicSection.from(..."Probably easier for the user if they're homogeneous"),
+    AtomicSection.from(..."but they don't have to be"),
+  ]
+  const basicSection = Section.from(...listSections)
 
   describe('Section', function () {
     it('equals itself', function() {
-      assert(basicSection.eq(basicSection))
+      assert(basicAtomicSection.eq(basicAtomicSection))
     })
 
     it('Has the right "atoms"', function() {
-      assert.deepStrictEqual(basicSection.atoms.join(''), testString1)
+      assert.deepStrictEqual(basicAtomicSection.atoms.join(''), testString1)
     })
 
     it('is equal to its split', function() {
-      assert(basicSection.split(6).eq(basicSection))
+      for(let i = 0; i < basicAtomicSection.length; i++) {
+        assert(basicAtomicSection.split(i).eq(basicAtomicSection))
+      }
     })
   })
 
 
   describe('AtomicSection', function () {
 
+    it('equals itself', function() {
+      assert(basicSection.eq(basicSection))
+    })
+    it('is equal to its split', function() {
+      for(let i = 0; i < basicSection.length; i++) {
+        assert(basicSection.split(i).eq(basicSection))
+      }
+    })
   })
 })
