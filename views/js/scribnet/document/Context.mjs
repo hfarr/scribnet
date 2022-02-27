@@ -56,6 +56,96 @@
   on the matter to get my first thoughts out and processed.
  */
 
+/**
+ * TODO there is an abundance of common functionality we could abstract factor
+ * out. "List of varying sized components" supporting a few operations- determine
+ * index within a component, split, insert, delete, etc etc.
+ * Not feeling it /immediately/ but it should be within grasp.
+ */
+
+import { ListSegment } from "./Segment.mjs"
+
+const BLOCKS = ['p', 'h1', 'h2', 'h3', 'pre']
+
+const filterInline = tag => !BLOCKS.includes(tag)
+
 class Context {
+
+  constructor() {
+    this.block = undefined
+    this.listSegment = new ListSegment()
+  }
+
+  static createContext(block) {
+    const context = new Context()
+    if (!context._updateBlock(block)) return undefined
+    return context
+  }
+
+  copy() {
+    const context = Context.createContext(this.block)
+    context.listSegment = this.listSegment
+    return context
+  }
+
+  get characters() {
+    return this.listSegment.characters
+  }
+  get length() {
+    return this.listSegment.length
+  }
+
+  /**
+   * Update the block element used by this context
+   * 
+   * @param block new block the context should use
+   * @returns True if the block was successfully updated, false if not
+   */
+  _updateBlock(block) {
+    block = block.toLowerCase()
+    if (!BLOCKS.includes(block)) return false
+
+    this.block = block
+    return true
+  }
+
+  setBlock(block) {
+    const context = this.copy()
+    context.block = block 
+    return context
+  }
+
+  setListSegment(listSegment) {
+    const context = this.copy()
+    context.listSegment = listSegment
+    return context
+  }
+
+  delete(start, end) {
+    return this.setListSegment(this.listSegment.delete(start, end))
+  }
+
+  insert(location, string) {
+    return this.setListSegment(this.listSegment.insert(location, string))
+  }
+
+  applyTags(tags, start, end) {
+    return this.setListSegment(this.listSegment.applyTags( tags.filter(filterInline), start, end ))
+  }
+  removeTags(tags, start, end) {
+    return this.setListSegment(this.listSegment.removeTags( tags.filter(filterInline), start, end ))
+  }
+  toggleTags(tags, start, end) {
+    return this.setListSegment(this.listSegment.toggleTags( tags.filter(filterInline), start, end ))
+  }
+  tagsAt(characaterIndex) {
+    return this.listSegment(characaterIndex)
+  }
+  eq(other) {
+    if (other instanceof Context) {
+      return this.listSegment.eq(other.listSegment)
+    }
+    return false
+  }
 
 }
