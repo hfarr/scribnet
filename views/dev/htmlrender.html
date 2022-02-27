@@ -81,6 +81,11 @@ title: Testing
 
   window.addEventListener('load', async (event) => {
     editor = hf.editor
+    // editor.reformat()
+    editor.formatDOM()
+    editor.render()
+    editor.readDOM()
+
     editDocRender.setEditDoc(editor.currentDocument)
     htmlRender.setEditDoc(editor.currentDocument)
 

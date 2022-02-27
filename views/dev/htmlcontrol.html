@@ -67,6 +67,13 @@ title: Testing
 
   window.addEventListener('load', async (event) => {
     editor = hf.editor
+    // TODO this is a bit clunky. I don't want to really keep "editor.reformat()" around so I need to think of better capabilities to expose.
+    //    likely, need to focus on "HTML Renderers" etc. An "Editor" should not have a concept of an "internal node", it should instead
+    //    perform operations on the internal document model. then let the changes come out through whatever renderer is attached, e.g. an
+    //    HTML renderer.
+    editor.formatDOM()  // Updates an "internal node"
+    editor.render()
+    editor.readDOM()
     /* Two notions for renderes. Independent ones, and ones attached to an editor.
       There can be multiple or 0 independent renderers, and right now we're
       constructing software to allow exactly one renderer, specifically an HTML

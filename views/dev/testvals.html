@@ -68,6 +68,9 @@ title: Testing
 
   window.addEventListener('load', async (event) => {
     editor = hf.editor
+    editor.formatDOM()
+    editor.render()
+    editor.readDOM()
     editDocDisplay.setEditDoc(editor.currentDocument)
 
     editor.currentDocument.addSelectListener(updateEditDocLabel)
