@@ -172,6 +172,18 @@ class AtomicSection extends Section {
     return this
   }
 
+  // ============
+  insert(location, atoms) {
+    const newSection = this.copy()
+    newSection.subPieces.splice(location, 0, ...atoms)
+    return newSection
+  }
+  delete(start, end) {
+    const newSection = this.copy()
+    newSection.subPieces.splice(start, end - start)
+    return newSection
+  }
+
   map(func) {
     return AtomicSection.from( this.subPieces.map(func) )
   }
