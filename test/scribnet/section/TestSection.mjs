@@ -1,5 +1,6 @@
 'use strict'
 import assert from 'assert';
+import exp from 'constants';
 import { secureHeapUsed } from 'crypto';
 
 const PATH = "/home/henry/dev/scribnet/views"
@@ -22,8 +23,22 @@ describe(`${MODULE} module`, function () {
     "but they don't have to be",
   ]
 
+  const innerStrings = [
+    "Hey these strings are in a nested section",
+    "we are testing just one layer of depth right now",
+    "sufficient to cover recursive case? On espere"
+  ]
+
   const listSections = testStrings.map(wrapAtomic)
+  const complexSections = [
+    ...testStrings.slice(0,2).map(wrapAtomic),
+    Section.from(...innerStrings.map(wrapAtomic)),
+    ...testStrings.slice(2).map(wrapAtomic)
+  ]
+
   const basicSection = Section.from(...listSections)
+  const nestedSection = Section.from(...complexSections)
+
 
   describe('AtomicSection', function () {
     it('equals itself', function () {
@@ -72,10 +87,14 @@ describe(`${MODULE} module`, function () {
 
     it('equals itself', function () {
       assert(basicSection.eq(basicSection))
+      assert(nestedSection.eq(nestedSection))
     })
     it('is equal to its split', function () {
       for (let i = 0; i < basicSection.length; i++) {
         assert(basicSection.split(i).eq(basicSection))
+      }
+      for (let i = 0; i < nestedSection.length; i++) {
+        assert(nestedSection.split(i).eq(nestedSection))
       }
     })
 
@@ -83,6 +102,12 @@ describe(`${MODULE} module`, function () {
       it('deletes correctly', function () {
         const result = basicSection.delete(10, 23)
         const expected = Section.from(...["Some cool don't have to be just text though", ...testStrings.slice(2)].map(wrapAtomic))
+        assert(result.eq(expected))
+      })
+      it('deletes nested correctly', function() {
+        const result = nestedSection.delete(50, 80)
+        const expected_str = nestedSection.atoms.join('').substring(0, 50) + nestedSection.atoms.join('').substring(80)
+        const expected = AtomicSection.from(...expected_str)
         assert(result.eq(expected))
       })
       it('does not mutate original', function () {
@@ -97,6 +122,15 @@ describe(`${MODULE} module`, function () {
         const result = basicSection.insert(14, "new text!")
         // in this case, insertion at a boundary
         const expected = Section.from(...[testStrings[0], "new text!", ...testStrings.slice(1)].map(wrapAtomic))
+        assert(result.eq(expected))
+      })
+      it('inserts nested correctly', function() {
+        const insertionString = " and I am very excited about that. "
+        const originalString = nestedSection.atoms.join('')
+        const expectedString = originalString.substring(0, 97) + insertionString + originalString.substring(97)
+
+        const result = nestedSection.insert(97, insertionString)
+        const expected = AtomicSection.from(...expectedString)
         assert(result.eq(expected))
       })
       it('does not mutate original', function () {
