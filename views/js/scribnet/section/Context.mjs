@@ -63,11 +63,72 @@
  * Not feeling it /immediately/ but it should be within grasp.
  */
 
-import { ListSegment } from "../document/Segment.mjs"
+import Section from "./Section.mjs"
+import { AtomicSection } from "./Section.mjs"
 
 const BLOCKS = ['p', 'h1', 'h2', 'h3', 'pre']
 
 const filterInline = tag => !BLOCKS.includes(tag)
+
+class Segment extends AtomicSection {
+  constructor() {
+    super()
+    this.tags = new Set()
+  }
+  static copy() {
+    const clone = super.copy()
+    clone.tags = this.tags
+    return clone
+  }
+}
+
+class Context extends Section {
+  constructor() {
+    super()
+    this.block = 'p'
+  }
+
+  static copy() {
+    const clone = super.copy()
+    clone.block = this.block
+    return clone
+  }
+
+  set block(tag) {
+    if (BLOCKS.includes(tag.toLowerCase())) this.blockTag = tag.toLowerCase()
+  }
+  get block() {
+    return this.blockTag
+  }
+
+}
+
+class Doc extends Section {
+
+}
+/* 
+ on map/operate,
+  I want a pattern that captures "answering". we can imagine AtomicSegments are the terminal Sections 
+  that answer to any functional application. For a Segment though, unless I make Segments as Atoms 
+  then Context as an AtomicSegment, I don't have a way to say "okay, from Doc, which has Contexts, 
+  which has Segment, operate 'applyTag'" because it would 'applyTag' to the atoms. In this case that's
+  the characters but the characters don't have the tag, the Segment does! 
+  
+  In this scenario I want "Context" to /ignore/ that call and Segment to *answer* it. The call
+  propogation terminates with Segment and doesn't pass to its subPieces (which may or may not be atoms
+  from the perspective of the caller, the point is it doesn't matter since the recursion stopped).
+
+  This gives me the flexibility I want without needing to do all the logic coding individually, I want
+  that functional feel (tm). This is a decent case for mutli-inheritance, or a metaprogramming mechanism
+  where every section tries to "answer" the call but only if it has that function as a property does it
+  succeed, otherwise propogate. That option gives me the opt-in semantics and easy syntactics of easily
+  specifying which subclasses answer which calls just be writing a function of the name. Maybe still
+  use "operate" as the backbone.
+
+  Oh, also, I'd like to parameterize the functional higher order function that operate uses. Right now
+  its a "generalization" (or.. specification, maybe) over "map". well. yeah. Specialization of map.
+  but t'would be nice to also do e.g filter, reduce.... fold...
+ */
 
 class Context {
 
