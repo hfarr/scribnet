@@ -16,6 +16,16 @@ class Section {
     return this.constructor.from(...this.subPieces)
   }
 
+  copyFrom(...pieces) {
+    // .... probably can name this better. this is a "copy" then a "from". ha. doesn't capture the intent-
+    // it creates a new Section, then sets the pieces, but that new section is specifically a *copy*. any
+    // inheritors override copy when they have subclass specific state to copy. This method serves to
+    // capture that pattern.
+    const result = this.copy()
+    result.subPieces = pieces
+    return result
+  }
+
   split(index) {
     const [ splitSecIndex, offset ] = this._locateBoundary(index)
     const splitSections = this.subPieces[splitSecIndex].split(offset, this.constructor)
@@ -29,8 +39,8 @@ class Section {
     // const splitSections = this.subPieces[splitSecIndex].split(offset, this.constructor).subPieces
     // return this.splice(splitSecIndex, 1, ...splitSections.subPieces)
     return [
-      this.constructor.from(...this.subPieces.slice(0, splitSecIndex), splitSections[0]),
-      this.constructor.from(splitSections[1], ...this.subPieces.slice(splitSecIndex + 1))
+      this.copyFrom(...this.subPieces.slice(0, splitSecIndex), splitSections[0]),
+      this.copyFrom(splitSections[1], ...this.subPieces.slice(splitSecIndex + 1))
     ]
   }
 
@@ -63,7 +73,7 @@ class Section {
   }
 
   cutEmpty() {
-    return this.constructor.from(...this.subPieces.filter(sec => !sec.empty()))
+    return this.copyFrom(...this.subPieces.filter(sec => !sec.empty()))
   }
 
   //===================================================
@@ -103,7 +113,7 @@ class Section {
   delete(start, end) {
     const [ startSection, _, __, endSection ] = [ ...this.split(start), ...this.split(end) ]
     // TODO should update splice to work on atoms, not sections ?
-    const result = this.constructor.from(...startSection.subPieces, ...endSection.subPieces).cutEmpty()
+    const result = this.copyFrom(...startSection.subPieces, ...endSection.subPieces).cutEmpty()
 
     return result
   }
@@ -126,7 +136,7 @@ class Section {
     const [ startSection, startMid ] = [ ...this.split(start) ]
     const [ endMid, endSection ] = [ ...startMid.split(end - start) ]
 
-    const result = this.constructor.from(
+    const result = this.copyFrom(
       ...startSection.subPieces, 
       endMid.map(func), // TODO Flatten? that is, not quite "explode", but we know there is probably an extra layer of wrapping here
       ...endSection.subPieces
@@ -141,7 +151,9 @@ class Section {
    * @param func Function to apply
    */
   map(func) {
-    return this.constructor.from(...this.subPieces.map( sec => sec.map(func)))
+    const result = this.clone()
+    result.subPieces = this.subPieces.map( section => section.map(func) )
+    return this.copyFrom(...this.subPieces.map( sec => sec.map(func)))
   }
 
   at(offset) {
@@ -180,8 +192,8 @@ class AtomicSection extends Section {
 
   split(index) {
     return [
-      this.constructor.from(...this.subPieces.slice(0, index)), 
-      this.constructor.from(...this.subPieces.slice(index)) 
+      this.copyFrom(...this.subPieces.slice(0, index)), 
+      this.copyFrom(...this.subPieces.slice(index)) 
     ]
   }
 
@@ -204,10 +216,10 @@ class AtomicSection extends Section {
   }
 
   map(func) {
-    return this.constructor.from( ...this.subPieces.map(func) )
+    return this.copyFrom( ...this.subPieces.map(func) )
   }
 
 }
 
-export { AtomicSection }
+export { AtomicSection, Section }
 export default Section
