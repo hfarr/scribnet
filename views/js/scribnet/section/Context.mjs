@@ -92,7 +92,7 @@ class CallTable {
 class Segment extends AtomicSection {
   constructor() {
     super()
-    this.tags = new Set()
+    this.tags = []
   }
   static copy() {
     const clone = super.copy()
@@ -107,8 +107,15 @@ class Segment extends AtomicSection {
 
   ////////
   _filterTags(tags) {
-    const unique = new Set(tags.map(str => str.toLowerCase()))
-    return [...unique].filter(filterInline)
+    const unique = new Set(tags.map(str => str.toLowerCase()).filter(filterInline))
+    return [...unique]
+  }
+  _eqTags(otherSegment) {
+    const thisTags = new Set(this.tags)
+    const otherTags = new Set(otherSegment.tags)
+    const thisContainsOtherTags = otherSegment.tags.every(t => thisTags.has(t))
+    const otherContainsThisTags = this.tags.every(t => otherTags.has(t))
+    return thisContainsOtherTags && otherContainsThisTags
   }
 
   /* TODO I could argue these don't need to clone, since they're operating on clones. That might not be a given, though.

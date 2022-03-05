@@ -60,8 +60,8 @@ describe('Context', function() {
   describe('Doc', function() {
 
     const segments = [
-      Segment.from(...'I am a part of a larger context'),
-      Segment.from(...'I am the second part of a larger context'),
+      Segment.from(...'I am a part of a larger context').applyTags(['em', 'strong']),
+      Segment.from(...'I am the second part of a larger context').applyTags(['strong', 'mark']),
     ]
     const context = Context.from(...segments)
     const doc = Doc.from(context)
@@ -70,6 +70,16 @@ describe('Context', function() {
       // Docs split and produce another doc, unlike most Section which split into a list of Section (or subclasses of Section)
       const result = doc.split(5)
       assert(doc.eq(result))
+    })
+
+    it('preserves Segment tagging when split', function() {
+      const result = doc.split(5)
+      ;[segments];
+      const resultSegments = [ ...result.subPieces.map( ctx => [...ctx.subPieces] ) ].flat()
+
+      assert(resultSegments[0]._eqTags(segments[0]))
+      assert(resultSegments[1]._eqTags(segments[0]))
+      assert(resultSegments[2]._eqTags(segments[1]))
     })
   })
 })
