@@ -1,7 +1,5 @@
 'use strict'
 import assert from 'assert';
-import exp from 'constants';
-import { secureHeapUsed } from 'crypto';
 
 const PATH = "/home/henry/dev/scribnet/views"
 const MODULE = "Section"
