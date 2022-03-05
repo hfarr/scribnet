@@ -70,17 +70,22 @@ const BLOCKS = ['p', 'h1', 'h2', 'h3', 'pre']
 
 const filterInline = tag => !BLOCKS.includes(tag)
 
-const callTable = {
-  [Segment.name]: function(func) { return /tag/i.test(func.name) },  // test if 'tag' is a substring of the function name, case insensitive
-  [Context.name]: ['updateBlock'],
-  [Doc.name]: []
-}
-const checkTable = (subclass, func) => {
-  const entry = callTable[subclass.name]
-  if (typeof entry === 'function') {
-    return entry(func)
-  } else {
-    return entry.includes(func.name)
+class CallTable {
+  constructor() {
+    this.callTable = {
+      [Segment.name]: function(func) { return /tag/i.test(func.name) },  // test if 'tag' is a substring of the function name, case insensitive
+      [Context.name]: ['updateBlock'],
+      [Doc.name]: []
+    }
+  }
+
+  checkTable (subclass, func) {
+    const entry = callTable[subclass.name]
+    if (typeof entry === 'function') {
+      return entry(func)
+    } else {
+      return entry.includes(func.name)
+    }
   }
 }
 
