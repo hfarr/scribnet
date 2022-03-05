@@ -7,6 +7,14 @@ const { Doc, Context, Segment } = await import(`${PATH}/js/scribnet/section/${MO
 
 describe('Context', function() {
 
+  const testSimpleSegments = [
+    Segment.from(...'AAAAA'),
+    Segment.from(...'BBBBB').applyTags(['B']),
+    Segment.from(...'CCCCC'),
+  ]
+  const testSimpleCtx = Context.from(...testSimpleSegments)
+  const testSimpleDoc = Context.from(testSimpleCtx)
+
 
   describe('Segment', function () {
 
@@ -68,18 +76,30 @@ describe('Context', function() {
 
     it('is equal to its own split', function() {
       // Docs split and produce another doc, unlike most Section which split into a list of Section (or subclasses of Section)
-      const result = doc.split(5)
+      const result = doc.splitInterior(5)
       assert(doc.eq(result))
     })
 
     it('preserves Segment tagging when split', function() {
-      const result = doc.split(5)
+      const result = doc.splitInterior(5)
       ;[segments];
       const resultSegments = [ ...result.subPieces.map( ctx => [...ctx.subPieces] ) ].flat()
 
       assert(resultSegments[0]._eqTags(segments[0]))
       assert(resultSegments[1]._eqTags(segments[0]))
       assert(resultSegments[2]._eqTags(segments[1]))
+    })
+
+    it('applies tags NAME TBD, TODO', function () {
+      const tagged = doc.applyTags(['mark'], 2, 4)
+
+      console.log(tagged)
+    })
+
+    it('is a place for me to test', function() {
+      [Segment, Context, Doc, testSimpleSegments, testSimpleCtx, testSimpleDoc]
+
+      assert(true)
     })
   })
 })
