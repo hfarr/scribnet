@@ -70,6 +70,20 @@ const BLOCKS = ['p', 'h1', 'h2', 'h3', 'pre']
 
 const filterInline = tag => !BLOCKS.includes(tag)
 
+const callTable = {
+  [Segment.name]: function(func) { return /tag/i.test(func.name) },  // test if 'tag' is a substring of the function name, case insensitive
+  [Context.name]: ['updateBlock'],
+  [Doc.name]: []
+}
+const checkTable = (subclass, func) => {
+  const entry = callTable[subclass.name]
+  if (typeof entry === 'function') {
+    return entry(func)
+  } else {
+    return entry.includes(func.name)
+  }
+}
+
 class Segment extends AtomicSection {
   constructor() {
     super()
@@ -80,6 +94,47 @@ class Segment extends AtomicSection {
     clone.tags = this.tags
     return clone
   }
+
+  answers(func) {
+    // TODO would like to make this polymorphic yknow. But I don't want to put it back in "Section". Need some multi inheritance. Maybe I should inject it on the constructor.
+    return checkTable(this.constructor.name, func)  
+  }
+
+  ////////
+  _filterTags(tags) {
+    const unique = new Set(tags.map(str => str.toLowerCase()))
+    return [...unique].filter(filterInline)
+  }
+
+  /* TODO I could argue these don't need to clone, since they're operating on clones. That might not be a given, though.
+      Might be worth letting them be mutators. But I'm also just happy to consume memory for now.
+  */
+  applyTags(tags) {
+    return this.replaceTags([...this.tags, ...tags])
+  }
+  removeTags(tags) {
+    return this.replaceTags(this.tags.filter(t => !tags.includes(t))) // I am passing an iterator, not a list, but replaceTags handles that because _filterTags handles it
+  }
+  toggleTags(tags) {
+    return this.replaceTags([
+      ...this.tags.filter(t => !tags.includes(t)),
+      ...tags.filter(t => this.tags.includes(t))
+    ])
+  }
+  replaceTags(tags) {
+    const seg = this.copy()   
+    seg.tags = this._filterTags(tags)
+    return seg
+  }
+  hasTag(tag) {
+    return this.tags.includes(tag.toLowerCase())
+  }
+
+  applyTag(tag) { return this.applyTags( [tag] ) }
+  removeTag(tag) { return this.removeTags( [tag] ) }
+  toggleTag(tag) { return this.toggleTags( [tag] ) }
+  replaceTag(tag) { return this.replaceTags( [tag] ) }
+
 }
 
 class Context extends Section {
@@ -105,6 +160,15 @@ class Context extends Section {
 
 class Doc extends Section {
 
+  applyTags(tags, start, end) {
+    this.operate((seg) => seg.applyTags(tags), start, end)
+  }
+  removeTags(tags, start, end) {
+    this.operate((seg) => seg.removeTags(tags), start, end)
+  }
+  toggleTags(tags, start, end) {
+    this.operate((seg) => seg.toggleTags(tags), start, end)
+  }
 }
 /* 
  on map/operate,

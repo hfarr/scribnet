@@ -145,13 +145,25 @@ class Section {
     return result
   }
 
+  answers(func) {
+    // Thought- this is a edging close to a visitor pattern. I can also envision like a table, where we
+    // specify functions on one dimension and subclasses of section on the other. consulting the table
+    // reveals whether a given section answers the call, or propogates it. Actually, in terms of 
+    // patterns, that reminds me of the event handling pattern. Might use a table, reminds me of Clox
+    // and the unary/binary operator table.
+    return false;
+  }
+
   /**
    * Apply function to all entries
    * 
    * @param func Function to apply
    */
   map(func) {
-    const result = this.clone()
+    if (this.answers(func))
+      return func(this.copy())
+
+    const result = this.copy()
     result.subPieces = this.subPieces.map( section => section.map(func) )
     return this.copyFrom(...this.subPieces.map( sec => sec.map(func)))
   }
