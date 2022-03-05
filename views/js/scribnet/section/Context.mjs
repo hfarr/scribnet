@@ -94,7 +94,8 @@ class Segment extends AtomicSection {
     super()
     this.tags = []
   }
-  static copy() {
+  // static from(...)
+  copy() {
     const clone = super.copy()
     clone.tags = this.tags
     return clone
@@ -155,7 +156,7 @@ class Context extends Section {
     this.block = 'p'
   }
 
-  static copy() {
+  copy() {
     const clone = super.copy()
     clone.block = this.block
     return clone
