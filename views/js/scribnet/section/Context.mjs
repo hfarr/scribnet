@@ -70,24 +70,7 @@ const BLOCKS = ['p', 'h1', 'h2', 'h3', 'pre']
 
 const filterInline = tag => !BLOCKS.includes(tag)
 
-class CallTable {
-  constructor() {
-    this.callTable = {
-      [Segment.name]: function(func) { return /tag/i.test(func.name) },  // test if 'tag' is a substring of the function name, case insensitive
-      [Context.name]: ['updateBlock'],
-      [Doc.name]: []
-    }
-  }
 
-  checkTable (subclass, func) {
-    const entry = callTable[subclass.name]
-    if (typeof entry === 'function') {
-      return entry(func)
-    } else {
-      return entry.includes(func.name)
-    }
-  }
-}
 
 class Segment extends AtomicSection {
   constructor() {
@@ -103,7 +86,7 @@ class Segment extends AtomicSection {
 
   answers(func) {
     // TODO would like to make this polymorphic yknow. But I don't want to put it back in "Section". Need some multi inheritance. Maybe I should inject it on the constructor.
-    return checkTable(this.constructor.name, func)  
+    return table.check(this.constructor, func)  
   }
 
   ////////
@@ -173,20 +156,14 @@ class Context extends Section {
 
 class Doc extends Section {
 
-  split(index) {
-    // TODO Might lift this into Section, as another operation. Combined with a "Join" operation. Maybe.
-    const [ left, right ] = super.split(index)
-    return this.copyFrom( ...left.subPieces, ...right.subPieces )
-  }
-
   applyTags(tags, start, end) {
-    this.operate((seg) => seg.applyTags(tags), start, end)
+    return this.operate(function applyTags(seg) { return seg.applyTags(tags) }, start, end)
   }
   removeTags(tags, start, end) {
-    this.operate((seg) => seg.removeTags(tags), start, end)
+    this.operate((seg) => { return seg.removeTags(tags) }, start, end)
   }
   toggleTags(tags, start, end) {
-    this.operate((seg) => seg.toggleTags(tags), start, end)
+    this.operate((seg) => { return seg.toggleTags(tags) }, start, end)
   }
 }
 /* 
@@ -212,5 +189,26 @@ class Doc extends Section {
   its a "generalization" (or.. specification, maybe) over "map". well. yeah. Specialization of map.
   but t'would be nice to also do e.g filter, reduce.... fold...
  */
+
+class Table {
+  constructor() {
+    this.callTable = {
+      [Segment.name]: function(func) { return /tag/i.test(func.name) },  // test if 'tag' is a substring of the function name, case insensitive
+      [Context.name]: ['updateBlock'],
+      [Doc.name]: []
+    }
+  }
+
+  check (subclass, func) {
+    const entry = this.callTable[subclass.name]
+    if (typeof entry === 'function') {
+      return entry(func)
+    } else {
+      return entry.includes(func.name)
+    }
+  }
+}
+
+const table = new Table()
 
 export { Doc, Context, Segment }
