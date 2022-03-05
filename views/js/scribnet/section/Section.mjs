@@ -44,6 +44,21 @@ class Section {
     ]
   }
 
+  /**
+   * Acts to split the Section, but joins the resulting pieces
+   * 
+   * @param index Index to split
+   * @returns new Section, with interior subpieces split
+   */
+  splitInterior(index) {
+    const [ left, right ] = this.split(index)
+    return left.join(right)
+  }
+
+  join(other) {
+    return this.copyFrom( ...this.subPieces, ...other.subPieces )
+  }
+
   splice(start, length, ...sections) {
     // Tricky bit about splice is it operates on segments entirely
     // caution is warranted. Most methods operate on the index of
@@ -228,6 +243,8 @@ class AtomicSection extends Section {
   }
 
   map(func) {
+    if (this.answers(func))
+      return func(this.copy())
     return this.copyFrom( ...this.subPieces.map(func) )
   }
 
