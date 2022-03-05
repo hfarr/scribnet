@@ -123,7 +123,7 @@ class Segment extends AtomicSection {
   toggleTags(tags) {
     return this.replaceTags([
       ...this.tags.filter(t => !tags.includes(t)),
-      ...tags.filter(t => this.tags.includes(t))
+      ...tags.filter(t => !this.tags.includes(t))
     ])
   }
   replaceTags(tags) {
