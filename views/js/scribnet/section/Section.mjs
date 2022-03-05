@@ -153,7 +153,7 @@ class Section {
 
     const result = this.copyFrom(
       ...startSection.subPieces, 
-      ...endMid.map(func).subPieces, // TODO Flatten? that is, not quite "explode", but we know there is probably an extra layer of wrapping here
+      ...endMid.map(func).subPieces,
       ...endSection.subPieces
     ).cutEmpty()
 
