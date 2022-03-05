@@ -165,6 +165,13 @@ class Context extends Section {
 
 class Doc extends Section {
 
+  split(index) {
+    const [ left, right ] = super.split(index)
+    const result = this.copy()
+    result.subPieces = [ ...left.subPieces, ...right.subPieces ]
+    return result
+  }
+
   applyTags(tags, start, end) {
     this.operate((seg) => seg.applyTags(tags), start, end)
   }

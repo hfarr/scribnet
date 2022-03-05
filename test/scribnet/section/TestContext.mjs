@@ -7,9 +7,6 @@ const { Doc, Context, Segment } = await import(`${PATH}/js/scribnet/section/${MO
 
 describe('Context', function() {
 
-  // describe('Context', function() {
-
-  // })
 
   describe('Segment', function () {
 
@@ -53,6 +50,26 @@ describe('Context', function() {
       it('has tags it had originally that were not toggled', function() {
         assert(toggled.hasTag('strong'))
       })
+    })
+  })
+
+  describe('Context', function() {
+
+  })
+
+  describe('Doc', function() {
+
+    const segments = [
+      Segment.from(...'I am a part of a larger context'),
+      Segment.from(...'I am the second part of a larger context'),
+    ]
+    const context = Context.from(...segments)
+    const doc = Doc.from(context)
+
+    it('is equal to its own split', function() {
+      // Docs split and produce another doc, unlike most Section which split into a list of Section (or subclasses of Section)
+      const result = doc.split(5)
+      assert(doc.eq(result))
     })
   })
 })
