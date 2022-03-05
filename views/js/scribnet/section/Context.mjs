@@ -166,10 +166,9 @@ class Context extends Section {
 class Doc extends Section {
 
   split(index) {
+    // TODO Might lift this into Section, as another operation. Combined with a "Join" operation. Maybe.
     const [ left, right ] = super.split(index)
-    const result = this.copy()
-    result.subPieces = [ ...left.subPieces, ...right.subPieces ]
-    return result
+    return this.copyFrom( ...left.subPieces, ...right.subPieces )
   }
 
   applyTags(tags, start, end) {
