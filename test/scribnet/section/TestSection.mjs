@@ -195,23 +195,23 @@ describe(`${MODULE} module`, function () {
         // assert.equal(operated.constructor, SectionHigh)
       })
 
-      it('splits when child answers', function () {
-        [highSection, midSection1, lowSections1, operated, mids, lows]
-        const operateLow = highSection.operate(answerLow, 3, 10)
-        const operateMid = highSection.operate(answerMid, 3, 10)
-        const operateHigh = highSection.operate(answerHigh, 3, 10)
-
-        // Assert.equal(actual, expected)
-        assert.equal(operateLow.subPieces.length, highSection.subPieces.length)
-        assert.equal(operateMid.subPieces.length, highSection.subPieces.length)
-        assert.equal(operateHigh.subPieces.length, 3)
-
-        // assert.equal(operateLow.subPieces.length, highSection.subPieces.length)
-        assert(true)
-      })
     })
 
     describe('mapRange', function () {
+
+      it('splits when child answers', function () {
+        [highSection, midSection1, lowSections1, operated, mids, lows]
+        const mapRangeLow = highSection.mapRange(answerLow, 8, 13)
+        const mapRangeMid = highSection.mapRange(answerMid, 3, 10)
+        const mapRangeHigh = highSection.mapRange(answerHigh, 3, 10)
+
+        // Assert.equal(actual, expected)
+        assert.equal(mapRangeLow.subPieces.length, highSection.subPieces.length)
+        assert.equal(mapRangeMid.subPieces.length, highSection.subPieces.length)
+        assert.equal(mapRangeHigh.subPieces.length, 3)
+
+        assert(true)
+      })
 
     })
 
