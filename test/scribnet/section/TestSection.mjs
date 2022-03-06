@@ -201,13 +201,13 @@ describe(`${MODULE} module`, function () {
 
       it('splits when child answers', function () {
         [highSection, midSection1, lowSections1, operated, mids, lows]
-        const mapRangeLow = highSection.mapRange(answerLow, 8, 13)
-        const mapRangeMid = highSection.mapRange(answerMid, 3, 10)
-        const mapRangeHigh = highSection.mapRange(answerHigh, 3, 10)
+        const mapRangeLow = highSection.mapRange(answerLow, 8, 17)
+        const mapRangeMid = highSection.mapRange(answerMid, 8, 17)
+        const mapRangeHigh = highSection.mapRange(answerHigh, 8, 17)
 
         // Assert.equal(actual, expected)
         assert.equal(mapRangeLow.subPieces.length, highSection.subPieces.length)
-        assert.equal(mapRangeMid.subPieces.length, highSection.subPieces.length)
+        assert.equal(mapRangeMid.subPieces.length, 4)
         assert.equal(mapRangeHigh.subPieces.length, 3)
 
         assert(true)
