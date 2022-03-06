@@ -171,6 +171,9 @@ class Section {
     return [startSection, midSection, endSection]
   }
 
+  // TODO the name of mapRange is not very suggestive of what it does. Would like to change it,
+  // perhaps as "map interior". It's use is to apply a map function but targeting an internal
+  // row of nested Section, not strictly the atoms (which map offers)
   mapRange(func, start, end) {
 
     // nyeah, TODO trying to maneouver this so that we don't need to run the base case on the /parent/ of the answering segment
