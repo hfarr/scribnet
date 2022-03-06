@@ -165,10 +165,12 @@ class Doc extends Section {
   get characters() {
     return this.atoms
   }
-  write(string, location=-1) {
+  write(string, location=undefined) {
     // TODO implement
     if ( this.empty() )
       return this.addSubSections(Context.from(new Segment())).insert(0, string)
+
+    location = location ?? this.length
 
     return this.insert(location, string)
   }
