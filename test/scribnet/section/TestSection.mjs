@@ -29,7 +29,7 @@ describe(`${MODULE} module`, function () {
 
   const listSections = testStrings.map(wrapAtomic)
   const complexSections = [
-    ...testStrings.slice(0,2).map(wrapAtomic),
+    ...testStrings.slice(0, 2).map(wrapAtomic),
     Section.from(...innerStrings.map(wrapAtomic)),
     ...testStrings.slice(2).map(wrapAtomic)
   ]
@@ -37,10 +37,10 @@ describe(`${MODULE} module`, function () {
   const basicSection = Section.from(...listSections)
   const nestedSection = Section.from(...complexSections)
 
-  const SectionSubclassA = class extends Section {}
-  const SectionSubclassB = class extends Section {}
+  const SectionSubclassA = class extends Section { }
+  const SectionSubclassB = class extends Section { }
 
-  const AtomicSectionSubclassA = class extends AtomicSection {}
+  const AtomicSectionSubclassA = class extends AtomicSection { }
 
   const mixedSection = SectionSubclassA.from(...complexSections)
 
@@ -118,7 +118,7 @@ describe(`${MODULE} module`, function () {
 
     const operated = highSection.operate(id, 3, 10)
     const mids = operated.subPieces
-    const lows = mids.map( mid => mid.subPieces).flat()
+    const lows = mids.map(mid => mid.subPieces).flat()
 
     it('equals itself', function () {
       assert(basicSection.eq(basicSection))
@@ -139,7 +139,7 @@ describe(`${MODULE} module`, function () {
         const expected = Section.from(...["Some cool don't have to be just text though", ...testStrings.slice(2)].map(wrapAtomic))
         assert(result.eq(expected))
       })
-      it('deletes nested correctly', function() {
+      it('deletes nested correctly', function () {
         const result = nestedSection.delete(50, 80)
         const expected_str = nestedSection.atoms.join('').substring(0, 50) + nestedSection.atoms.join('').substring(80)
         const expected = AtomicSection.from(...expected_str)
@@ -159,7 +159,7 @@ describe(`${MODULE} module`, function () {
         const expected = Section.from(...[testStrings[0], "new text!", ...testStrings.slice(1)].map(wrapAtomic))
         assert(result.eq(expected))
       })
-      it('inserts nested correctly', function() {
+      it('inserts nested correctly', function () {
         const insertionString = " and I am very excited about that. "
         const originalString = nestedSection.atoms.join('')
         const expectedString = originalString.substring(0, 97) + insertionString + originalString.substring(97)
@@ -173,56 +173,56 @@ describe(`${MODULE} module`, function () {
         assert(basicSection.eq(Section.from(...listSections)))
       })
     })
-  
-  describe('operate', function() {
 
-    it('applies correctly', function() {
-      const originalString = nestedSection.atoms.join('')
-      const expectedString = originalString.substring(0, 50) + originalString.substring(50,80).toUpperCase() + originalString.substring(80)
+    describe('operate', function () {
 
-      const result = nestedSection.operate(a => a.toUpperCase(), 50, 80)
-      const expected = AtomicSection.from(...expectedString)
-      assert(result.eq(expected))
+      it('applies correctly', function () {
+        const originalString = nestedSection.atoms.join('')
+        const expectedString = originalString.substring(0, 50) + originalString.substring(50, 80).toUpperCase() + originalString.substring(80)
+
+        const result = nestedSection.operate(a => a.toUpperCase(), 50, 80)
+        const expected = AtomicSection.from(...expectedString)
+        assert(result.eq(expected))
+      })
+
+      it('produces results of same class', function () {
+        assert.equal(operated.constructor, SectionHigh)
+      })
+
+      it('preserves homogeneity of subPieces', function () {
+        mids.forEach(sp => assert.equal(sp.constructor, SectionMid))
+        lows.forEach(sp => assert.equal(sp.constructor, SectionLow))
+        // assert.equal(operated.constructor, SectionHigh)
+      })
+
+      it('splits when child answers', function () {
+        [highSection, midSection1, lowSections1, operated, mids, lows]
+        const operateLow = highSection.operate(answerLow, 3, 10)
+        const operateMid = highSection.operate(answerMid, 3, 10)
+        const operateHigh = highSection.operate(answerHigh, 3, 10)
+
+        // Assert.equal(actual, expected)
+        assert.equal(operateLow.subPieces.length, highSection.subPieces.length)
+        assert.equal(operateMid.subPieces.length, highSection.subPieces.length)
+        assert.equal(operateHigh.subPieces.length, 3)
+
+        // assert.equal(operateLow.subPieces.length, highSection.subPieces.length)
+        assert(true)
+      })
     })
 
-    it('produces results of same class', function () {
-      assert.equal(operated.constructor, SectionHigh)
+    describe('mapRange', function () {
+
     })
 
-    it('preserves homogeneity of subPieces', function () {
-      mids.forEach( sp => assert.equal(sp.constructor, SectionMid) )
-      lows.forEach( sp => assert.equal(sp.constructor, SectionLow) )
-      // assert.equal(operated.constructor, SectionHigh)
+    describe('split', function () {
+
+      it('preserves class', function () {
+        const [start, end] = mixedSection.split(10)
+        assert(start instanceof SectionSubclassA)
+        assert(end instanceof SectionSubclassA)
+      })
     })
-
-    it('splits when child answers', function() {
-      [ highSection, midSection1, lowSections1, operated, mids, lows ]
-      const operateLow = highSection.operate(answerLow, 3, 10)
-      const operateMid = highSection.operate(answerMid, 3, 10)
-      const operateHigh = highSection.operate(answerHigh, 3, 10)
-
-      // Assert.equal(actual, expected)
-      assert.equal(operateLow.subPieces.length, highSection.subPieces.length)
-      assert.equal(operateMid.subPieces.length, highSection.subPieces.length)
-      assert.equal(operateHigh.subPieces.length, 3)
-
-      // assert.equal(operateLow.subPieces.length, highSection.subPieces.length)
-      assert(true)
-    })
-  })
-
-  describe('mapRange', function() {
-
-  })
-
-  describe('split', function() {
-
-    it('preserves class', function() {
-      const [ start, end ] = mixedSection.split(10)
-      assert(start instanceof SectionSubclassA)
-      assert(end instanceof SectionSubclassA)
-    })
-  })
 
 
   })
