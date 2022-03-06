@@ -225,8 +225,6 @@ class Section {
     if (this.answers(func))
       return func(this.copy())
 
-    const result = this.copy()
-    result.subPieces = this.subPieces.map( section => section.map(func) )
     return this.copyFrom(...this.subPieces.map( sec => sec.map(func)))
   }
 
