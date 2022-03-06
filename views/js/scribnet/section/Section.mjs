@@ -149,6 +149,11 @@ class Section {
 
   /* Content mutators */
   delete(start, end) {
+    const [ leftSectionIndex, leftOffset ] = this._locateAtom(start)
+    const [ rightSectionIndex, rightOffset ] = this._locateAtom(end)
+    if (leftSectionIndex === rightSectionIndex) 
+      return this.splice(leftSectionIndex, 1, this.subPieces[leftSectionIndex].delete(leftOffset, rightOffset) )
+
     const [ startSection, _, __, endSection ] = [ ...this.split(start), ...this.split(end) ]
     // TODO should update splice to work on atoms, not sections ?
     const result = this.copyFrom(...startSection.subPieces, ...endSection.subPieces).cutEmpty()
