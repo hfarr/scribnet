@@ -157,13 +157,13 @@ class Context extends Section {
 class Doc extends Section {
 
   applyTags(tags, start, end) {
-    return this.operate(function applyTags(seg) { return seg.applyTags(tags) }, start, end)
+    return this.mapRange(function applyTags(seg) { return seg.applyTags(tags) }, start, end)
   }
   removeTags(tags, start, end) {
-    this.operate((seg) => { return seg.removeTags(tags) }, start, end)
+    return this.mapRange(function applyTags(seg) { return seg.removeTags(tags) }, start, end)
   }
   toggleTags(tags, start, end) {
-    this.operate((seg) => { return seg.toggleTags(tags) }, start, end)
+    return this.mapRange(function applyTags(seg) { return seg.toggleTags(tags) }, start, end)
   }
 }
 /* 
