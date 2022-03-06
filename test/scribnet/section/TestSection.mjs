@@ -89,6 +89,36 @@ describe(`${MODULE} module`, function () {
 
 
   describe('Section', function () {
+    const SectionLow = class extends AtomicSection {
+      answers(func) { return func.name === 'answerLow' }
+    }
+    const SectionMid = class extends Section {
+      answers(func) { return func.name === 'answerMid' }
+    }
+    const SectionHigh = class extends Section {
+      answers(func) { return func.name === 'answerHigh' }
+    }
+
+    const lowSections1 = [
+      SectionLow.from(...'AAAAA'),
+      SectionLow.from(...'BBBBB'),
+    ]
+    const lowSections2 = [
+      SectionLow.from(...'CCCCC'),
+      SectionLow.from(...'DDDDD'),
+    ]
+    const midSection1 = SectionMid.from(...lowSections1)
+    const midSection2 = SectionMid.from(...lowSections2)
+    const highSection = SectionHigh.from(midSection1, midSection2)
+
+    const id = a => a
+    const answerLow = a => a
+    const answerMid = a => a
+    const answerHigh = a => a
+
+    const operated = highSection.operate(id, 3, 10)
+    const mids = operated.subPieces
+    const lows = mids.map( mid => mid.subPieces).flat()
 
     it('equals itself', function () {
       assert(basicSection.eq(basicSection))
@@ -143,35 +173,8 @@ describe(`${MODULE} module`, function () {
         assert(basicSection.eq(Section.from(...listSections)))
       })
     })
-  })
   
   describe('operate', function() {
-    const SectionLow = class extends AtomicSection {
-      answers(func) { return func.name === 'answerLow' }
-    }
-    const SectionMid = class extends Section {
-      answers(func) { return func.name === 'answerMid' }
-    }
-    const SectionHigh = class extends Section {
-      answers(func) { return func.name === 'answerHigh' }
-    }
-
-    const lowSections = [
-      SectionLow.from(...'AAAAA'),
-      SectionLow.from(...'BBBBB'),
-      SectionLow.from(...'CCCCC'),
-    ]
-    const midSection = SectionMid.from(...lowSections)
-    const highSection = SectionHigh.from(midSection)
-
-    const id = a => a
-    const answerLow = a => a
-    const answerMid = a => a
-    const answerHigh = a => a
-
-    const operated = highSection.operate(id, 3, 10)
-    const mids = operated.subPieces
-    const lows = mids.map( mid => mid.subPieces).flat()
 
     it('applies correctly', function() {
       const originalString = nestedSection.atoms.join('')
@@ -193,7 +196,7 @@ describe(`${MODULE} module`, function () {
     })
 
     it('splits when child answers', function() {
-      [ highSection, midSection, lowSections, operated, mids, lows ]
+      [ highSection, midSection1, lowSections1, operated, mids, lows ]
       const operateLow = highSection.operate(answerLow, 3, 10)
       const operateMid = highSection.operate(answerMid, 3, 10)
       const operateHigh = highSection.operate(answerHigh, 3, 10)
@@ -208,6 +211,10 @@ describe(`${MODULE} module`, function () {
     })
   })
 
+  describe('mapRange', function() {
+
+  })
+
   describe('split', function() {
 
     it('preserves class', function() {
@@ -215,5 +222,8 @@ describe(`${MODULE} module`, function () {
       assert(start instanceof SectionSubclassA)
       assert(end instanceof SectionSubclassA)
     })
+  })
+
+
   })
 })
