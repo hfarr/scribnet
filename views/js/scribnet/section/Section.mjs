@@ -179,6 +179,7 @@ class Section {
     // nyeah, TODO trying to maneouver this so that we don't need to run the base case on the /parent/ of the answering segment
     // if (this.answers(func))
     //   return Section.from(...this.triSplit(func, start, end)).cutEmpty()
+    // the below also assumes that the subPieces are homogeneous- that is, it assumes if one answers 'func', they all will
     if (this.subPieces.some(sec => sec instanceof AtomicSection || sec.answers(func))) 
       return this.operate(func, start, end)
     
