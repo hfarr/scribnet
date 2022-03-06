@@ -150,6 +150,19 @@ describe(`${MODULE} module`, function () {
         assert.equal(result.subPieces.length, highSection.subPieces.length);
       })
 
+      it('cuts across sections correctly', function () {
+        const result = highSection.delete(8,12)
+        assert.equal(result.subPieces.length, highSection.subPieces.length);
+      })
+      it('cuts out interior sections', function() {
+        const testSection = Section.from(...["AAA", "BBB", "CCC"].map(wrapAtomic))
+
+        const result = testSection.delete(2,7)
+
+        assert.equal(result.subPieces.length, testSection.subPieces.length - 1)
+        assert.equal(result.atoms.join(''), 'AACC')
+      })
+
     })
 
     describe('insert', function () {
