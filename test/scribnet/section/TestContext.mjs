@@ -103,7 +103,19 @@ describe('Context', function() {
     })
 
     it('is a place for me to test', function() {
-      [Segment, Context, Doc, testDoc]
+      [Segment, Context, Doc]
+
+      const testSegments1 = [
+        Segment.from(...'AAAAA'),
+        Segment.from(...'BBBBB').applyTags(['B']),
+      ]
+      const testSegments2 = [
+        Segment.from(...'CCCCC'),
+        Segment.from(...'DDDDD'),
+      ]
+      const testContext1 = Context.from(...testSegments1)
+      const testContext2 = Context.from(...testSegments2)
+      const testDoc = Doc.from(testContext1, testContext2)
 
       assert(true)
     })
