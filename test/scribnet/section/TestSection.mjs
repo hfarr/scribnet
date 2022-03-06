@@ -178,7 +178,7 @@ describe(`${MODULE} module`, function () {
         const result = original.addSubSections(appended, appended)
         const expectedString = 'AAABBBCCCCCC'
 
-        assert.equal(original.atoms.join(''), expectedString)
+        assert.equal(result.atoms.join(''), expectedString)
       })
     })
 
