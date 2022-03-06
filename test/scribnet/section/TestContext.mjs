@@ -102,6 +102,15 @@ describe('Context', function() {
       console.log(tagged)
     })
 
+    describe('write', function() {
+      it('permits writing to an empty doc', function () {
+        const newDoc = new Doc()
+
+        const result = newDoc.write('Test')
+        assert.equal(result.toString(), 'Test')
+      })
+    })
+
     it('is a place for me to test', function() {
       [Segment, Context, Doc]
 
