@@ -111,14 +111,10 @@ describe(`${MODULE} module`, function () {
     const midSection2 = SectionMid.from(...lowSections2)
     const highSection = SectionHigh.from(midSection1, midSection2)
 
-    const id = a => a
     const answerLow = a => a
     const answerMid = a => a
     const answerHigh = a => a
 
-    const operated = highSection.operate(id, 3, 10)
-    const mids = operated.subPieces
-    const lows = mids.map(mid => mid.subPieces).flat()
 
     it('equals itself', function () {
       assert(basicSection.eq(basicSection))
@@ -185,30 +181,25 @@ describe(`${MODULE} module`, function () {
         assert(result.eq(expected))
       })
 
-      it('produces results of same class', function () {
-        assert.equal(operated.constructor, SectionHigh)
-      })
-
-      it('preserves homogeneity of subPieces', function () {
-        mids.forEach(sp => assert.equal(sp.constructor, SectionMid))
-        lows.forEach(sp => assert.equal(sp.constructor, SectionLow))
-        // assert.equal(operated.constructor, SectionHigh)
-      })
-
     })
 
     describe('mapRange', function () {
 
       it('splits when child answers', function () {
-        [highSection, midSection1, lowSections1, operated, mids, lows]
         const mapRangeLow = highSection.mapRange(answerLow, 8, 17)
         const mapRangeMid = highSection.mapRange(answerMid, 8, 17)
-        const mapRangeHigh = highSection.mapRange(answerHigh, 8, 17)
+        // TODO mapRange assumes you are doing work on the inner Sections.
+        // if the outermost "answers" then you could just perform the operation then and there
+        // what we might want to do is handle the case where the outermost does handle the 
+        // function- but that would probably end up returning a list of instances of that
+        // kind of Section. Not as nice to use, and not a worthy enough use case to waste 
+        // the effort coding to handle—for now (use 'operate' at that point)
+        // const mapRangeHigh = highSection.mapRange(answerHigh, 8, 17) 
 
         // Assert.equal(actual, expected)
         assert.equal(mapRangeLow.subPieces.length, highSection.subPieces.length)
         assert.equal(mapRangeMid.subPieces.length, 4)
-        assert.equal(mapRangeHigh.subPieces.length, 3)
+        // assert.equal(mapRangeHigh.subPieces.length, 3)
 
         assert(true)
       })
