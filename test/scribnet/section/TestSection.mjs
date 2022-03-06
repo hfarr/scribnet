@@ -171,6 +171,24 @@ describe(`${MODULE} module`, function () {
     })
 
     describe('addSubSections', function(){ 
+      it('appends to an empty section successfully', function() {
+        const emptySec = Section.from()
+        const appendee1 = Section.from(AtomicSection.from('AAA'), AtomicSection.from('BBB'))
+        const appendee2 = AtomicSection.from('CCC')
+
+        const result = emptySec.addSubSections(appendee1, appendee2)
+        const expectedString = 'AAABBBCCC'
+        assert.equal(result.atoms.join(''), expectedString)
+      })
+      it('supports chaining calls', function() {
+        const emptySec = Section.from()
+        const appendee1 = Section.from(AtomicSection.from('AAA'), AtomicSection.from('BBB'))
+        const appendee2 = AtomicSection.from('CCC')
+
+        const result = emptySec.addSubSections(appendee1).addSubSections(appendee2)
+        const expectedString = 'AAABBBCCC'
+        assert.equal(result.atoms.join(''), expectedString)
+      })
       it('appends sections to the end', function () {
         const original = Section.from(AtomicSection.from('AAA'), AtomicSection.from('BBB'))
         const appended = AtomicSection.from('CCC')
