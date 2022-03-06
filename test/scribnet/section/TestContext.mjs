@@ -1,5 +1,6 @@
 'use strict'
 import assert from 'assert';
+import { assertWrappingType } from 'graphql';
 
 const PATH = "/home/henry/dev/scribnet/views"
 const MODULE = "Context"
@@ -108,6 +109,13 @@ describe('Context', function() {
 
         const result = newDoc.write('Test')
         assert.equal(result.toString(), 'Test')
+      })
+      it('writes by default to the last Context', function () {
+        const insertString = 'EEEEE'
+        const result = testDoc.write(insertString)
+
+        assert.equal(result.subPieces[0].length, testContext1.length)
+        assert.equal(result.subPieces[1].length, testContext2.length + insertString.length)
       })
     })
 
