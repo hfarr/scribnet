@@ -172,10 +172,15 @@ class Section {
   }
 
   mapRange(func, start, end) {
+
+    if (this.subPieces.some(sec => sec instanceof AtomicSection || sec.answers(func))) 
+      return this.operate(func, start, end)
+    
     const left = this._locateSection(start)
     const right = this._locateSection(end)
 
     const resultSections = []
+    
 
     // TODO... better way to handle telescoping ranges. or, slinky ranges. I like slinky ranges, fun term.
     for (let i = 0, cumulativeLength = 0; i < this.subPieces.length; cumulativeLength += this.subPieces[i].length, i++) {
@@ -186,22 +191,22 @@ class Section {
       else if (i > left && i < right)
         resultSections.push(section.map(func));
       else if (i === left && i === right) {
-        if (this instanceof AtomicSection || section.answers(func)) {
-          resultSections.push(section.operate(func, start - cumulativeLength, end - cumulativeLength))
+        if (section instanceof AtomicSection || section.answers(func)) {
+          resultSections.push(this.operate(func, start - cumulativeLength, end - cumulativeLength))
         } else {
           resultSections.push(section.mapRange(func, start - cumulativeLength, end - cumulativeLength))
         }
       }
       else if (i === left) {
-        if (this instanceof AtomicSection || section.answers(func)) {
-          resultSections.push(section.operate(func, start - cumulativeLength, sec.length))
+        if (section instanceof AtomicSection || section.answers(func)) {
+          resultSections.push(this.operate(func, start - cumulativeLength, section.length))
         } else {
-          resultSections.push(section.mapRange(func, start - cumulativeLength, sec.length))
+          resultSections.push(section.mapRange(func, start - cumulativeLength, section.length))
         }
       }
       else if (i === right) {
-        if (this instanceof AtomicSection || section.answers(func)) {
-          resultSections.push(section.operate(func, 0, end - cumulativeLength))
+        if (section instanceof AtomicSection || section.answers(func)) {
+          resultSections.push(this.operate(func, 0, end - cumulativeLength))
         } else {
           resultSections.push(section.mapRange(func, 0, end - cumulativeLength))
         }
@@ -295,6 +300,10 @@ class AtomicSection extends Section {
     const newSection = this.copy()
     newSection.subPieces.splice(start, end - start)
     return newSection
+  }
+
+  mapRange(func, start, end) {
+    return this.operate(func, start, end)
   }
 
   map(func) {
