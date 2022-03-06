@@ -253,6 +253,53 @@ class Section {
   }
 }
 
+/**
+ * Commenting interlude
+ * 
+ * I'm honing my thoughts around the concept of "targeting" different regions for operations.
+ * This started coming up in my mind through implementing "mapRange" as the alternative to 
+ * operate. Operate, and many other operations, can be thought of as ways to manipulate the
+ * underlying Atoms through overlaying stacks of varying Sections. This enables working with
+ * any Section easier as the contextual state a section holds on to doesn't need to deal with
+ * managing the plumbing for calls to reach the underlying data.
+ * 
+ * However some Sections are aware of other Sections in the stack, primary use case being the
+ * Doc, Context, Segment stack I have going on. Certain operations against a Doc should
+ * target other sections (like applying tags to a Segment) rather than hit the Atoms under it
+ * all. 
+ * 
+ * Right now we have a sort of solution to that. It only applies for mapRange and map. These
+ * functions check whether a section "answers" the function to be mapped, if so it applies the
+ * function there (which has similar if not identical behavior to the original "operate"), 
+ * else it propogates the call to lower Sections or ultimately Atoms.
+ * 
+ * I'd like to generalize the notion of targeting different layers. For example, the insert 
+ * operation. Right now we have two, one "insert" that inserts atoms having the default 
+ * behavior of Section operations which is to plumb all the way down. We also have 
+ * addSubSections and more loosely 'splice' for working with the subPieces of a given section.
+ * A general form would be to enable "targeting" a specific section within a layer- the
+ * default target is the bottom layer of Atoms, but you could target any kind of Section 
+ * instead. Then the "mapRange" and "map" would build off of this behavior and other methods
+ * could too.
+ * 
+ * For example say we want to insert new Segment. Right now we can basically only interact
+ * with Doc, and only interact with Atoms, using just a Doc instance and its method suite.
+ * We could dig in, if we know the internal structure of the stack (which highly couples us
+ * to that too!) and do the work. But this should be supported by the Section interface.
+ * Similarly Section layers, the subPieces of a given section, may not be homogeneous,
+ * although by and large they are right now. With that restriction we could think of these
+ * operations as operating on a given "row" of a tree, a given depth, but I'd like to work
+ * generally for any child "node" that fits the targeting requirements (Sections of a given
+ * type, in this case, for example). 
+ * 
+ * In the future I can see myself adding more Section kinds and using them to implement
+ * different kinds of logic, like say group many contexts into a "dropdown" section which
+ * would render as an expandable box in a Document. This sits next to Contexts, and contains
+ * Contexts, and we'd like to always target Contexts with operations that do so, like 
+ * changing the block tag.
+ * 
+ */
+
 class AtomicSection extends Section {
   constructor() {
     super()
