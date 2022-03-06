@@ -69,6 +69,10 @@ class Section {
     return newSection
   }
 
+  addSubSections(...sections) {
+    return this.splice(this.subPieces.length, 0, ...sections)
+  }
+
   get atoms() {
     if (this._atoms === undefined) {
       this._atoms = this.subPieces.map(section => section.atoms ).flat()
