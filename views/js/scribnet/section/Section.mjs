@@ -149,6 +149,7 @@ class Section {
   }
 
   insert(location, atoms) {
+    // TODO to fit the general pattern, might use the rest operator for all "sections" and "atoms" parameters, particularly here in insert.
     const [ sectionIndex, sectionOffset ] = this._locateAtom(location)
     const newSecs = this.subPieces[sectionIndex].insert(sectionOffset, atoms)
     const result = this.splice(sectionIndex, 1, newSecs)
