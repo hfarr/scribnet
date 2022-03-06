@@ -88,7 +88,7 @@ class Section {
   }
 
   empty() {
-    return this.length === 0
+    return this.subPieces.length === 0 || this.length === 0
   }
 
   cutEmpty() {
@@ -119,6 +119,14 @@ class Section {
    * @return Address of the character in terms of segment and character offset
    */
   _locateAtom(atomIndex) {
+
+    if ( atomIndex < 0 ) {
+      // atomIndex = this.length === 0 ? 0 : (Math.floor(-atomIndex / this.length) + 1) * this.length + atomIndex
+      atomIndex = this.length === 0 ? 0 : (atomIndex % this.length) + this.length
+      atomIndex = atomIndex === this.length ? 0 : atomIndex
+    }
+      
+
     let sectionIndex = 0
     while (sectionIndex < this.subPieces.length && atomIndex >= this.subPieces[sectionIndex].length) {  // Jumps over empty subPieces
       atomIndex -= this.subPieces[sectionIndex].length; // length of a section expresses # atoms so this is still valid
