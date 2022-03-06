@@ -145,6 +145,12 @@ class Context extends Section {
     return clone
   }
 
+  updateBlock(blockTag) {
+    const result = this.copy()
+    result.block = blockTag
+    return result
+  }
+
   set block(tag) {
     if (BLOCKS.includes(tag.toLowerCase())) this.blockTag = tag.toLowerCase()
   }
