@@ -145,6 +145,10 @@ describe(`${MODULE} module`, function () {
         basicSection.delete(10, 23)
         assert(basicSection.eq(Section.from(...listSections)))
       })
+      it('deletes "within" a Section, if a delete is contained within a section.', function (){ // poor naming for this test. The idea: When deleting Section uses 'split' to cut out the deleted Section. but it doesn't join the pieces, it is a deep cut all the way down.
+        const result = highSection.delete(2,3)
+        assert.equal(result.subPieces.length, highSection.subPieces.length);
+      })
 
     })
 
