@@ -7,13 +7,6 @@ const { Doc, Context, Segment } = await import(`${PATH}/js/scribnet/section/${MO
 
 describe('Context', function() {
 
-  const testSimpleSegments = [
-    Segment.from(...'AAAAA'),
-    Segment.from(...'BBBBB').applyTags(['B']),
-    Segment.from(...'CCCCC'),
-  ]
-  const testSimpleCtx = Context.from(...testSimpleSegments)
-  const testSimpleDoc = Context.from(testSimpleCtx)
 
 
   describe('Segment', function () {
@@ -74,6 +67,19 @@ describe('Context', function() {
     const context = Context.from(...segments)
     const doc = Doc.from(context)
 
+
+    const testSegments1 = [
+      Segment.from(...'AAAAA'),
+      Segment.from(...'BBBBB').applyTags(['B']),
+    ]
+    const testSegments2 = [
+      Segment.from(...'CCCCC'),
+      Segment.from(...'DDDDD'),
+    ]
+    const testContext1 = Context.from(...testSegments1)
+    const testContext2 = Context.from(...testSegments2)
+    const testDoc = Doc.from(testContext1, testContext2)
+
     it('is equal to its own split', function() {
       // Docs split and produce another doc, unlike most Section which split into a list of Section (or subclasses of Section)
       const result = doc.splitInterior(5)
@@ -97,7 +103,7 @@ describe('Context', function() {
     })
 
     it('is a place for me to test', function() {
-      [Segment, Context, Doc, testSimpleSegments, testSimpleCtx, testSimpleDoc]
+      [Segment, Context, Doc, testDoc]
 
       assert(true)
     })
