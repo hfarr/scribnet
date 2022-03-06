@@ -122,6 +122,17 @@ class Section {
     }
     return [ sectionIndex, atomIndex ]
   }
+
+  /**
+   * Determine the index of the sub-piece that holds the atom at the 
+   * given index
+   * 
+   * @param atomIndex Index of atom whose container we'd like to find
+   */
+  _locateSection(atomIndex) {
+    const [ sectionIndex ] = this._locateAtom(atomIndex)
+    return sectionIndex
+  }
   //===================================================
 
   /* Content mutators */
@@ -158,6 +169,50 @@ class Section {
     ).cutEmpty()
 
     return result
+  }
+
+  mapRange(func, start, end) {
+    const left = this._locateSection(start)
+    const right = this._locateSection(end)
+
+    const resultSections = []
+
+    // TODO... better way to handle telescoping ranges. or, slinky ranges. I like slinky ranges, fun term.
+    for (let i = 0, cumulativeLength = 0; i < this.subPieces.length; cumulativeLength += this.subPieces[i].length, i++) {
+
+      const section = this.subPieces[i]
+      if (i < left || i > right)
+        resultSections.push(section)
+      else if (i > left && i < right)
+        resultSections.push(section.map(func));
+      else if (i === left && i === right) {
+        if (this instanceof AtomicSection || section.answers(func)) {
+          resultSections.push(section.operate(func, start - cumulativeLength, end - cumulativeLength))
+        } else {
+          resultSections.push(section.mapRange(func, start - cumulativeLength, end - cumulativeLength))
+        }
+      }
+      else if (i === left) {
+        if (this instanceof AtomicSection || section.answers(func)) {
+          resultSections.push(section.operate(func, start - cumulativeLength, sec.length))
+        } else {
+          resultSections.push(section.mapRange(func, start - cumulativeLength, sec.length))
+        }
+      }
+      else if (i === right) {
+        if (this instanceof AtomicSection || section.answers(func)) {
+          resultSections.push(section.operate(func, 0, end - cumulativeLength))
+        } else {
+          resultSections.push(section.mapRange(func, 0, end - cumulativeLength))
+        }
+      }
+      else {
+        assert(false, "Impossible condition")
+      }
+    }
+    
+    return this.copyFrom(...resultSections).cutEmpty()
+    
   }
 
   answers(func) {
