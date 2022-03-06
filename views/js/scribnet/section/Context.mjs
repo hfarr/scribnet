@@ -162,6 +162,19 @@ class Context extends Section {
 
 class Doc extends Section {
 
+  get characters() {
+    return this.atoms
+  }
+  write(string, location=-1) {
+    // TODO implement
+    if ( this.empty() )
+      return this.addSubSections(Context.from(new Segment())).insert(0, string)
+
+    return this.insert(location, string)
+  }
+
+  // -------------------
+
   applyTags(tags, start, end) {
     return this.mapRange(function applyTags(seg) { return seg.applyTags(tags) }, start, end)
   }
@@ -171,6 +184,11 @@ class Doc extends Section {
   toggleTags(tags, start, end) {
     return this.mapRange(function applyTags(seg) { return seg.toggleTags(tags) }, start, end)
   }
+
+  toString() {
+    return this.characters.join('')
+  }
+
 }
 /* 
  on map/operate,
