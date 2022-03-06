@@ -176,6 +176,20 @@ describe(`${MODULE} module`, function () {
         assert.equal(result1.atoms.join(''), 'AAAAABBBBBCCCCCDDDDDEEEEE')
         assert.equal(result2.atoms.join(''), 'AAAAABBBBBCCCCCDDDDDEEEEE')
       })
+      it('supports negative indexing', function () {
+        const section = Section.from(AtomicSection.from(...'Aaaaa'), Section.from(AtomicSection.from(...'Bbbbb'), AtomicSection.from(...'Ccccc')), AtomicSection.from(...'Ddddd'))
+
+        const result = section.insert(-2, "XXX")
+
+        assert.equal(result.atoms.join(''), 'AaaaaBbbbbCccccDddXXXdd')
+      })
+      // it('supports negative indexing on an empty section', function () {
+      //   // OK- it won't do this yet. I don't want to prescribe that inserting into an empty section will create an AtomicSection. At least,
+      //   //  note before thinking about what should happen in that circumstance.
+      //   const section = new Section()
+      //   const result = section.insert(-2, "XXX")
+      //   assert.equal(result.atoms.join(''), 'XXX')
+      // })
     })
 
     describe('addSubSections', function(){ 
