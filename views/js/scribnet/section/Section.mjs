@@ -181,39 +181,23 @@ class Section {
 
     const resultSections = []
     
-
     // TODO... better way to handle telescoping ranges. or, slinky ranges. I like slinky ranges, fun term.
     for (let i = 0, cumulativeLength = 0; i < this.subPieces.length; cumulativeLength += this.subPieces[i].length, i++) {
 
       const section = this.subPieces[i]
+      const [ lb, rb ] = [ i === left ? start - cumulativeLength : 0, i === right ? end - cumulativeLength : section.length ]
+
+      /* TODO we can, potentially, group these into one step. that is, allow mapRange to handle 
+        all of these, for example calling map range with a range that is out of bounds would 
+        just pass the original back, or if fully immersed in the range, then it would map.
+        In fact, without any changes, this already covers the "map" and "mapRange" cases.
+      */
       if (i < left || i > right)
         resultSections.push(section)
       else if (i > left && i < right)
         resultSections.push(section.map(func));
-      else if (i === left && i === right) {
-        if (section instanceof AtomicSection || section.answers(func)) {
-          resultSections.push(this.operate(func, start - cumulativeLength, end - cumulativeLength))
-        } else {
-          resultSections.push(section.mapRange(func, start - cumulativeLength, end - cumulativeLength))
-        }
-      }
-      else if (i === left) {
-        if (section instanceof AtomicSection || section.answers(func)) {
-          resultSections.push(this.operate(func, start - cumulativeLength, section.length))
-        } else {
-          resultSections.push(section.mapRange(func, start - cumulativeLength, section.length))
-        }
-      }
-      else if (i === right) {
-        if (section instanceof AtomicSection || section.answers(func)) {
-          resultSections.push(this.operate(func, 0, end - cumulativeLength))
-        } else {
-          resultSections.push(section.mapRange(func, 0, end - cumulativeLength))
-        }
-      }
-      else {
-        assert(false, "Impossible condition")
-      }
+      else 
+        resultSections.push(section.mapRange(func, lb, rb))
     }
     
     return this.copyFrom(...resultSections).cutEmpty()
@@ -300,10 +284,6 @@ class AtomicSection extends Section {
     const newSection = this.copy()
     newSection.subPieces.splice(start, end - start)
     return newSection
-  }
-
-  mapRange(func, start, end) {
-    return this.operate(func, start, end)
   }
 
   map(func) {
