@@ -170,6 +170,18 @@ describe(`${MODULE} module`, function () {
       })
     })
 
+    describe('addSubSections', function(){ 
+      it('appends sections to the end', function () {
+        const original = Section.from(AtomicSection.from('AAA'), AtomicSection.from('BBB'))
+        const appended = AtomicSection.from('CCC')
+
+        const result = original.addSubSections(appended, appended)
+        const expectedString = 'AAABBBCCCCCC'
+
+        assert.equal(original.atoms.join(''), expectedString)
+      })
+    })
+
     describe('operate', function () {
 
       it('applies correctly', function () {
