@@ -168,6 +168,14 @@ describe(`${MODULE} module`, function () {
         basicSection.insert(14, "new text!")
         assert(basicSection.eq(Section.from(...listSections)))
       })
+      it('inserts at the end correctly', function () {
+        const secLength = highSection.length
+        const result1 = highSection.insert(secLength, "EEEEE")
+        const result2 = highSection.insert(secLength + 10, "EEEEE")
+
+        assert.equal(result1.atoms.join(''), 'AAAAABBBBBCCCCCDDDDDEEEEE')
+        assert.equal(result2.atoms.join(''), 'AAAAABBBBBCCCCCDDDDDEEEEE')
+      })
     })
 
     describe('addSubSections', function(){ 

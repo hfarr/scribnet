@@ -150,7 +150,25 @@ class Section {
 
   insert(location, atoms) {
     // TODO to fit the general pattern, might use the rest operator for all "sections" and "atoms" parameters, particularly here in insert.
+    // TODO also I noticed I pluralized "newSecs" below, we could support inserting creating multiple new segments. E.g in a case where 
+    //    we insert, say, multiple lineBreaks in a Context and it should create multiple Contexts... leaving this as TODO because that I
+    //    will handle with logic for now but I like the idea of incorporating it into the design of Sections.
+    //    also we should have more handling of results as lists. It does burden clients a bit which is the issue, as they generally expect
+    //    singleton results (and would have to unwrap the list each time). Maybe we do it internally to section and expose the original
+    //    behavior for the interface.
     const [ sectionIndex, sectionOffset ] = this._locateAtom(location)
+    if ( sectionIndex === this.subPieces.length ) {
+      // location references an atom beyond the "right edge". Literal edge case. 
+      // We shift the location to reference the first "nonexistant" atom (at the imaginary index represented by the total "length")
+      // and insert at the "length" of that section, which will propogate down correctly. Insert, as a function that references character
+      // indicies, could work by referencing "boundary" indices, but we then have ambiguity at the border of sections. By referenceing
+      // character indices we remove that ambiguity but pay the cost of this edge case.
+      // In this way, any index greater than the length is treated as the length, which reduces all those "error" cases to the singular
+      // edge case. Indices 0 <= x < length behave normally.
+      const lastSec = this.subPieces.at(-1)
+      const newSecs = lastSec.insert(lastSec.length, atoms)
+      return this.splice(-1, 1, newSecs)
+    }
     const newSecs = this.subPieces[sectionIndex].insert(sectionOffset, atoms)
     const result = this.splice(sectionIndex, 1, newSecs)
     return result
