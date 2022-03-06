@@ -159,20 +159,23 @@ class Section {
    * @param end End index
    */
   operate(func, start, end) {
-    const [ startSection, startMid ] = [ ...this.split(start) ]
-    const [ endMid, endSection ] = [ ...startMid.split(end - start) ]
+    const [ left, mid, right ] = this.triSplit(start, end)
+    return this.copyFrom(...left.subPieces, ...mid.map(func).subPieces, ...right.subPieces).cutEmpty()
+  }
 
-    const result = this.copyFrom(
-      ...startSection.subPieces, 
-      ...endMid.map(func).subPieces,
-      ...endSection.subPieces
-    ).cutEmpty()
 
-    return result
+  triSplit(start, end) {
+    const [ startSection, rest ] = [ ...this.split(start) ]
+    const [ midSection, endSection ] = [ ...rest.split(end - start) ]
+
+    return [startSection, midSection, endSection]
   }
 
   mapRange(func, start, end) {
 
+    // nyeah, TODO trying to maneouver this so that we don't need to run the base case on the /parent/ of the answering segment
+    // if (this.answers(func))
+    //   return Section.from(...this.triSplit(func, start, end)).cutEmpty()
     if (this.subPieces.some(sec => sec instanceof AtomicSection || sec.answers(func))) 
       return this.operate(func, start, end)
     
