@@ -188,8 +188,12 @@ class Doc extends Section {
     if ( leftSectionIndex === rightSectionIndex )
       return result
     
+    // leftSectionIndex refers to the same section in both "this" and "result",
+    // but rightSectionIndex might not, as the section could "shift left" after
+    // a delete. We're looking to join adjacent sections hence using 
+    // leftSectionIndex and leftSectionIndex + 1
     const leftSection = result.subPieces[leftSectionIndex]
-    const rightSection =  result.subPieces[rightSectionIndex]
+    const rightSection =  result.subPieces[leftSectionIndex + 1]
     if ( leftSection !== undefined && rightSection != undefined )
       return result.splice( leftSectionIndex, 2, leftSection.join(rightSection) )
     
