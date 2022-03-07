@@ -119,6 +119,15 @@ describe('Context', function() {
       })
     })
 
+    describe('delete', function() {
+      it('combines contexts when a delete straddles the boundary', function () {
+
+        const result = testDoc.delete(8, 12)
+
+        assert.equal(result.subPieces.length, testDoc.subPieces.length - 1)
+      })
+    })
+
     it('is a place for me to test', function() {
       [Segment, Context, Doc]
 
