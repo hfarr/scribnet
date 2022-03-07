@@ -188,10 +188,10 @@ class Doc extends Section {
     if ( leftSectionIndex === rightSectionIndex )
       return result
     
-    const leftSection = this.subPieces[leftSectionIndex]
-    const rightSection =  this.subPieces[rightSectionIndex]
+    const leftSection = result.subPieces[leftSectionIndex]
+    const rightSection =  result.subPieces[rightSectionIndex]
     if ( leftSection !== undefined && rightSection != undefined )
-      return result.splice( leftSectionIndex, 1, leftSection.join(rightSection) )
+      return result.splice( leftSectionIndex, 2, leftSection.join(rightSection) )
     
     return result
 
