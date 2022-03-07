@@ -126,6 +126,28 @@ describe('Context', function() {
 
         assert.equal(result.subPieces.length, testDoc.subPieces.length - 1)
       })
+      it('combines Context when a delete spans more than one boundary', function() {
+        const testDoc2 = Doc.from(testContext1, testContext2, testContext1) // length 30 from [10, 10, 10]
+        const result = testDoc2.delete(8, 22) // cut out testContext2, dig in to testContext1 on either side
+
+        assert.equal(result.subPieces.length, testDoc2.subPieces.length - 2)
+      })
+      it('does not combine if a delete range includes the boundary of a Context, but without cutting into the other Context', function() {
+        // Another complicated idea to express. Idea: if you select an entire paragraph, then delete, it should yield essentially an empty context
+        // crucially, that should not, then, also combine them. Same if you select from the start of a paragraph to the middle, or from the middle
+        // to the end. So long as the selection falls within the boundary of a context it won't join with adjacent ones after the delete.
+
+        const testDoc2 = Doc.from(testContext1, testContext2, testContext1) // length 30 from [10, 10, 10]
+
+        const result_cutAll = testDoc2.delete(10,20)
+        const result_cutLeft = testDoc2.delete(10,15)
+        const result_cutRight = testDoc2.delete(15,20)
+
+        assert.equal(result_cutAll.subPieces.length, testDoc2.subPieces.length)
+        assert.equal(result_cutLeft.subPieces.length, testDoc2.subPieces.length)
+        assert.equal(result_cutRight.subPieces.length, testDoc2.subPieces.length)
+
+      })
     })
 
     it('is a place for me to test', function() {
