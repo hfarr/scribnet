@@ -175,6 +175,33 @@ class Doc extends Section {
     return this.insert(location, string)
   }
 
+  delete(start, end) {
+    // TODO implement override delete to join contexts.
+    // Context joining is a signature trait of using Doc to manage, rather than just having
+    // a list of Context. a wrapping Section that understands, well, the Context.
+    // TODO delete when start === end and located between contexts (rightOffset === 0) then
+    //    left section joins right section
+    const result = super.delete(start, end)
+    const [ leftSectionIndex, leftOffset ] = this._locateAtom(start)
+    const [ rightSectionIndex, rightOffset ] = this._locateAtom(end)
+
+    // if ( start === end && rightOffset === 0 ) { // cursor between two segments. Join them.
+      // TODO this is only "backspace". By using locate atom and ignoring the differences of boundary locations
+      //  (extreme right of one segment is equal to its right neighbor's extreme left) we eagerly assume the
+      //  location is "left most of the right segment" when the cursor is between two segments.
+      //  but for delete to work properly we need that contextual awareness.
+      //  same deal for inserting characters actually.
+      // const [ leftSection, rightSection ] = [ this.subPieces[rightSectionIndex - 1], this.subPieces[rightSectionIndex] ]
+    // }
+
+    const [ leftSection, rightSection ] = [ this.subPieces[leftSectionIndex], this.subPieces[rightSectionIndex] ]
+    if ( leftSectionIndex !== rightSectionIndex && leftSection !== undefined && rightSection != undefined )
+      return result.splice( leftSectionIndex, 1, leftSection.join(rightSection) )
+    
+    return result
+
+  }
+
   // -------------------
 
   applyTags(tags, start, end) {
