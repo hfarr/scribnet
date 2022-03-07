@@ -70,7 +70,14 @@ const BLOCKS = ['p', 'h1', 'h2', 'h3', 'pre']
 
 const filterInline = tag => !BLOCKS.includes(tag)
 
+// Boundary constants. I did some long hand writing on these, may bring in to comments.
+const [ LEFT, RIGHT ] = [ 0, 1 ]
 
+// Given a boundary, identified by the index to it's immediate right, determine it's address
+// in terms of "index, orientation" ordered pair. That is, "toRight" is the pair where the
+// orientation is RIGHT, "toLeft" where the orientation is LEFT.
+const convertIndexToRight = idx => [ idx - RIGHT, RIGHT ]
+const convertIndexToLeft = idx => [ idx - LEFT, LEFT ]
 
 class Segment extends AtomicSection {
   constructor() {
@@ -181,9 +188,16 @@ class Doc extends Section {
     // a list of Context. a wrapping Section that understands, well, the Context.
     // TODO delete when start === end and located between contexts (rightOffset === 0) then
     //    left section joins right section
-    const result = super.delete(start, end)
-    const leftSectionIndex = this._locateSection(start)
-    const rightSectionIndex = this._locateSection(end)
+    let result = super.delete(start, end)
+
+    // Boundary work to determine if boundaries are crossed
+    const [ startOrientLeft, _ ] = convertIndexToLeft(start)
+    const [ endOrientRight, __ ] = convertIndexToRight(end)
+    const leftSectionIndex = this._locateSection(startOrientLeft)
+    const rightSectionIndex = this._locateSection(endOrientRight)
+
+    // const leftSection = result.subPieces[leftSectionIndex]
+    // result = result.splice(leftSectionIndex, 1, leftSection.copyFrom())
 
     if ( leftSectionIndex === rightSectionIndex )
       return result
