@@ -143,9 +143,9 @@ describe('Context', function() {
         const result_cutLeft = testDoc2.delete(10,15)
         const result_cutRight = testDoc2.delete(15,20)
 
-        assert.equal(result_cutAll.subPieces.length, testDoc2.subPieces.length)
-        assert.equal(result_cutLeft.subPieces.length, testDoc2.subPieces.length)
-        assert.equal(result_cutRight.subPieces.length, testDoc2.subPieces.length)
+        assert.equal(result_cutAll.subPieces.length, testDoc2.subPieces.length, "Result should leave an empty context")
+        assert.equal(result_cutLeft.subPieces.length, testDoc2.subPieces.length, "Result should not join left to middle")
+        assert.equal(result_cutRight.subPieces.length, testDoc2.subPieces.length, "Result should not join middle to right")
 
       })
     })
