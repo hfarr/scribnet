@@ -4,7 +4,7 @@ import { assertWrappingType } from 'graphql';
 
 const PATH = "/home/henry/dev/scribnet/views"
 const MODULE = "Context"
-const { Doc, Context, Segment } = await import(`${PATH}/js/scribnet/section/${MODULE}.mjs`)
+const { Doc, Context, Segment, Gap } = await import(`${PATH}/js/scribnet/section/${MODULE}.mjs`)
 
 describe('Context', function() {
 
@@ -56,6 +56,36 @@ describe('Context', function() {
   })
 
   describe('Context', function() {
+
+  })
+
+  describe('Gap', function () {
+
+    const testSegments1 = [
+      Segment.from(...'AAA'),
+      Segment.from(...'BBB').applyTags(['B']),
+      Segment.from(...'CCC'),
+    ]
+    const testSegments2 = [
+      Segment.from(...'DDD'),
+      Segment.from(...'EEE'),
+    ]
+    const testSegments3 = [
+      Segment.from(...'FFF'),
+    ]
+    const testSegments4 = [
+      Segment.from(...'GGG'),
+    ]
+    const testContext1 = Context.from(...testSegments1)
+    const testContext2 = Context.from(...testSegments2)
+    const testContext3 = Context.from(...testSegments3)
+    const testContext4 = Context.from(...testSegments4)
+
+    const gap = new Gap()
+    const testDoc = Doc.from(gap, testContext1, gap, testContext2, gap, testContext3, gap, testContext4, gap)
+    const tradDoc = Doc.from(testContext1, testContext2, testContext3, testContext4)
+
+    assert(true)
 
   })
 
