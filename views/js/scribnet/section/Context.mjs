@@ -167,6 +167,15 @@ class Context extends Section {
 
 }
 
+class Gap extends Section {
+  empty() {
+    return false
+  }
+  get length() {
+    return 0
+  }
+}
+
 class Doc extends Section {
 
   get characters() {
@@ -277,4 +286,117 @@ class Table {
 
 const table = new Table()
 
-export { Doc, Context, Segment }
+export { Doc, Context, Segment, Gap }
+
+
+
+/**
+ * 
+ * Traditional array slicing can conceptually treat "start" and "end"
+ * arguments as referring to the "spaces" between elements. As opposed
+ * to treating arguments as indices. We can uniquely correspond 
+ * indicies to the "boundary" by mapping a value referring to a given
+ * index to refer to the boundary to the "Left" of that index.
+ * Visualized as follows, given this array of characters "abcdefgh"
+ *
+ *    a b c d e f g h
+ *   |-|-|-|-|-|-|-|-|
+ * 
+ * A pipe is a "boundary" and a hyphen is an "index". At any index we
+ * can refer to the boundary on its left or on its right using a 2
+ * dimensioned coordinate. We see that each "interior" boundary has 
+ * two unique addresses in this coordinate system. For example, the
+ * boundary between b and c can be referred to by either
+ *    (1, RIGHT) or (2, LEFT)
+ * Boundaries at the extremes have 1 unique address, (0, LEFT) and
+ * (array.length - 1, RIGHT) respectively. Note that we could consider
+ * boundaries with their own numbering, ranging from 0 to array.length
+ * (inclusive) and indices as they are traditionally, 0 to 
+ * array.length - 1 but the __combined notation lets us piggy back off
+ * results for either under one system__        <-- dunno if I like the wording, I'm trying to hit on a core idea here but the words aren't coming to me.
+ * 
+ * The Section system is a means of working with overlapping sets of
+ * lists (lists of lists) that ultimately boils down to the "list"
+ * produced by an in-order traversal of the leaf nodes. We have an 
+ * informal notion of "layers".
+ * 
+ * There are natural "boundaries" between adjacent lists as there are
+ * between the atomic elements at the leaves. Suppose we have this list 
+ * of Context within a Doc:
+ * 
+ *   AaaBbbCcc DddEeeFff GggHhh
+ *  |---------|---------|------|
+ * 
+ * We can delete a slice from, say, index 6 to 12.
+ * 
+ *   AaaBbb Ccc Ddd EeeFff GggHhh
+ *  |------*---|---*------|------|
+ * 
+ * to yield,
+
+ *   AaaBbb EeeFff GggHhh
+ *  |------|------|------|
+ * 
+ * which operates as expected on the "lowest" layer, of the atoms.
+ * Section is designed to facilitate this use case. Crucially just as
+ * in normal arrays we operate on indices without the boundary 
+ * abstraction. Section recursively operates on all the intervening
+ * layers (here we just show the one, of Context) cutting them apart,
+ * deleting empty Section, and stitching it back up to the top in a
+ * natural way.
+ * 
+ * The challenge arises because we seek to have a different behavior
+ * for Context specifically.
+ * -------------------------------------------------------------------
+ * 
+ * A | can be referred to either by the index on its right and the key 
+ * LEFT (meaning "left of index") or the index on its left and the key
+ * RIGHT (meaning "right of index")
+
+ * viewed as below:
+ *
+ *   AaaBbbCcc DddEeeFff GggHhh
+ *  |---------|---------|------|
+ *            ^         ^
+ *          start      end
+ *
+ * In a Section this delete maneouver is fine. We end up removing the 
+ * mid section in its entirety. A Doc with Contexts requires
+ * disambiguating intervention. This follows from these reasons:
+ * - Context can be empty
+ * 
+ *   AaaBbbCcc  DddEeeFff  GggHhh
+ *  |---------||---------||------|
+ *              \_______/
+
+ * should yield an empty mid section
+
+ *   AaaBbbCcc           GggHhh
+ *  |---------||<empty>||------|
+ */
+
+/**
+ * The Gap abstraction
+ * Context-level abstraction. A "Gap" represents the absence of a Section. It takes 
+ * up no space, but is nevertheless "not empty"
+ * 
+ * Idea: 
+ * - After a delete, contexts without a "Gap" between them merge.
+ * - Two adjacent gaps produce a new Context
+ * - Context Gap Context remains untouched
+ * 
+ * This removes the need to logically detect when a boundary is crossed during a 
+ * delete operation. After applying the delete, in addition to cutEmpty the 
+ * merge operations are performed. Context merging with a Gap produces a Context,
+ * Gap pair (i.e no change), Gap merge with Gap produces an empty Context,
+ * Gap to Context produces Gap, Context (i.e no change). Context - Context as 
+ * normal, combining their contents. Covers all the cases. No "edge case" because 
+ * we adopt an abstraction that accounts for them.
+ * 
+ * Challenges:
+ *    Gap, as a concept, is not intuitive. It is "empty" (meaning any "locate" 
+ *    operation should not identify the Gap as containing, e.g, an atom). Such
+ *    methods must correctly "skip" gaps (on both sides, mind). Meanwhile they
+ *    are still susceptible to standard delete operation.
+ *  
+ */
