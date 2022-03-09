@@ -1,6 +1,5 @@
 'use strict'
 import assert from 'assert';
-import { assertWrappingType } from 'graphql';
 
 const PATH = "/home/henry/dev/scribnet/views"
 const MODULE = "Context"
