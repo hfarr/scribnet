@@ -190,6 +190,13 @@ class Gap extends Section {
     return [ this ]
   }
 
+  join(other) {
+    if (other instanceof Gap)
+      return Context.from(new Segment())
+
+    return other
+  }
+
   // merge(otherSections) {
   //   if (otherSections.length === 0) return [ this ]
   merge(other) {
@@ -235,41 +242,32 @@ class Doc extends Section {
     // gapped.subPieces.splice(endOrientRight + 1, 0, new Gap())
     // result = gapped.delete(start, end)
     // warning- we are taking the rare step of modifying "this"
-    this.subPieces.splice(rightSectionIndex + 1, 0, new Gap())  // right must be before left
-    this.subPieces.splice(leftSectionIndex, 0, new Gap())
-    let result = super.delete(start, end)
 
-    this.subPieces.spl
+    // must insert at right before at left
+    let result = this.insertSubSections(rightSectionIndex + 1, new Gap()).insertSubSections(leftSectionIndex, new Gap())
+    result = super.delete.bind(result)(start, end)
+    result = result.mergeTwoGaps()
 
-
-    // const leftSectionIndex = this._locateSection(startOrientLeft)
-    // const rightSectionIndex = this._locateSection(endOrientRight)
-
-    const gapLeft = result.subPieces[leftSectionIndex]
-    const section = result.subPieces[leftSectionIndex + 1]
-    result = result.splice(leftSectionIndex, 2, ...gapLeft.merge(section))
-
-    return result
-
-    if ( leftSectionIndex === rightSectionIndex )
-      return result
-    
-    // leftSectionIndex refers to the same section in both "this" and "result",
-    // but rightSectionIndex might not, as the section could "shift left" after
-    // a delete. We're looking to join adjacent sections hence using 
-    // leftSectionIndex and leftSectionIndex + 1
-    const leftSection = result.subPieces[leftSectionIndex]
-    const rightSection =  result.subPieces[leftSectionIndex + 1]
-    if ( leftSection !== undefined && rightSection != undefined )
-      return result.splice( leftSectionIndex, 2, ...leftSection.merge(rightSection) )
-    
     return result
 
   }
 
-  mergeGaps() {
+  mergeTwoGaps() {
     // would like to put this in the Gap class but we don't have any Section methods (yet) that would be appropriate to override
     // maybe gap extends Context? mmm. mmm. Such a method would need to return a list of Section.
+
+    // these gaps are more like "bookends". We insert them, then kinda "press" them towards each other, squeezing out "merger". An apple press or something. A contraction.
+    let left, right
+    left = this.subPieces.findIndex( x => x instanceof Gap )
+    right = this.subPieces.findIndex( (x, i) => x instanceof Gap && i > left )
+
+    let merger = this.subPieces[left]
+    for ( let i = left + 1; i < right + 1; i++ ) {
+      merger = merger.join(this.subPieces[i])
+    }
+
+    return this.splice(left, right - left + 1, merger)
+
   }
 
   // -------------------
