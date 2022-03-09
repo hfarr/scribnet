@@ -225,24 +225,17 @@ class Doc extends Section {
   }
 
   delete(start, end) {
-    // TODO implement override delete to join contexts.
+    // Delete override to join Contexts
     // Context joining is a signature trait of using Doc to manage, rather than just having
     // a list of Context. a wrapping Section that understands, well, the Context.
-    // TODO delete when start === end and located between contexts (rightOffset === 0) then
-    //    left section joins right section
-    // let result = super.delete(start, end)
 
     // Boundary work to determine if boundaries are crossed
     const [ leftSectionIndex, _ ] = this._locateBoundaryLeft(start)
     const [ rightSectionIndex, __ ] = this._locateBoundaryRight(end)
 
     const result = this.insertSubSections(rightSectionIndex + 1, new Gap()).insertSubSections(leftSectionIndex, new Gap())
-    const bnd = super.delete.bind(result)
-    const result2 = bnd(start, end)
-    const result3 = result2.mergeTwoGaps()
-    return result3 
-
-    return result
+    const boundDelete = super.delete.bind(result)
+    return boundDelete(start, end).mergeTwoGaps()
 
   }
 
