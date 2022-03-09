@@ -85,6 +85,8 @@ describe('Context', function() {
     const testDoc = Doc.from(gap, testContext1, gap, testContext2, gap, testContext3, gap, testContext4, gap)
     const tradDoc = Doc.from(testContext1, testContext2, testContext3, testContext4)
 
+    // const result = testDoc.delete(0,9)
+    const result2 = tradDoc.delete(0, 9)
     assert(true)
 
   })

@@ -165,14 +165,40 @@ class Context extends Section {
     return this.blockTag
   }
 
+
+  merge(other) {
+
+    if (other instanceof Context) 
+      return [ this.join(other) ]
+
+    return [ this, other ]
+
+  }
+
 }
 
 class Gap extends Section {
+  // maybe Gap should have a block tag. Then at least when we merge we can "preserve" the block tag from the context.
   empty() {
     return false
   }
   get length() {
     return 0
+  }
+
+  split() {
+    return [ this ]
+  }
+
+  // merge(otherSections) {
+  //   if (otherSections.length === 0) return [ this ]
+  merge(other) {
+
+    if (other instanceof Gap) 
+      return [ this, Context.from(new Segment()), this ]  // TODO should segment retain styling? hmmm! that would be a bit of a pain
+
+    return [ this, other ]
+
   }
 }
 
@@ -197,16 +223,33 @@ class Doc extends Section {
     // a list of Context. a wrapping Section that understands, well, the Context.
     // TODO delete when start === end and located between contexts (rightOffset === 0) then
     //    left section joins right section
-    let result = super.delete(start, end)
+    // let result = super.delete(start, end)
 
     // Boundary work to determine if boundaries are crossed
     const [ startOrientLeft, _ ] = convertIndexToLeft(start)
     const [ endOrientRight, __ ] = convertIndexToRight(end)
     const leftSectionIndex = this._locateSection(startOrientLeft)
     const rightSectionIndex = this._locateSection(endOrientRight)
+    // const gapped = this.copy()
+    // gapped.subPieces.splice(startOrientLeft, 0, new Gap())
+    // gapped.subPieces.splice(endOrientRight + 1, 0, new Gap())
+    // result = gapped.delete(start, end)
+    // warning- we are taking the rare step of modifying "this"
+    this.subPieces.splice(rightSectionIndex + 1, 0, new Gap())  // right must be before left
+    this.subPieces.splice(leftSectionIndex, 0, new Gap())
+    let result = super.delete(start, end)
 
-    // const leftSection = result.subPieces[leftSectionIndex]
-    // result = result.splice(leftSectionIndex, 1, leftSection.copyFrom())
+    this.subPieces.spl
+
+
+    // const leftSectionIndex = this._locateSection(startOrientLeft)
+    // const rightSectionIndex = this._locateSection(endOrientRight)
+
+    const gapLeft = result.subPieces[leftSectionIndex]
+    const section = result.subPieces[leftSectionIndex + 1]
+    result = result.splice(leftSectionIndex, 2, ...gapLeft.merge(section))
+
+    return result
 
     if ( leftSectionIndex === rightSectionIndex )
       return result
@@ -218,10 +261,15 @@ class Doc extends Section {
     const leftSection = result.subPieces[leftSectionIndex]
     const rightSection =  result.subPieces[leftSectionIndex + 1]
     if ( leftSection !== undefined && rightSection != undefined )
-      return result.splice( leftSectionIndex, 2, leftSection.join(rightSection) )
+      return result.splice( leftSectionIndex, 2, ...leftSection.merge(rightSection) )
     
     return result
 
+  }
+
+  mergeGaps() {
+    // would like to put this in the Gap class but we don't have any Section methods (yet) that would be appropriate to override
+    // maybe gap extends Context? mmm. mmm. Such a method would need to return a list of Section.
   }
 
   // -------------------
