@@ -70,7 +70,11 @@ class Section {
   }
 
   addSubSections(...sections) {
-    return this.splice(this.subPieces.length, 0, ...sections)
+    return this.insertSubSections(this.subPieces.length, ...sections)
+  }
+
+  insertSubSections(idx, ...sections) {
+    return this.splice(idx, 0, ...sections)
   }
 
   get atoms() {
@@ -135,6 +139,47 @@ class Section {
     return [ sectionIndex, atomIndex ]
   }
 
+
+  _locateBoundaryLeft(atomIndex) {
+    // boundary to the right of the atom (inclusive of the atom, in the pair [x,y)  the boundary right of x
+    return this._locateAtom(atomIndex)
+  }
+  _locateBoundaryRight(atomIndex) {
+    // boundary to the left of the atom (exclusive of the atom, in the pair [x,y)  the boundary left of y
+    const [ secIdx, offset ] = this._locateAtom(atomIndex - 1)
+    return [ secIdx, offset + 1 ]
+    // return this._locateAtom(atomIndex - 1)
+  }
+  // E.g, _locateBoundaryRight(3) of the following:
+  //  0 1 2 3 4 5 6 7 8 9 A B C
+  //  H e l l o ,   w o r l d !
+  // | | |>|<| | | | | | | | | |
+  //       ^      that is the boundary index at 3
+  //      ^       this is the atom to the left, of the boundary "right" oriented 
+  //        ^     this is the atom to the right of the boundary, "left" oriented
+  //  3, LEFT === 2, RIGHT
+  //
+  // when I'm doing gap squeeze, I want to do as follows:
+  // AAABBB CCCDDD AAABBB     3 Context
+  //       |<    >|
+  //   b. left   b. right
+  //  note that when giving the slice range we specify the index of the boundary
+  //  from the whole and determine the section & offset you'd need to hit that
+  //  boundary when you "travel" in the given orientation.
+  //  This matters when the boundary falls /between subPieces/ because it can
+  //  then be referred to be two sets of section/offset pairs.
+  //  
+  //  We have b.right(x) === b.left(x) - 1
+  //
+  //  taking the same logic I can apply that to any range-based maneouver, start
+  //  with delete for example since it's what inspired the "gap" strategy.
+  //  rather than interpret the range as a pair of indices, one inclusive one
+  //  exclusive, I look at it as a pair of boundaries, between which is the 
+  //  referred range. No consideration over inclusive/exclusive, all indices
+  //  between the boundaries are affected.
+  //
+  // also wow I'm getting my names mixed up.
+
   /**
    * Determine the index of the sub-piece that holds the atom at the 
    * given index
@@ -149,10 +194,10 @@ class Section {
 
   /* Content mutators */
   delete(start, end) {
-    const [ leftSectionIndex, leftOffset ] = this._locateAtom(start)
-    const [ rightSectionIndex, rightOffset ] = this._locateAtom(end)
+    const [ leftSectionIndex, leftOffset ] = this._locateBoundaryLeft(start)
+    const [ rightSectionIndex, rightOffset ] = this._locateBoundaryRight(end)
     if (leftSectionIndex === rightSectionIndex) 
-      return this.splice(leftSectionIndex, 1, this.subPieces[leftSectionIndex].delete(leftOffset, rightOffset) )
+      return this.splice(leftSectionIndex, 1, this.subPieces[leftSectionIndex].delete(leftOffset, rightOffset) ).cutEmpty()
 
     const [ startSection, _, __, endSection ] = [ ...this.split(start), ...this.split(end) ]
     // TODO should update splice to work on atoms, not sections ?

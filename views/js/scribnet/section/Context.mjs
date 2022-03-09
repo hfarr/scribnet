@@ -187,7 +187,7 @@ class Gap extends Section {
   }
 
   split() {
-    return [ this ]
+    return [ this, this ]
   }
 
   join(other) {
@@ -233,20 +233,14 @@ class Doc extends Section {
     // let result = super.delete(start, end)
 
     // Boundary work to determine if boundaries are crossed
-    const [ startOrientLeft, _ ] = convertIndexToLeft(start)
-    const [ endOrientRight, __ ] = convertIndexToRight(end)
-    const leftSectionIndex = this._locateSection(startOrientLeft)
-    const rightSectionIndex = this._locateSection(endOrientRight)
-    // const gapped = this.copy()
-    // gapped.subPieces.splice(startOrientLeft, 0, new Gap())
-    // gapped.subPieces.splice(endOrientRight + 1, 0, new Gap())
-    // result = gapped.delete(start, end)
-    // warning- we are taking the rare step of modifying "this"
+    const [ leftSectionIndex, _ ] = this._locateBoundaryLeft(start)
+    const [ rightSectionIndex, __ ] = this._locateBoundaryRight(end)
 
-    // must insert at right before at left
-    let result = this.insertSubSections(rightSectionIndex + 1, new Gap()).insertSubSections(leftSectionIndex, new Gap())
-    result = super.delete.bind(result)(start, end)
-    result = result.mergeTwoGaps()
+    const result = this.insertSubSections(rightSectionIndex + 1, new Gap()).insertSubSections(leftSectionIndex, new Gap())
+    const bnd = super.delete.bind(result)
+    const result2 = bnd(start, end)
+    const result3 = result2.mergeTwoGaps()
+    return result3 
 
     return result
 
