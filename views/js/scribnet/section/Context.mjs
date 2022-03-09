@@ -254,6 +254,10 @@ class Doc extends Section {
     }
 
     return this.splice(left, right - left + 1, merger)
+    
+    // TODO would like to generalize this pattern (joining adjacent Section) into Sections
+    //    call it "Squeeze". Love our non-commutative binary operator friends (join could be considered a non commutative binary operation).
+    //    and... what do we get when we apply a binary operation over a range of elements...? that's right, reduction! a fold! functors! er.. foldables!
 
   }
 
