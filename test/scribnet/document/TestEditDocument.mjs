@@ -6,7 +6,7 @@ const { default: EditDocument, expose: {} } = await import(`${PATH}/js/scribnet/
 const { Segment, Context, Doc } = await import(`${PATH}/js/scribnet/section/Context.mjs`)
 
 describe('EditDocument', function() {
-  const doc = EditDocument.fromBlockContexts(
+  const editDoc = EditDocument.fromBlockContexts(
     [
       Context.createContext('h1', Segment.from(..."Document Title")),
       Context.createContext('p', Segment.from(..."Intro paragraph")),
@@ -16,8 +16,8 @@ describe('EditDocument', function() {
 
   describe('selection', function() {
     it ('selected the correct string', function() {
-      doc.select(34, 44)
-      assert.strictEqual(doc.selection(), "paragraph.")
+      editDoc.select(34, 44)
+      assert.strictEqual(editDoc.selection(), "paragraph.")
     })
 
   })
@@ -30,20 +30,20 @@ describe('EditDocument', function() {
     ).applyTags(['strong'], 34, 43)
 
     it('does not change the content', function() {
-      doc.select(34, 43)
-      const nextDoc = doc.applyTag('strong')
-      assert.strictEqual(nextDoc.toString(), doc.toString())
+      editDoc.select(34, 43)
+      const nextDoc = editDoc.applyTag('strong')
+      assert.strictEqual(nextDoc.toString(), editDoc.toString())
     })
     it('has the same selection', function() {
-      doc.select(34, 43)
-      const nextDoc = doc.applyTag('strong')
-      assert.strictEqual(nextDoc.anchor, doc.anchor)
-      assert.strictEqual(nextDoc.focus, doc.focus)
+      editDoc.select(34, 43)
+      const nextDoc = editDoc.applyTag('strong')
+      assert.strictEqual(nextDoc.anchor, editDoc.anchor)
+      assert.strictEqual(nextDoc.focus, editDoc.focus)
     })
 
     it('applies tag correctly', function() {
-      doc.select(34, 43)
-      const nextDoc = doc.applyTag('strong')
+      editDoc.select(34, 43)
+      const nextDoc = editDoc.applyTag('strong')
       assert(nextDoc.document.eq(taggedDoc))
 
     })
