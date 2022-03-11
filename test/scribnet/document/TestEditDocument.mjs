@@ -3,27 +3,15 @@ import assert from 'assert';
 const PATH = "/home/henry/dev/scribnet/views"
 
 const { default: EditDocument, expose: {} } = await import(`${PATH}/js/scribnet/document/EditDocument.mjs`)
-const { Segment, ListSegment } = await import(`${PATH}/js/scribnet/document/Segment.mjs`)
-
-// describe('hooks', function () {
-//   before(function () {
-//     const { Segment, applyTag } = expose
-
-//     const basicSegment = Segment.taggedSegment('p', ...['A test segment'])
-
-//   })
-//   after(function () {
-
-//   })
-// })
+const { Segment, Context, Doc } = await import(`${PATH}/js/scribnet/section/Context.mjs`)
 
 describe('EditDocument', function() {
-  const doc = EditDocument.fromListSegment(
-    ListSegment.from(
-      Segment.taggedSegment(['h1'], "Document Title"),
-      Segment.taggedSegment(['p'], "Intro paragraph"),
-      Segment.taggedSegment(['p'], "Body paragraph. It has some longer text."),
-    )
+  const doc = EditDocument.fromBlockContexts(
+    [
+      Context.createContext('h1', Segment.from(..."Document Title")),
+      Context.createContext('p', Segment.from(..."Intro paragraph")),
+      Context.createContext('p', Segment.from(..."Body paragraph. It has some longer text.")),
+    ]
   )
 
   describe('selection', function() {
@@ -35,10 +23,10 @@ describe('EditDocument', function() {
   })
 
   describe('applyTag', function() {
-    const tagged = ListSegment.from(
-      Segment.taggedSegment(['h1'], "Document Title"),
-      Segment.taggedSegment(['p'], "Intro paragraph"),
-      Segment.taggedSegment(['p'], "Body paragraph. It has some longer text."),
+    const taggedDoc = Doc.from(
+      Context.createContext('h1', Segment.from(..."Document Title")),
+      Context.createContext('p', Segment.from(..."Intro paragraph")),
+      Context.createContext('p', Segment.from(..."Body paragraph. It has some longer text.")),
     ).applyTags(['strong'], 34, 43)
 
     it('does not change the content', function() {
@@ -56,7 +44,7 @@ describe('EditDocument', function() {
     it('applies tag correctly', function() {
       doc.select(34, 43)
       const nextDoc = doc.applyTag('strong')
-      assert(nextDoc.text.eq(tagged), nextDoc, tagged)
+      assert(nextDoc.document.eq(taggedDoc))
 
     })
 

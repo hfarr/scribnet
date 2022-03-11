@@ -2,7 +2,8 @@
 
 import { treeTraverse, traversePruneTokens, treeFoldr } from './DOM.mjs'
 import { TokenVisitor } from './Token.mjs'
-import { Segment, ListSegment } from './Segment.mjs'
+// import { Segment, ListSegment } from './Segment.mjs'
+import { Doc, Context, Segment } from '../section/Context.mjs'
 
 
 // ========= HTML View/Controller ==========================
@@ -224,8 +225,11 @@ export const domFunctions = { loadDocument, loadHTML, renderHTML, charOffset }
 class _EditDocument {
 
   constructor() {
-    this.history = null;
-    this.text = ListSegment.from(Segment.taggedSegment(['p'], ''))
+
+    // const empty = Segment.from("")
+    // const ctx = Context.from(empty)
+    // this.document = Doc.from(ctx)
+    this.document = new Doc()
 
     // Segment index, index in segment
     this.focus = 0
@@ -236,26 +240,21 @@ class _EditDocument {
   static newDocument() {
     return new EditDocument()
   }
-  static fromSegments(segments) {
-    return EditDocument.fromListSegment(ListSegment.from(...segments))
+  static fromBlockContexts(contexts) {
+    return EditDocument.fromDocSection(Doc.from(...contexts))
   }
-  static fromListSegment(listSegment) {
+  static fromDocSection(docSection) {
     const doc = EditDocument.newDocument()
-    doc.text = listSegment
+    doc.document = docSection
     return doc
   }
 
   copy() {
     const doc = EditDocument.newDocument()
-    doc.text = this.text
+    doc.document = this.document
     doc.focus = this.focus
     doc.anchor = this.anchor
-    doc.history = this.history
     return doc
-  }
-
-  get segments() {
-    return this.text.segments
   }
 
   /**
@@ -266,7 +265,7 @@ class _EditDocument {
    * there are four: "|abc", "a|bc", "ab|c", "abc|"
    */
   get length() {
-    return this.text.length
+    return this.document.length
   }
 
   get cursorOffset() {
@@ -288,39 +287,24 @@ class _EditDocument {
     return this.focusOffset === this.anchorOffset
   }
 
-  // ----- "State" -----
-  // pushHistory() {
-
-  // }
-
   // ----- Builders ------
 
-  applyTag(tag, attributes) {
+  applyTag(tag) {
 
     const newDoc = this.copy()
-    newDoc.text = this.text.applyTags([tag], this.startOffset, this.endOffset)
-    // newDoc.pushHistory()
-    // this.history = { prev: this.history, text: newText }
-    // this.text = newText
-    newDoc.notifySelectListeners()  // temp. or... temp?
+    newDoc.document = this.document.applyTags([tag], this.startOffset, this.endOffset)
+    newDoc.notifySelectListeners()
 
-    // hmm. do we...? track past EditDocs? or just past ListSegment? hmm.
     return newDoc
-
-    // const newDoc = EditDocument.fromListSegment(this.text.applyTags([ tag ], this.startOffset, this.endOffset))
-    // newDoc.parent = this
-    // newDoc.anchor = this.anchor
-    // newDoc.focus = this.focus
-    // return newDoc
   }
 
-  toggleTags(tags, attributesLists) {
+  toggleTags(tags) {
     const newDoc = this.copy()
-    newDoc.text = this.text.toggleTags(tags, this.startOffset, this.endOffset)
+    newDoc.document = this.document.toggleTags(tags, this.startOffset, this.endOffset)
     newDoc.notifySelectListeners()
     return newDoc
   }
-  toggleTag(tag, attributes) {
+  toggleTag(tag) {
     return this.toggleTags([tag], [attributes])
   }
 
@@ -340,11 +324,11 @@ class _EditDocument {
 
   at(characterIndex = undefined) {
     if (characterIndex === undefined) characterIndex = this.focusOffset
-    return this.text.at(characterIndex)
+    return this.document.at(characterIndex)
   }
   selection() {
 
-    return this.text.characters.slice(this.startOffset, this.endOffset).join('')
+    return this.document.characters.slice(this.startOffset, this.endOffset).join('')
   }
 
   // ----------------------
@@ -379,7 +363,7 @@ class _EditDocument {
     const result = this.copy()
     const from = this.startOffset
     const to = this.isCollapsed ? this.cursorOffset + 1 : this.endOffset
-    result.text = result.text.delete(from, to)
+    result.document = result.document.delete(from, to)
     result.select(this.startOffset)
 
     if (notify) result.notifySelectListeners()  // todo changing
@@ -397,7 +381,7 @@ class _EditDocument {
     let result = this.copy()
 
     if (!this.isCollapsed) result = result.delete(false)
-    result.text = result.text.insert(this.startOffset, string)
+    result.document = result.document.write(this.startOffset, string)
     result.select(result.startOffset + [...string].length)
 
     if (notify) result.notifySelectListeners()  // todo changing
@@ -411,7 +395,7 @@ class _EditDocument {
   toString() {
     // note that the "\n" (which again, we just use ' ', but. Maybe we should use '\n') of the last paragraph is always present
     // but not always addressable (can't click there), it's not a rendered character
-    return this.text.characters.join('')
+    return this.document.toString()
   }
 
 }
