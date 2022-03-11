@@ -138,12 +138,25 @@ class Segment extends AtomicSection {
   toggleTag(tag) { return this.toggleTags( [tag] ) }
   replaceTag(tag) { return this.replaceTags( [tag] ) }
 
+  get characters() {
+    return this.atoms
+  }
+
+  toString() {
+    return this.characters.join('')
+  }
+
 }
 
 class Context extends Section {
   constructor() {
     super()
     this.block = 'p'
+  }
+
+  static createContext(blockTag, ...segments) {
+    const result = this.from(...segments)
+    return result.updateBlock(blockTag) // not strictly necessary, we could modify .block here. Trying to stick to a pattern though of preferring "mutative" methods
   }
 
   copy() {
@@ -163,6 +176,10 @@ class Context extends Section {
   }
   get block() {
     return this.blockTag
+  }
+
+  get segments() {
+    return this.subPieces
   }
 
 
@@ -211,9 +228,6 @@ class Gap extends Section {
 
 class Doc extends Section {
 
-  get characters() {
-    return this.atoms
-  }
   write(string, location=undefined) {
     // TODO implement
     if ( this.empty() )
@@ -262,6 +276,14 @@ class Doc extends Section {
   }
 
   // -------------------
+
+  get characters() {
+    return this.atoms
+  }
+
+  get contexts() {
+    return this.subPieces
+  }
 
   applyTags(tags, start, end) {
     return this.mapRange(function applyTags(seg) { return seg.applyTags(tags) }, start, end)

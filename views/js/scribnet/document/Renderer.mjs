@@ -19,9 +19,9 @@ function escapeString(htmlRaw) {
 
 class Renderer {
   // TODO work out who should take responsibility for 'wrapperElement'. Renders is renders but perhaps it belongs.
-  constructor(editDocument) {
+  constructor() {
     this.elem = undefined
-    this.setEditDoc(editDocument)
+    // this.setEditDoc(editDocument)
   }
 
   setWrapper(elem) {
@@ -62,14 +62,17 @@ class Renderer {
   }
 }
 
+const wrapOne = (tag, value) => `<${tag.toLowerCase()}>${value}</${tag.toLowerCase()}>`
+const wrap = (tags, content) => tags.length === 0 ? content : wrapOne(tags[0], wrap(tags.slice(1), content))
+
+// TODO-accept editDoc in constructor? :S would an HTML renderer "own" that or would it be more about the specific place 
+//  where rendering occurs (in a document?) hermngh
 class HTMLRenderer extends Renderer {
   get wrapperStyling() {  // hmmmmmmmmmmmmmmmmmmmm
     return "white-space: pre-wrap;" // yeah. I think. In a shadow-dom world we'd just Not and leave it to the component, but I havent component'd renders yet.
   }
 
-
-
-  toHTML(editDoc) {
+  _toHTML(editDoc) {
     // Not the most elegant 'prettyprinter'
     if (editDoc === undefined) return ""
     let result = ""
@@ -107,6 +110,36 @@ class HTMLRenderer extends Renderer {
       if (segment.characters.at(-1) === "\n") closeBlock()
     }
     return result
+  }
+
+  renderSegment(inlineSegment) {
+    
+    return wrap(inlineSegment.tags, inlineSegment.toString())
+
+  }
+
+  renderContext(context) {
+    let result = ""
+    const blockTag = context.block
+
+    for (const segment of context.segments)
+      result += this.renderSegment(segment)
+    
+    return wrapOne(context.blockTag, result)
+
+  }
+
+  renderDoc(document) {
+    let result = ""
+    for (const context of document.contexts)
+      result += this.renderContext(context)
+    
+    return result
+
+  }
+
+  toHTML(document) {  // Working on the document model now
+    return this.renderDoc(document)
   }
 }
 
