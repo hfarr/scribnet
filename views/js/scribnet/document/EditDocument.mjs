@@ -404,6 +404,26 @@ class _EditDocument {
     return result
   }
 
+  /**
+   * Classically this creates a new paragraph from where the cursor is.
+   * In EditDoc paragraphs are represented as block contexts in the 
+   * with the Context class. We have other kinds of Context and they
+   * all support a similar operation, not all are going to produce a
+   * new "paragraph". Hence the name is "enterNewline".
+   * 
+   * Generally it splits a block context at the location creating a new
+   * one directly after the previous.
+   */
+  enterNewline(notify = true) {
+    let result = this.copy()
+
+    if (!this.isCollapsed) result = result.delete(false)
+    result.document = result.document.contextBreakAt(this.startOffset)
+
+    if (notify) result.notifySelectListeners()
+    return result
+  }
+
   accept(visitor, ...args) {
     return visitor.visitDocument(this, ...args)
   }

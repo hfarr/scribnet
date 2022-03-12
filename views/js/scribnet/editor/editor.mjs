@@ -222,6 +222,9 @@ export class Editor {
     if (this.currentDocument.isCollapsed) this.currentDocument.select(this.currentDocument.cursorOffset - 1)
     this.docHistory.add(this.currentDocument.delete())
   }
+  enterNewline() {
+    this.docHistory.add(this.currentDocument.enterNewline())
+  }
 
   // -----------------------
 
@@ -265,7 +268,7 @@ export class Editor {
    * Update the position of the cursor in the internal EditDocument
    */
   updateSelection() {
-    if (!this.containsWindowSelection) {
+    if (!this.containsWindowSelection()) {
       return
     }
     const sel = window.getSelection()

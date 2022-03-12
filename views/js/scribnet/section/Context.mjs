@@ -267,6 +267,10 @@ class Doc extends Section {
 
   }
 
+  contextBreakAt(location) {
+    return this.splitInterior(location)
+  }
+
   mergeTwoGaps() {
     // would like to put this in the Gap class but we don't have any Section methods (yet) that would be appropriate to override
     // maybe gap extends Context? mmm. mmm. Such a method would need to return a list of Section.
