@@ -196,17 +196,20 @@ class Section {
   //===================================================
 
   /* Content mutators */
-  delete(start, end) {
+  delete(start, end = undefined) {
+    if (end === undefined) end = this.length
+
     const [ leftSectionIndex, leftOffset ] = this._locateAtomBoundaryLeft(start)
     const [ rightSectionIndex, rightOffset ] = this._locateAtomBoundaryRight(end)
-    if (leftSectionIndex === rightSectionIndex) 
-      return this.splice(leftSectionIndex, 1, this.subPieces[leftSectionIndex].delete(leftOffset, rightOffset) ).cutEmpty()
+    const patchedSections = []
+    if (leftSectionIndex === rightSectionIndex) {
+      patchedSections.push(this.subPieces[leftSectionIndex].delete(leftOffset, rightOffset))
+    } else {
+      patchedSections.push(this.subPieces[leftSectionIndex].delete(leftOffset), this.subPieces[rightSectionIndex].delete(0, rightOffset))
+    }
 
-    const [ startSection, _, __, endSection ] = [ ...this.split(start), ...this.split(end) ]
-    // TODO should update splice to work on atoms, not sections ?
-    const result = this.copyFrom(...startSection.subPieces, ...endSection.subPieces).cutEmpty()
+    return this.splice(leftSectionIndex, 1 + (rightSectionIndex - leftSectionIndex), ...patchedSections ).cutEmpty()
 
-    return result
   }
 
   insert(location, atoms) {
@@ -416,8 +419,9 @@ class AtomicSection extends Section {
     newSection.subPieces.splice(location, 0, ...atoms)
     return newSection
   }
-  delete(start, end) {
+  delete(start, end = undefined) {
     const newSection = this.copy()
+    if (end === undefined) end = this.length
     newSection.subPieces.splice(start, end - start)
     return newSection
   }
