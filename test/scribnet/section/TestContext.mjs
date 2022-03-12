@@ -108,8 +108,13 @@ describe('Context', function() {
       Segment.from(...'CCCCC'),
       Segment.from(...'DDDDD'),
     ]
+    const testSegments3 = [
+      Segment.from(...'EEEEE'),
+      Segment.from(...'FFFFF'),
+    ]
     const testContext1 = Context.from(...testSegments1)
     const testContext2 = Context.from(...testSegments2)
+    const testContext3 = Context.from(...testSegments3)
     const testDoc = Doc.from(testContext1, testContext2)
 
     it('is equal to its own split', function() {
@@ -179,6 +184,22 @@ describe('Context', function() {
         assert.equal(result_cutRight.subPieces.length, testDoc2.subPieces.length, "Result should not join middle to right")
 
       })
+      
+      it('it produces one empty Context when delete straddles at least one boundary between Contexts and bounds of delete are left most and right most of corresponding Context', function () {
+        // Test naming award of the year goes to.... me!
+
+        const testDoc2 = Doc.from(testContext1, testContext2, testContext3, testContext1)
+
+        const result = testDoc2.delete(10, 30)
+
+        assert.equal(result.subPieces.length, testDoc2.subPieces.length - 1, "Result should have one less Context than original")
+        assert.equal(result.toString(), Doc.from(testContext1, new Context(), testContext1).toString())
+
+      })
+    })
+
+    describe('insert', function() {
+      // it ('')
     })
 
     it('is a place for me to test', function() {
