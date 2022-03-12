@@ -169,6 +169,28 @@ function loadHTML(element) {
   return treeTraverse(segmentate, element).map(unwrap)
 }
 
+function parseSection(node, sections) {
+  if (node.nodeType === Node.TEXT_NODE) {
+    return [ Segment.from(...node.textContent ) ] // "Just x"
+  }
+  if (node.nodeType !== Node.ELEMENT_NODE) {
+    return [] // "Nothing"
+  }
+
+  if (Doc.isBlock(node.tagName)) return [ Context.createContext(node.tagName, ...sections.flat()) ]
+
+  return sections.flat().map(segment => segment.applyTag(node.tagName))
+}
+
+/**
+ * Parse a piece of the DOM into a Section
+ * 
+ * @param element DOM Element
+ */
+function parse(element) {
+  return treeTraverse(parseSection, element)[0]
+}
+
 /**
  * Given the root of a document parse into an EditDocument
  * This differs from loadHTML as rootElement tag is excluded from
@@ -185,17 +207,10 @@ function loadHTML(element) {
  */
 function loadDocument(rootElement) {
 
-  // TODO this shouldn't break? I think it makes sense to keep the paragraph newline
-  // char but we need to correct the selection capability. Or, doc.length is reporting,
-  // maybe, the length of the "cursor" slots (1476 slots indexed 0 - 1475). Makes sense
-  // to me.
-  // const allButLast = fn => (item, idx, arr) => idx === arr.length - 1 ? item : fn(item)
-  const childSegments = [...rootElement.children]
-    .map(loadHTML)
-    // .map(allButLast(pad))
-    .map(pad)
+  const childContexts = [...rootElement.children]
+    .map(parse)
     .flat()
-  return EditDocument.fromSegments(childSegments)
+  return EditDocument.fromBlockContexts(childContexts)
 }
 
 function html(tags) {
@@ -305,7 +320,8 @@ class _EditDocument {
     return newDoc
   }
   toggleTag(tag) {
-    return this.toggleTags([tag], [attributes])
+    // return this.toggleTags([tag], [attributes])
+    return this.toggleTags([tag])
   }
 
   // ----- Accessors ------

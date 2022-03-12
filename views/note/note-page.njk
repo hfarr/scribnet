@@ -132,12 +132,12 @@ permalink: "note/{{ noteItem.name | slug }}/"
       editor.render()
       // htmlRenderer.render(editor.editor.currentDocument)
 
-      editor.editor.currentDocument.addSelectListener(doc => {
+      editor.editor.currentDocument.addSelectListener(editDoc => {
         // yeah it's still /too much/ to submit updates eagerly, owing to the fact that 
         // some triggers of this command don't even update content (it's a "select" listener).
         // Naming is wrong too really it should just be "addListener" because it listens for
         // nearly all state changes of an EditDocument.
-        const data={ content: htmlRenderer.toHTML(doc) }
+        const data={ content: htmlRenderer.toHTML(editDoc.document) }
         return saveContent(data)
       })
     })

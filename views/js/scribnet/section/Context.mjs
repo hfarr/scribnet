@@ -69,6 +69,7 @@ import { AtomicSection } from "./Section.mjs"
 const BLOCKS = ['p', 'h1', 'h2', 'h3', 'pre']
 
 const filterInline = tag => !BLOCKS.includes(tag)
+const isBlock = tag => BLOCKS.includes(tag.toLowerCase())
 
 // Boundary constants. I did some long hand writing on these, may bring in to comments.
 const [ LEFT, RIGHT ] = [ 0, 1 ]
@@ -83,6 +84,11 @@ class Segment extends AtomicSection {
   constructor() {
     super()
     this.tags = []
+  }
+  static createSegment(tags, ...characters) {
+    const result = this.from(...characters)
+    result.tags = Array.isArray(tags) ? tags : [ tags ]
+    return result
   }
   // static from(...)
   copy() {
@@ -227,6 +233,14 @@ class Gap extends Section {
 }
 
 class Doc extends Section {
+
+  static createSection(tag, ...subPiecees) {
+    
+  }
+
+  static isBlock(tag) {
+    return isBlock(tag)
+  }
 
   write(string, location=undefined) {
     // TODO implement

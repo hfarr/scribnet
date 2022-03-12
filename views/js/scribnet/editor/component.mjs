@@ -187,8 +187,9 @@ class EditorComponent extends HTMLElement {
 
   render() {
     if (this._renderer) {
-      // this._renderer.toHTML()
-      this._renderer.render(this.editor.currentDocument)
+      // vvv closer to what I want me thinks
+      // this.editor.currentDocument.render(this._renderer)
+      this._renderer.render(this.editor.currentDocument.document)
       this.editor.selectInDOM()
     }
   }
