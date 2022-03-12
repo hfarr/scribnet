@@ -256,8 +256,8 @@ class _EditDocument {
     this.document = new Doc()
 
     // Segment index, index in segment
-    this._startOffset = 0
-    this._endOffset = 0
+    this.focus = 0
+    this.anchor = 0
 
   }
 
@@ -276,8 +276,8 @@ class _EditDocument {
   copy() {
     const doc = EditDocument.newDocument()
     doc.document = this.document
-    doc._startOffset = this._startOffset
-    doc._endOffset = this._endOffset
+    doc.focus = this.focus
+    doc.anchor = this.anchor
     return doc
   }
 
@@ -292,14 +292,23 @@ class _EditDocument {
     return this.document.length
   }
 
+  get cursorOffset() {
+    return this.focusOffset
+  }
+  get focusOffset() {
+    return this.focus
+  }
+  get anchorOffset() {
+    return this.anchor
+  }
   get startOffset() {
-    return this._startOffset
+    return this.focusOffset <= this.anchorOffset ? this.focusOffset : this.anchorOffset
   }
   get endOffset() {
-    return this._endOffset
+    return this.focusOffset <= this.anchorOffset ? this.anchorOffset : this.focusOffset
   }
   get isCollapsed() {
-    return this.startOffset === this.endOffset
+    return this.focusOffset === this.anchorOffset
   }
 
   // ----- Builders ------
@@ -326,13 +335,20 @@ class _EditDocument {
 
   // ----- Accessors ------
 
-  select(startIndex, endIndex = undefined) {
-    this._startOffset = startIndex
-    this._endOffset = endIndex ?? this._startOffset
+  select(anchorIndex=0, focusIndex=undefined) {
+    // Honestly after reading Crafting Interpreters I can't get +1 in a bounds check out of my head (as opposed to >= ). 
+    // Like I read it differently- "If the next index after anchor would be out of bounds," using + is like left shift
+    // with +1 we can think of it as "nth"s, like index 0 is 1st, index 10 is 11th, index length - 1 is "length"th
+    if (anchorIndex < 0 || anchorIndex + 1 > this.length) anchorIndex = 0
+    if (focusIndex < 0 || focusIndex + 1 > this.length) focusIndex = this.length - 1
+
+    if (focusIndex === undefined) focusIndex = anchorIndex
+    this.anchor = anchorIndex
+    this.focus = focusIndex
   }
 
   at(characterIndex = undefined) {
-    if (characterIndex === undefined) characterIndex = this.startOffset
+    if (characterIndex === undefined) characterIndex = this.focusOffset
     return this.document.at(characterIndex)
   }
   selection() {
@@ -371,7 +387,7 @@ class _EditDocument {
   delete(notify = true ) {
     const result = this.copy()
     const from = this.startOffset
-    const to = this.isCollapsed ? this.startOffset + 1 : this.endOffset
+    const to = this.isCollapsed ? this.cursorOffset + 1 : this.endOffset
     result.document = result.document.delete(from, to)
     result.select(this.startOffset)
 
@@ -446,8 +462,8 @@ let EditDocumentMixListener = class extends _EditDocument {
     doc._listenersSelect = this._listenersSelect
     return doc
   }
-  select(startIndex, endIndex) {
-    super.select(startIndex, endIndex)
+  select(anchorIndex, focusIndex) {
+    super.select(anchorIndex, focusIndex)
     this.notifySelectListeners()
   }
   notifySelectListeners(editDoc = this) { // May not be strictly necessary to parameterize, leaving as an option for now
