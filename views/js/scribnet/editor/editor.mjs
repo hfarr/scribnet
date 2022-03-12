@@ -267,39 +267,19 @@ export class Editor {
   /**
    * Update the position of the cursor in the internal EditDocument
    */
-  updateSelection() {
-    if (!this.containsWindowSelection()) {
-      return
-    }
-    const sel = window.getSelection()
-    const elements = foldElements(this.component)
+  updateSelection(selection) {
 
-    // is this function too involved in knowledge of EditDocument's internals?
-    // We're in the era of taking on a bit of tech debt, to sift out interfaces
-    // later
 
-    const domFocusOffset = domFunctions.charOffset(this.component, sel.focusNode, sel.focusOffset)
+    const domFocusOffset = domFunctions.charOffset(this.component, selection.focusNode, selection.focusOffset)
     this.currentDocument.select(domFocusOffset)
 
-    // in a given paragraph, the cursor can be positioned at length + 1 spots, indexed 0-length.
-    // you can index characters 0-(length-1) but we are counting cursor positions
 
-    if (!sel.isCollapsed) {
+    if (!selection.isCollapsed) {
 
-      const domAnchorOffset = domFunctions.charOffset(this.component, sel.anchorNode, sel.anchorOffset)
+      const domAnchorOffset = domFunctions.charOffset(this.component, selection.anchorNode, selection.anchorOffset)
       this.currentDocument.select(domFocusOffset, domAnchorOffset)
 
-      // const parent = sel.focusNode.parentElement
-      // traverse index much?
-      // const segmentIndex = elements.indexOf(parent) + [...parent.childNodes].indexOf(sel.focusNode) - 1
-      // const [ idx, offset ] = [ elements.indexOf(sel.focusNode.parentElement), sel.focusOffset ]
-      // yeah, long term the editor isn't going to know how to translate DOM selection to doc
-      // In the interim it's okay to use this strategy, Editor assumes all EditDocs are rendering as HTML
-      // and takes the responsibility.
-      // idx less one because the collapsed list includes the editor element
-      // this.currentDocument.selectSegCoords(segmentIndex, sel.focusOffset)
     }
-      
   }
 
   /**
@@ -314,7 +294,7 @@ export class Editor {
     if (!this.containsWindowSelection()) {
       return
     }
-    this.updateSelection()
+    this.updateSelection(sel)
     // console.debug(this.currentDocument.at())
 
 
