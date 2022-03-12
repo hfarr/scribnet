@@ -14,7 +14,7 @@ class MapToHTMLEditDocIdx extends TokenVisitor {
   // why is lineBreak 0 not 1? because we 'collapse' it to a newline and push it to the previous elem (in effect, it's an inline character we convert to text)
   // ^^^ likely want to verify this is the case. It's a bit awkward I'll admit. Am I admitting to awkwardness because I forgot when I am the one who coded this, or because the behavior is awkward? :shrug:
   visitLinebreak(token) { return 0 }
-  visitBlock(token) { return 1}
+  visitBlock(token) { return 0}
   visitInline(token) { return 0}
   visitText(token) {
     return [...token.string].length // separates string into code points as to not over-count 16byte characters
