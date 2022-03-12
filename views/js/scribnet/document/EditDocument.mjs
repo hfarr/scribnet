@@ -10,9 +10,18 @@ import { Doc, Context, Segment } from '../section/Context.mjs'
 
 // this fella maps a selected character in the editor to an edit document
 // assuming the editor is showing an HTML view
-class MapToHTMLEditDocIdx extends TokenVisitor {
+class MapToHTMLSegmentIdx extends TokenVisitor {
   // why is lineBreak 0 not 1? because we 'collapse' it to a newline and push it to the previous elem (in effect, it's an inline character we convert to text)
   // ^^^ likely want to verify this is the case. It's a bit awkward I'll admit. Am I admitting to awkwardness because I forgot when I am the one who coded this, or because the behavior is awkward? :shrug:
+  visitLinebreak(token) { return 0 }
+  visitBlock(token) { return 1} // overcompensates because we use a single "\n" char within segments to encode paragraph breaks. This char is not rendered however, it is only for encoding.
+  visitInline(token) { return 0}
+  visitText(token) {
+    return [...token.string].length // separates string into code points as to not over-count 16byte characters
+  }
+}
+
+class MapToHTMLSectionIdx extends TokenVisitor {
   visitLinebreak(token) { return 0 }
   visitBlock(token) { return 0}
   visitInline(token) { return 0}
@@ -29,7 +38,7 @@ const mixOriginal= (tokenVisitor) => (class extends tokenVisitor {
   visitText(tok) { return [super.visitText(tok), tok.string]}
 })
 
-const htmlMapper = new MapToHTMLEditDocIdx()
+const htmlMapper = new MapToHTMLSectionIdx()
 
 /**
  * Given a DOM node compute the cursor position as-rendered to the
