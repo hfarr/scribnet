@@ -52,6 +52,8 @@ permalink: "note/{{ noteItem.name | slug }}/"
 
 <!-- <script type="module" src="/js/scribnet/document/Renderer.mjs"></script> -->
 <script>
+
+  let editorhf;
   // const resourceName = window.location.pathname.match(/[^\/]*$/)[0] // grabs the string in the url past the last forward slash
   const resourceName = "{{ noteItem.name }}"
   const slugName = "{{ noteItem.name | slug }}"
@@ -141,6 +143,8 @@ permalink: "note/{{ noteItem.name | slug }}/"
         return saveContent(data)
       })
     })
+
+    editorhf = editor.editor
 
   }
   function viewingState() {
