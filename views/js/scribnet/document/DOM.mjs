@@ -319,6 +319,22 @@ class HTMLOffsetMap extends TokenVisitor {
   };
 }
 
+class SectionOffsetToHTML extends TokenVisitor {
+  visitLinebreak(token) {
+    return [ 0, token ]
+  }
+  visitText(token) {
+    const lenDoc = [...token.string].length
+    return [ lenDoc, token ]
+  }
+  visitBlock(token) {
+    return [ 0, token ]
+  }
+  visitInline(token) {
+    return [ 0, token ]
+  }
+}
+
 // TODO okay, so Im beginning to think we should move this to Document,
 // or to the Renders once I layer those out
 // One thing to think is instead of glomping over tokens we should be
@@ -330,7 +346,7 @@ class HTMLOffsetMap extends TokenVisitor {
 export function offsetToDOM(rootElement, docOffset) {
   const tokens = Token.collapseTokens(treeFoldr((c, p) => [Token.tokenize(c), ...p], [], rootElement))
 
-  const dualAccumulator = new HTMLOffsetMap()
+  const dualAccumulator = new SectionOffsetToHTML()
   // TODO still awkwardly slicing the 'h1' off
   // TODO Could, in line with other TODOs suggesting a refactor, stuff in the "padding" rules to eliminate
   const dualAccums = dualAccumulator.visitList(tokens).slice(1)
