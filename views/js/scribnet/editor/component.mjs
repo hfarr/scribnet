@@ -152,7 +152,7 @@ class EditorComponent extends HTMLElement {
           keyUp.preventDefault()
           if (keyState[statekey]) {
             keyState[statekey] = false // in our interface we'd probably implement the 'check&set' in one operation
-            console.log('up', statekey)
+            console.debug('key up', statekey)
           }
         }
       }
@@ -166,7 +166,7 @@ class EditorComponent extends HTMLElement {
           if (!keyState[statekey]) {
             keyState[statekey] = true // in our interface we'd probably implement the 'check&set' in one operation
             actionsKeyDown[statekey]()
-            console.log('down',statekey)
+            console.debug('key down',statekey)
           }
         }
       }
