@@ -140,13 +140,16 @@ class Section {
   }
 
 
-  _locateBoundaryLeft(atomIndex) {
-    // boundary to the right of the atom (inclusive of the atom, in the pair [x,y)  the boundary right of x
-    return this._locateAtom(atomIndex)
+  _locateAtomBoundaryLeft(boundaryIndex) {
+    // returns coordinate as a section and the atom in that section from which heading left of the atom hits the boundary given by the index
+    // boundary index must be index of a boundary with a "flat view". That is boundaries are indexed between 0 and this.characters.length inclusive, ignoring "empty Section" that would otherwise count for 1 boundary
+    return this._locateAtom(boundaryIndex)
   }
-  _locateBoundaryRight(atomIndex) {
-    // boundary to the left of the atom (exclusive of the atom, in the pair [x,y)  the boundary left of y
-    const [ secIdx, offset ] = this._locateAtom(atomIndex - 1)
+  _locateAtomBoundaryRight(boundaryIndex) {
+    // returns coordinate as a section and the atom in that section from which heading right of the atom hits the boundary given by the index
+    // boundary index must be index of a boundary with a "flat view". That is boundaries are indexed between 0 and this.characters.length inclusive, ignoring "empty Section" that would otherwise count for 1 boundary
+    const atomIndex = boundaryIndex - 1
+    const [ secIdx, offset ] = this._locateAtom(boundaryIndex - 1)
     return [ secIdx, offset + 1 ]
     // return this._locateAtom(atomIndex - 1)
   }
@@ -194,8 +197,8 @@ class Section {
 
   /* Content mutators */
   delete(start, end) {
-    const [ leftSectionIndex, leftOffset ] = this._locateBoundaryLeft(start)
-    const [ rightSectionIndex, rightOffset ] = this._locateBoundaryRight(end)
+    const [ leftSectionIndex, leftOffset ] = this._locateAtomBoundaryLeft(start)
+    const [ rightSectionIndex, rightOffset ] = this._locateAtomBoundaryRight(end)
     if (leftSectionIndex === rightSectionIndex) 
       return this.splice(leftSectionIndex, 1, this.subPieces[leftSectionIndex].delete(leftOffset, rightOffset) ).cutEmpty()
 

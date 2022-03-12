@@ -258,8 +258,8 @@ class Doc extends Section {
     // a list of Context. a wrapping Section that understands, well, the Context.
 
     // Boundary work to determine if boundaries are crossed
-    const [ leftSectionIndex, _ ] = this._locateBoundaryLeft(start)
-    const [ rightSectionIndex, __ ] = this._locateBoundaryRight(end)
+    const [ leftSectionIndex, _ ] = this._locateAtomBoundaryLeft(start)
+    const [ rightSectionIndex, __ ] = this._locateAtomBoundaryRight(end)
 
     const result = this.insertSubSections(rightSectionIndex + 1, new Gap()).insertSubSections(leftSectionIndex, new Gap())
     const boundDelete = super.delete.bind(result)
