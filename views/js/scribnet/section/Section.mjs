@@ -88,6 +88,7 @@ class Section {
     //  split, only start splitting /after/ a point?
 
     if (other === undefined) return this
+    if (other instanceof AtomicSection) return this.addSubSections(other) // Not sure how 'natural' this is. It is a bit awkward merging Atomic and nonAtomic Sections
 
     const middleLeft = this.subPieces.at(-1)
     const middleRight = other.subPieces.at(0)
@@ -293,6 +294,7 @@ class Section {
   }
 
   deleteBoundary(startBoundary, endBoundary = undefined) {
+    if (this.boundariesLength === 1) return this
     if (endBoundary === undefined) endBoundary = this.boundariesLength - 1
 
     const [ leftSectionIndex, leftOffset ] = this._locateBoundary(startBoundary)
@@ -523,7 +525,13 @@ class AtomicSection extends Section {
   }
 
   merge(other) {
-    return this.join(other)
+
+    if (other === undefined) return this
+    if (other instanceof AtomicSection)
+      return this.join(other)
+    
+    // Like the merge in Section, merging AtomicSection to a (non-Atomic) Section begs trouble. This copies what Section does but the other way around.
+    return other.copyFrom(this, ...other.subPieces)
   }
 
   // ============
