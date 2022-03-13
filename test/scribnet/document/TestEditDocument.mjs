@@ -14,6 +14,14 @@ describe('EditDocument', function() {
     ]
   )
 
+  const testEditDoc = EditDocument.fromBlockContexts([
+    Context.createContext('h1', Segment.from(...'AaaaaBbbbb')),
+    Context.createContext('p', Segment.from(...'CccccDdddd')),
+    Context.createContext('p', Segment.from(...'EeeeeFffffGgggg')),
+    Context.createContext('h1', Segment.from(...'HhhhhIiii\u{1F310}Jjjjj')),
+    Context.createContext('p', Segment.from(...'KkkkkLllll')),
+  ])
+
   describe('selection', function() {
     it ('selected the correct string', function() {
       editDoc.select(34, 44)
@@ -48,5 +56,18 @@ describe('EditDocument', function() {
 
     })
 
+  })
+
+  describe('write', function() {
+    it('writes in the expected location', function() {
+      const copy = testEditDoc.copy()
+      copy.select(24, 24)
+      const result = copy.write('_')
+
+      const charIndex = 24 - 2  // left shift two to account for the two +1 the cursor position gets by being in the context at index 2
+      const expected = testEditDoc.toString().slice(0, charIndex) + '_' + testEditDoc.toString().slice(charIndex)
+
+      assert.deepStrictEqual(result.toString(), expected)
+    })
   })
 })
