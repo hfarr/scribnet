@@ -100,7 +100,27 @@ class Section {
   }
 
   //===================================================
-  // TODO REVISE or... at least clarify
+  /**
+   * Determine the address of a boundary, given the index of a character. 
+   * An address is a section and an offset.
+   * Every character has two boundaries, one to it's left and one to it's
+   * right. This function yields the boundary to the left (or the "right oriented" 
+   * boundary).
+   * The exception is the "left most" boundary, it is given in it's left
+   * orientation as [0, 0]. All other boundaries return a section offset
+   * greater than 0 because no right oriented boundary has a section
+   * offset of 0.
+   * In this case [0, 0] is the only left boundary.
+   * 
+   * This means for all boundaries
+   * 
+   * When the found boundary falls between two Sections _locateBoundary will
+   * yield the address as the boundary on the left with index as length of that
+   * section. In this way 
+   * 
+   * @param boundaryIndex Index of the boundary (ranging from 0 to length, inclusive)
+   * @returns Right oriented section-offset boundary address (except [0,0] which is left oriented)
+   */
   _locateBoundary(atomIndex) {
     // this method needs a revisit because it mixes "boundary points" and "character points",
     // yielding the wrong addresses m' fraid
