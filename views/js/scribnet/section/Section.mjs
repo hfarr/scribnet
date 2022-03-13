@@ -27,7 +27,7 @@ class Section {
   }
 
   split(index) {
-    const [ splitSecIndex, offset ] = this._locateBoundary(index)
+    const [ splitSecIndex, offset ] = this._locateAtomBoundary(index)
     const splitSections = this.subPieces[splitSecIndex].split(offset, this.constructor)
     // return this.splice(splitSecIndex, 1, ...splitSections.subPieces)
     // TODO work out whether we want to go with 'wrapping'. Splicing is great, but it also has a flattening effect.
@@ -112,16 +112,17 @@ class Section {
    * offset of 0.
    * In this case [0, 0] is the only left boundary.
    * 
-   * This means for all boundaries
+   * One consequence is _locateBoundary skips length 0 Sections (Sections
+   * with only one boundary), which is part of the desired behavior.
    * 
    * When the found boundary falls between two Sections _locateBoundary will
    * yield the address as the boundary on the left with index as length of that
    * section. In this way 
    * 
-   * @param boundaryIndex Index of the boundary (ranging from 0 to length, inclusive)
+   * @param atomIndex Index of the boundary (ranging from 0 to length, inclusive)
    * @returns Right oriented section-offset boundary address (except [0,0] which is left oriented)
    */
-  _locateBoundary(atomIndex) {
+  _locateAtomBoundary(atomIndex) {
     // this method needs a revisit because it mixes "boundary points" and "character points",
     // yielding the wrong addresses m' fraid
     let sectionIndex = 0
