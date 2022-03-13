@@ -220,7 +220,7 @@ describe(`${MODULE} module`, function () {
 
       })
 
-      it('removes empty Section in range', function() {
+      it('has correct merge behavior', function() {
         // Not said in test name, but a delete boundary can be thought of as taking everything between the boundaries and cutting it out,
         // effectively bringing the boundaries together like drawing a curtain. The outcome then is one boundary, in theory.
         // An upshot to that is deleteBoundary(x, x) returns the original, as there's no items between the boundaries meaning the
@@ -230,12 +230,32 @@ describe(`${MODULE} module`, function () {
         // this test deletes boundaries targeting two adjacent "empty" sections.
         // TODO really need to change the name of the empty() method to better reflect its intent.
 
-        const NonEmpty = class extends Section { empty() { return false; } }
-        const testSection = Section.from(Section.from(AtomicSection.from(...'Aaa')), NonEmpty.from(), NonEmpty.from(), AtomicSection.from(...'Bbb'))
+        const NonEmptyLeft = class extends Section { empty() { return false; } }
+        const NonEmptyRight = class extends Section { empty() { return false; } }
+        const testSection = Section.from(Section.from(AtomicSection.from(...'Aaa')), NonEmptyLeft.from(), NonEmptyRight.from(), AtomicSection.from(...'Bbb'))
+        const testSection2 = Section.from(AtomicSection.from(...'Aaa'), NonEmptyLeft.from(), NonEmptyRight.from(), AtomicSection.from(...'Bbb'))
 
-        const result = testSection.deleteBoundary(4,5)
+        // Test cases are of the following. This is a representation of testSection1 and testSection2, showing boundaries
+        // 0 1 2 3456 7 8 9   (boundary indices)
+        // [A|a|a]||[B|b|b]
+        //  
+        // [ and ] are boundaries just like |, they are brackets to highlight specifically where the Sections are adjacent
+        // cutting any ordered pair of (3,4,5,6) should yield a section with identical atoms, and either 1 or 2 fewer
+        // subPieces.
+        const cases = [
+          [3,4], [3,5], [3,6],
+          [4,5], [4,6], 
+          [5,6]
+        ]
 
-        assert.strictEqual(result.subPieces.length, testSection.subPieces.length - 1)
+        for (const [ lb, rb ] of cases ) {
+          assert.strictEqual(testSection.deleteBoundary(lb, rb).subPieces.length, testSection.subPieces.length - (rb - lb))
+          assert.strictEqual(testSection2.deleteBoundary(lb, rb).subPieces.length, testSection2.subPieces.length - (rb - lb))
+
+          assert.deepStrictEqual(testSection.deleteBoundary(lb, rb).atoms, testSection.atoms)
+          assert.deepStrictEqual(testSection2.deleteBoundary(lb, rb).atoms, testSection2.atoms)
+        }
+
       })
     })
 
