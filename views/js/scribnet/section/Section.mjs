@@ -27,6 +27,7 @@ class Section {
   }
 
   split(boundaryIndex) {
+    if (this.subPieces.length === 0) return [ this, this ]
     const [ splitSecIndex, offset ] = this._locateBoundary(boundaryIndex)
     const splitSections = this.subPieces[splitSecIndex].split(offset, this.constructor)
     // return this.splice(splitSecIndex, 1, ...splitSections.subPieces)
