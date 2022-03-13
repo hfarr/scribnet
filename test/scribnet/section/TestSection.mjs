@@ -339,7 +339,12 @@ describe(`${MODULE} module`, function () {
         const originalString = nestedSection.atoms.join('')
         const expectedString = originalString.substring(0, 50) + originalString.substring(50, 80).toUpperCase() + originalString.substring(80)
 
-        const result = nestedSection.operate(a => a.toUpperCase(), 50, 80)
+        // offsets to shift character positions to the respective boudnary positions (to immediate left and immediate right of
+        // selected chars respectively)
+        const boundaryOffsetLeft = 1
+        const boundaryOffsetRight = 2
+
+        const result = nestedSection.operate(a => a.toUpperCase(), 50 + boundaryOffsetLeft, 80 + boundaryOffsetRight)
         const expected = AtomicSection.from(...expectedString)
         assert(result.eq(expected))
       })

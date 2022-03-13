@@ -26,8 +26,8 @@ class Section {
     return result
   }
 
-  split(index) {
-    const [ splitSecIndex, offset ] = this._locateAtomBoundary(index)
+  split(boundaryIndex) {
+    const [ splitSecIndex, offset ] = this._locateBoundary(boundaryIndex)
     const splitSections = this.subPieces[splitSecIndex].split(offset, this.constructor)
     // return this.splice(splitSecIndex, 1, ...splitSections.subPieces)
     // TODO work out whether we want to go with 'wrapping'. Splicing is great, but it also has a flattening effect.
