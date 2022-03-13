@@ -91,6 +91,14 @@ class Section {
     return this._length
   }
 
+  get boundariesLength() {
+    if (this._bLength === undefined) {
+      this._bLength = this.subPieces.reduce((lengthSoFar, section) => lengthSoFar + section.boundariesLength, 0)
+      if (this._bLength === 0) this._bLength = 1
+    }
+    return this._bLength
+  }
+
   empty() {
     return this.subPieces.length === 0 || this.length === 0
   }
@@ -203,6 +211,15 @@ class Section {
   //  between the boundaries are affected.
   //
   // also wow I'm getting my names mixed up.
+
+  _locateBoundary(boundaryIndex) {
+    let sectionIndex = 0;
+    while (boundaryIndex > this.subPieces[sectionIndex].boundariesLength) {
+      boundaryIndex -= this.subPieces[sectionIndex].boundariesLength
+      sectionIndex++
+    }
+    return [ sectionIndex, boundaryIndex ]
+  }
 
   /**
    * Determine the index of the sub-piece that holds the atom at the 
@@ -415,6 +432,10 @@ class AtomicSection extends Section {
   }
   get length() {
     return this.subPieces.length
+  }
+
+  get boundariesLength() {
+    return this.subPieces.length + 1
   }
 
   slice(start, end) {
