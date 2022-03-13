@@ -171,6 +171,17 @@ class Context extends Section {
     return clone
   }
 
+  empty() {
+    // Context are a lot like Gaps in that we allow 0-length versions of them that are not considered "empty".
+    // Therefore /no/ Context is considered empty. This is awkward as empty is not a recursive definition,
+    // for most Section it is based on the atoms. 
+    // TODO This could cause a confusing interface. A brand new Doc will be considered "empty", as it has
+    //  length 0. But it will have a subPiece Context which is /not/ empty. Doesn't seem to follow logically,
+    //  how can something empty hold something not empty? Begs the question whether I should pick a different
+    //  name, or make this "private" to Section.
+    return false
+  }
+
   updateBlock(blockTag) {
     const result = this.copy()
     result.block = blockTag
@@ -188,14 +199,25 @@ class Context extends Section {
     return this.subPieces
   }
 
+  get boundariesLength() {
+    return this.length + 1
+  }
 
-  merge(other) {
+  // merge(other) {
 
-    if (other instanceof Context) 
-      return [ this.join(other) ]
+  //   if (other instanceof Context) 
+  //     return [ this.join(other) ]
 
-    return [ this, other ]
+  //   return [ this, other ]
 
+  // }
+
+  get characters() {
+    return this.atoms
+  }
+
+  toString() {
+    return this.characters.join('') + "\n"
   }
 
 }
@@ -222,13 +244,17 @@ class Gap extends Section {
 
   // merge(otherSections) {
   //   if (otherSections.length === 0) return [ this ]
-  merge(other) {
+  // merge(other) {
 
-    if (other instanceof Gap) 
-      return [ this, Context.from(new Segment()), this ]  // TODO should segment retain styling? hmmm! that would be a bit of a pain
+  //   if (other instanceof Gap) 
+  //     return [ this, Context.from(new Segment()), this ]  // TODO should segment retain styling? hmmm! that would be a bit of a pain
 
-    return [ this, other ]
+  //   return [ this, other ]
 
+  // }
+
+  get boundariesLength() {
+    return 0
   }
 }
 
@@ -267,6 +293,23 @@ class Doc extends Section {
 
   }
 
+  write_boundary(string, cursorLocation=undefined) {
+    if (cursorLocation === undefined) return this.write(string)
+
+    if ( this.empty() )
+      return this.addSubSections(Context.from(new Segment())).insert(0, string)
+
+    
+
+  }
+
+  deleteBoundary(startBoundary, endBoundary) {
+    return super.deleteBoundary(startBoundary, endBoundary)
+    // const [ leftSectionIndex, _ ] = this._locateBoundary(startBoundary)
+    // const [ rightSectionIndex, __ ] = this._locateBoundary(endBoundary)
+
+  }
+
   contextBreakAt(location) {
     return this.splitInterior(location)
   }
@@ -293,6 +336,8 @@ class Doc extends Section {
 
   }
 
+  // _locateBoundary()
+
   // -------------------
 
   get characters() {
@@ -315,6 +360,13 @@ class Doc extends Section {
 
   toString() {
     return this.characters.join('')
+  }
+
+  get boundariesLength() {
+    if (this._boundariesLength === undefined) {
+      this._boundariesLength = this.subPieces.reduce((lengthSoFar, section) => lengthSoFar + section.boundariesLength, 0)
+    }
+    return this._boundariesLength
   }
 
 }

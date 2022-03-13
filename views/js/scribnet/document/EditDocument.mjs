@@ -123,7 +123,7 @@ function cursorOffset(rootElement, node, nodeOffset) {
 
 function cursorOffsetToDOM(rootElement, editDocOffset) {
 
-  return offsetToDOM(rootElement, editDocOffset)
+  return boundaryOffsetToDOM(rootElement, editDocOffset)
 }
 
 
@@ -389,6 +389,15 @@ class _EditDocument {
     this.anchor = anchorIndex
     this.focus = focusIndex
   }
+  // selectBoundary(anchorBoundary=0, focusBoundary=0) {
+
+  //   if (anchorBoundary < 0) anchorBoundary = 0
+  //   if (focusBoundary < 0) focusBoundary = this.length - 1
+
+  //   if (focusBoundary === undefined) focusBoundary = anchorBoundary
+  //   this.anchorBoundary = anchorBoundary
+  //   this.focusBoundary = focusBoundary
+  // }
 
   at(characterIndex = undefined) {
     if (characterIndex === undefined) characterIndex = this.focusOffset
@@ -431,7 +440,7 @@ class _EditDocument {
     const result = this.copy()
     const from = this.startOffset
     const to = this.isCollapsed ? this.cursorOffset + 1 : this.endOffset
-    result.document = result.document.delete(from, to)
+    result.document = result.document.deleteBoundary(from, to)
     result.select(this.startOffset)
 
     if (notify) result.notifySelectListeners()  // todo changing

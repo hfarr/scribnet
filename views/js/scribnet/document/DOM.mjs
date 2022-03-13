@@ -334,6 +334,21 @@ class SectionOffsetToHTML extends TokenVisitor {
     return [ 0, token ]
   }
 }
+class SectionBoundaryOffsetToHTML extends TokenVisitor {
+  visitLinebreak(token) {
+    return [ 0, token ]
+  }
+  visitText(token) {
+    const lenDoc = [...token.string].length
+    return [ lenDoc, token ]
+  }
+  visitBlock(token) {
+    return [ 1, token ]
+  }
+  visitInline(token) {
+    return [ 0, token ]
+  }
+}
 
 // TODO okay, so Im beginning to think we should move this to Document,
 // or to the Renders once I layer those out
@@ -365,6 +380,35 @@ export function offsetToDOM(rootElement, docOffset) {
       // for here, for now, we won't, only because these offset functions are per-render type and will be refactored once we have renders anyway.
       // and if computing offsets can use the same Visitor going both ways, then we can probably genericize it. Need a collapser pattern too.
 
+      resultToken = token
+      break;
+    }
+  }
+  let nodeOffset = 0
+  while (docOffset > 0) {
+    if (resultToken.text.codePointAt(nodeOffset) > 0xFFFF) nodeOffset++
+    nodeOffset++;
+    docOffset--;
+  }
+  return [ resultToken.node, nodeOffset ]
+}
+
+export function boundaryOffsetToDOM(rootElement, docOffset) {
+  
+  const tokens = Token.collapseTokens(treeFoldr((c, p) => [Token.tokenize(c), ...p], [], rootElement))
+
+  const dualAccumulator = new SectionBoundaryOffsetToHTML()
+  const dualAccums = dualAccumulator.visitList(tokens).slice(1)
+
+  let resultToken = undefined
+  for (const [ docAcc, token ] of dualAccums) {
+    if (docOffset - docAcc > 0) {
+      docOffset -= docAcc
+    } else {
+      if (token.type === Token.TOKEN_BLOCK) {
+        docOffset -= 1;  
+        continue 
+      }
       resultToken = token
       break;
     }

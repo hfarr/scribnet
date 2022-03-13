@@ -273,16 +273,38 @@ export class Editor {
   updateSelection(selection) {
 
 
-    const domFocusOffset = domFunctions.charOffset(this.component, selection.focusNode, selection.focusOffset)
-    this.currentDocument.select(domFocusOffset)
+    // const domFocusOffset = domFunctions.charOffset(this.component, selection.focusNode, selection.focusOffset)
+    // this.currentDocument.select(domFocusOffset)
+
+    const domFocusBoundary = domFunctions.cursorOffset(this.component, selection.focusNode, selection.focusOffset)
+    // this.currentDocument.selectBoundary(domFocusOffset)
+    this.currentDocument.select(domFocusBoundary)
 
 
     if (!selection.isCollapsed) {
 
-      const domAnchorOffset = domFunctions.charOffset(this.component, selection.anchorNode, selection.anchorOffset)
-      this.currentDocument.select(domFocusOffset, domAnchorOffset)
+      // const domAnchorOffset = domFunctions.charOffset(this.component, selection.anchorNode, selection.anchorOffset)
+      // this.currentDocument.select(domFocusOffset, domAnchorOffset)
+
+      const domAnchorBoundary = domFunctions.cursorOffset(this.component, selection.anchorNode, selection.anchorOffset)
+      // this.currentDocument.selectBoundary(domAnchorBoundary, domFocusBoundary)
+      this.currentDocument.select(domAnchorBoundary, domFocusBoundary)
 
     }
+  }
+
+  at(index = undefined) {
+    return this.currentDocument.at(index)
+  }
+  get charOffset() {
+    return this.currentDocument.cursorOffset
+  }
+  get cursorOffset() {
+    if (!this.containsWindowSelection()) return undefined
+
+    const sel = window.getSelection()
+    const cursorOffset = domFunctions.cursorOffset(this.component, sel.focusNode, sel.focusOffset)
+    return cursorOffset
   }
 
   /**
@@ -302,6 +324,10 @@ export class Editor {
 
 
     // --------------------------------------------------------------
+    // below this line we don't need. We can find selectedText this way
+    // which is neat, cool, so happy 4 u.
+    // in the Way of All Things though it should be grabbing selected
+    // text from the internal document
 
     const re = sel.getRangeAt(0)  // Not handling multi ranges for now
 
@@ -324,6 +350,8 @@ export class Editor {
     this.selectedText = selectedText
 
     this.notify('selectionchange')
+
+    console.debug('cursor offset', this.cursorOffset, 'character index', this.currentDocument.cursorOffset)
 
   }
 
