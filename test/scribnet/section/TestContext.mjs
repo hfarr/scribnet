@@ -56,6 +56,29 @@ describe('Context', function() {
 
   describe('Context', function() {
 
+    const testContext1 = Context.from(Segment.from(...'Aaa'), Segment.from(...'Bbb'), Segment.from(...'Ccc'))
+    const testContext2 = Context.from()
+    const testContext3 = Context.from(Segment.from(...'Ddd'), Segment.from(...'Eee'))
+    const testContext4 = Context.from(Segment.from(...'Fff'), Segment.from(...'Ggg'))
+    const testDoc = Doc.from(testContext1, testContext2, testContext3, testContext4)
+
+    describe('insertBoundary', function() {
+      it('inserts without respect to Segment boundaries', function() {
+        const result1 = testContext1.insertBoundary(3, '_')
+        const result2 = testContext1.insertBoundary(4, '_')
+
+        assert.notDeepStrictEqual(result1.toString(), result2.toString())
+      })
+
+      it('inserts with respect to Context boundaries', function () {
+        const result1 = testDoc.insertBoundary(9, '_')
+        const result2 = testDoc.insertBoundary(10, '_')
+
+        assert.deepStrictEqual(result1.toString(), result2.toString())
+      })
+
+    })
+
   })
 
   describe('Gap', function () {

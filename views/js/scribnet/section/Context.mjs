@@ -182,6 +182,34 @@ class Context extends Section {
     return false
   }
 
+  insert(location, string) {
+    if (this.subPieces.length === 0) return this.copyFrom(Segment.from(...string))
+
+    return super.insert(location, string)
+
+  }
+  // maybe writeBoundary, I am unsure if I want to override in all Context.
+  // OTOH I think it's okay to prescribe this relation: Within a context we 
+  // don't consider boundaries (that is, between Segment)
+  // On the /original/ hand though we might not wish to make that the case
+  // in /all/ circumstances, which are as of yet unrevealed to me.
+  // we'll change it if we need to later. Such is software.
+  insertBoundary(boundaryLocation, string) {
+    // in this way it acts a bit like an AtomicSection.
+    // The combination of boundariesLength being length + 1 and forcing insertBoundary to be insert does the trick there
+    // might impact delete too
+    // return super.insertBoundary(boundaryLocation, string)
+    return this.insert(boundaryLocation, string)
+  }
+
+  get boundariesLength() {
+    // TODO in one sense I'd like this to be the only step one must take to cause a Section to "collapse" interior boundaries
+    //  I do not have the full shape of that concept in my mind yet to approach it properly
+    return this.length + 1
+  }
+
+  // ---------------------------
+
   updateBlock(blockTag) {
     const result = this.copy()
     result.block = blockTag
@@ -197,10 +225,6 @@ class Context extends Section {
 
   get segments() {
     return this.subPieces
-  }
-
-  get boundariesLength() {
-    return this.length + 1
   }
 
   // merge(other) {
@@ -293,13 +317,13 @@ class Doc extends Section {
 
   }
 
-  write_boundary(string, cursorLocation=undefined) {
-    if (cursorLocation === undefined) return this.write(string)
+  writeBoundary(string, cursorLocation=undefined) {
+    if (cursorLocation === undefined) cursorLocation = this.boundariesLength
 
     if ( this.empty() )
       return this.addSubSections(Context.from(new Segment())).insert(0, string)
-
     
+    super.insertBoundary(cursorLocation, string)
 
   }
 

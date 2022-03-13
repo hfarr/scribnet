@@ -234,6 +234,7 @@ describe(`${MODULE} module`, function () {
     })
 
     describe('insert', function () {
+      // TODO add tests to exemplify differences between insert and insertBoundary (namely that insert skips length 0, or empty, Boundary)
       it('inserts correctly', function () {
         const result = basicSection.insert(14, "new text!")
         // in this case, insertion at a boundary
