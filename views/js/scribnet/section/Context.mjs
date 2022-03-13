@@ -197,7 +197,8 @@ class Context extends Section {
   insertBoundary(boundaryLocation, string) {
     // in this way it acts a bit like an AtomicSection.
     // The combination of boundariesLength being length + 1 and forcing insertBoundary to be insert does the trick there
-    // might impact delete too
+    // might impact delete too.
+    // The way to sum that up is "treats boundary indices like atom indices", I think.
     // return super.insertBoundary(boundaryLocation, string)
     return this.insert(boundaryLocation, string)
   }
