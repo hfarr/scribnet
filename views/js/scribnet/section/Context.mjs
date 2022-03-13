@@ -323,7 +323,7 @@ class Doc extends Section {
     if ( this.empty() )
       return this.addSubSections(Context.from(new Segment())).insert(0, string)
     
-    super.insertBoundary(cursorLocation, string)
+    return super.insertBoundary(cursorLocation, string)
 
   }
 
