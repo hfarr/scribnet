@@ -122,6 +122,9 @@ class HTMLRenderer extends Renderer {
     let result = ""
     const blockTag = context.block
 
+    // if (context.empty()) result += "<br>"
+    if (context.length === 0) result += "<br>"
+
     for (const segment of context.segments)
       result += this.renderSegment(segment)
     
