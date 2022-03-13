@@ -140,9 +140,9 @@ describe(`${MODULE} module`, function () {
         assert.deepStrictEqual(testSection._locateBoundary(6), [1, 0] )
         assert.deepStrictEqual(testSection._locateBoundary(7), [2, 0] )
         assert.deepStrictEqual(testSection._locateBoundary(8), [2, 1] )
-        assert.deepStrictEqual(testSection._locateBoundary(9), [2, 2] )
-        assert.deepStrictEqual(testSection._locateBoundary(10), [3, 0] )
-        assert.deepStrictEqual(testSection._locateBoundary(15), [3, 5] )
+        assert.deepStrictEqual(testSection._locateBoundary(9), [3, 0] )
+        assert.deepStrictEqual(testSection._locateBoundary(10), [3, 1] )
+        assert.deepStrictEqual(testSection._locateBoundary(14), [3, 5] )
       })
     })
 
