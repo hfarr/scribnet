@@ -49,7 +49,7 @@ describe(`${MODULE} module`, function () {
     Section.from(AtomicSection.from(...'AaA'), AtomicSection.from(...'BbB'), AtomicSection.from(), AtomicSection.from(...'CcC')),
     AtomicSection.from(...'DdD'),
     AtomicSection.from(...'EeE'),
-    Section.from(),
+    Section.from(AtomicSection.from()),
     AtomicSection.from(...'FfF'),
     Section.from(AtomicSection.from(...'GgG'), AtomicSection.from(...'HhH')),
     Section.from(AtomicSection.from(...'IiI')),
@@ -154,6 +154,18 @@ describe(`${MODULE} module`, function () {
         assert.deepStrictEqual(testSection._locateBoundary(9), [3, 0] )
         assert.deepStrictEqual(testSection._locateBoundary(10), [3, 1] )
         assert.deepStrictEqual(testSection._locateBoundary(14), [3, 5] )
+      })
+    })
+
+    describe('boundariesLength', function() {
+      it('considers topologically overlapping boundaries the same', function() {
+        // this is my way of saying that when two Section have a boundary in the same "place" it is considered one "boundary"
+        // as a whole. For example, say a Section contains two AtomicSection. on the whole there are 3 Boundary,
+        // far left, one between the AtomicSection, far right. On the far left the Section itself would contribute 
+        // a boundary and so would the left AtomicSection. Same for the right. We don't want to double count them.
+
+        assert.equal(testSection.boundariesLength, 42)
+
       })
     })
 
@@ -265,6 +277,29 @@ describe(`${MODULE} module`, function () {
       //   const result = section.insert(-2, "XXX")
       //   assert.equal(result.atoms.join(''), 'XXX')
       // })
+    })
+
+    describe('insertBoundary', function() {
+      it('produces matching strings with identical insertions to adjacent boundaries', function() {
+
+        const insertString = '___'
+        const adjacentPairs = [
+          [3,4],
+          [7,8],
+          [8,9],  // boundary 8 is the single boundary of an empty section so its adjacent to two other boundaries
+          [12,13],
+          [16,17],
+          [20,21], 
+          [21,22], // boundary 21 is another single boundary of an empty Section (one that contains an empty AtomicSection note)
+          [25,26],
+          [29,30],
+          [33,34],
+          [37,38],
+        ]
+        for (const [ b1, b2 ] of adjacentPairs ) {
+          assert.deepStrictEqual(testSection.insertBoundary(b1, insertString).atoms, testSection.insertBoundary(b2, insertString).atoms)
+        }
+      })
     })
 
     describe('addSubSections', function(){ 

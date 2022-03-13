@@ -303,6 +303,14 @@ class Section {
     return result
   }
 
+  insertBoundary(boundaryLocation, atoms) {
+
+    const [ sectionIndex, boundaryOffset ] = this._locateBoundary(boundaryLocation)
+    const newSection = this.subPieces[sectionIndex].insertBoundary(boundaryOffset, atoms)
+    return this.splice(sectionIndex, 1, newSection)
+
+  }
+
   /**
    * Apply function over atoms specified by the indices
    * 
@@ -497,6 +505,9 @@ class AtomicSection extends Section {
     const newSection = this.copy()
     newSection.subPieces.splice(location, 0, ...atoms)
     return newSection
+  }
+  insertBoundary(boundaryLocation, atoms) {
+    return this.insert(boundaryLocation, atoms)
   }
   delete(start, end = undefined) {
     const newSection = this.copy()
