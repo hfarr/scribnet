@@ -29,6 +29,14 @@ class MapToHTMLSectionIdx extends TokenVisitor {
     return [...token.string].length // separates string into code points as to not over-count 16byte characters
   }
 }
+class MapToHTMLSectionCursor extends TokenVisitor {
+  visitLinebreak(token) { return 0 }
+  visitBlock(token) { return 1 }
+  visitInline(token) { return 0 }
+  visitText(token) {
+    return [...token.string].length // separates string into code points as to not over-count 16byte characters
+  }
+}
 
 // This is a debug mixin to get the string the token 'represents' in addition to its regular output
 const mixOriginal= (tokenVisitor) => (class extends tokenVisitor {
@@ -38,7 +46,8 @@ const mixOriginal= (tokenVisitor) => (class extends tokenVisitor {
   visitText(tok) { return [super.visitText(tok), tok.string]}
 })
 
-const htmlMapper = new MapToHTMLSectionIdx()
+const htmlToAtomMapper = new MapToHTMLSectionIdx()
+const htmlToCursorMapper = new MapToHTMLSectionCursor()
 
 /**
  * Given a DOM node compute the cursor position as-rendered to the
@@ -60,7 +69,7 @@ function charOffset(rootElement, node, nodeOffset) {
   // It would be ideal to have flexibility over Token "collapse" rules to handle 
   // all these cases, as right now charOffset is accounting for too much Token
   // specific behavior
-  const mapskies = htmlMapper.visitList(sliced).slice(1) // pesky construct still producing a '\n' at the front
+  const mapskies = htmlToAtomMapper.visitList(sliced).slice(1) // pesky construct still producing a '\n' at the front
   const totalCharacters = mapskies.reduce((p,c) => c + p, 0)
 
   let utf8offset = 0, characterOffset = 0, nodeCharacterLength = 0
@@ -86,6 +95,22 @@ function charOffset(rootElement, node, nodeOffset) {
   // offset- it's more pleasing? Not a huge cost either way since we are paying for the computation of charOffset regardless which, in the worst case, is the same cost as computing
   // both charOffset and totalCharacters (charOffset being equal to totalCharacters)
   return totalCharacters + characterOffset - nodeCharacterLength
+}
+
+function cursorOffset(rootElement, node, nodeOffset) {
+  const tokens = treeTraverse(traversePruneTokens(node), rootElement)
+
+  // Need to supply (inject) different collapse rules
+  const sliced = tokens.slice(1)
+
+  const mapskies = htmlToCursorMapper.visitList(sliced).slice(1) // pesky construct still producing a '\n' at the front
+  const boundariesUpToNode = (mapskies.reduce((p,c) => c + p, 0)) - ([ ...node.textContent].length)
+
+  // spread operator treats "characters" in utf16 form. nodeOffset should be given correctly in utf8 (i.e it won't slice between 0,1 on, say, "\u{1F310}".)
+  const boundaryOffset = [ ...node.textContent.slice(0, nodeOffset) ].length
+
+  return boundariesUpToNode + boundaryOffset
+
 }
 
 
@@ -238,7 +263,7 @@ function md(tag) {
 
 }
 
-export const domFunctions = { loadDocument, loadHTML, renderHTML, charOffset }
+export const domFunctions = { loadDocument, loadHTML, renderHTML, charOffset, cursorOffset }
 
 // =============================================
 
