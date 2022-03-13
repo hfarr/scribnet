@@ -53,7 +53,8 @@ permalink: "note/{{ noteItem.name | slug }}/"
 <!-- <script type="module" src="/js/scribnet/document/Renderer.mjs"></script> -->
 <script>
 
-  let editorhf;
+  let hfeditor;
+  let hfdocument;
   // const resourceName = window.location.pathname.match(/[^\/]*$/)[0] // grabs the string in the url past the last forward slash
   const resourceName = "{{ noteItem.name }}"
   const slugName = "{{ noteItem.name | slug }}"
@@ -129,7 +130,7 @@ permalink: "note/{{ noteItem.name | slug }}/"
 
     import('/js/scribnet/document/Renderer.mjs').then(m => {
       const { HTMLRenderer } = m;
-      htmlRenderer = new HTMLRenderer()
+      const htmlRenderer = new HTMLRenderer()
       editor.defaultRenderer = htmlRenderer
       editor.render()
       // htmlRenderer.render(editor.editor.currentDocument)
@@ -144,7 +145,8 @@ permalink: "note/{{ noteItem.name | slug }}/"
       })
     })
 
-    editorhf = editor.editor
+    hfeditor = editor.editor
+    hfdocument = hfeditor.currentDocument
 
   }
   function viewingState() {
