@@ -14,7 +14,8 @@
     "build-watch": "npx @11ty/eleventy --watch",
     "build-watch-flexible": "DEV_FETCH_FAILS_BUILD=false npx @11ty/eleventy --watch",
     "static": "DEV_FETCH_FAILS_BUILD=false npx @11ty/eleventy --watch",
-    "reload-db": "cp data-folder/dbfile.bkp data-folder/dbfile"
+    "db-reload": "cp data-folder/dbfile.bkp data-folder/dbfile",
+    "db-copy": "cp data-folder/dbfile data-folder/dbfile.bkp"
   },
   "repository": {
     "type": "git",
