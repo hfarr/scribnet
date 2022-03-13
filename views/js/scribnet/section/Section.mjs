@@ -214,7 +214,7 @@ class Section {
 
   _locateBoundary(boundaryIndex) {
     let sectionIndex = 0;
-    while (boundaryIndex > this.subPieces[sectionIndex].boundariesLength) {
+    while (boundaryIndex >= this.subPieces[sectionIndex].boundariesLength) {
       boundaryIndex -= this.subPieces[sectionIndex].boundariesLength
       sectionIndex++
     }
