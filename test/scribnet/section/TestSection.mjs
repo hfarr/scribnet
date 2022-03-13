@@ -218,7 +218,24 @@ describe(`${MODULE} module`, function () {
         // Since a boundary between segments is deleted the segments are joined
         assert.deepStrictEqual(result.subPieces[0].subPieces.length , testSection.cutEmpty().subPieces[0].subPieces.length - 1)
 
+      })
 
+      it('removes empty Section in range', function() {
+        // Not said in test name, but a delete boundary can be thought of as taking everything between the boundaries and cutting it out,
+        // effectively bringing the boundaries together like drawing a curtain. The outcome then is one boundary, in theory.
+        // An upshot to that is deleteBoundary(x, x) returns the original, as there's no items between the boundaries meaning the
+        // outcome is identical to the original. Constrast with delete(x).
+        // Furthermore if one of the range values is a singleton boundary of a section, that is an "empty" section, 
+        // then it will also be "deleted" as a consequence of merging with whatever is to its left or right.
+        // this test deletes boundaries targeting two adjacent "empty" sections.
+        // TODO really need to change the name of the empty() method to better reflect its intent.
+
+        const NonEmpty = class extends Section { empty() { return false; } }
+        const testSection = Section.from(Section.from(AtomicSection.from(...'Aaa')), NonEmpty.from(), NonEmpty.from(), AtomicSection.from(...'Bbb'))
+
+        const result = testSection.deleteBoundary(4,5)
+
+        assert.strictEqual(result.subPieces.length, testSection.subPieces.length - 1)
       })
     })
 
