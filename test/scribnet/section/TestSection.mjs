@@ -207,11 +207,17 @@ describe(`${MODULE} module`, function () {
 
     describe('deleteBoundary', function() {
       it('deletes correctly', function () {
-        const result = testSection.deleteBoundary(4, 5)
+        const result = testSection.deleteBoundary(3, 4)
 
-        testSection.deleteBoundary(3, 4)
+        // deletes just the boundary, no string mutation
+        const expectedString = 'AaABbBCcCDdDEeEFfFGgGHhHIiIJjJ'
 
-        const expectedString = 'AAABBBCCCAAABBBCCCAAABBBCCCAAA'
+        // Only a boundary between segments is deleted so the result string should match
+        assert.deepStrictEqual(result.atoms.join(''), expectedString)
+
+        // Since a boundary between segments is deleted the segments are joined
+        assert.deepStrictEqual(result.subPieces[0].subPieces.length , testSection.cutEmpty().subPieces[0].subPieces.length - 1)
+
 
       })
     })

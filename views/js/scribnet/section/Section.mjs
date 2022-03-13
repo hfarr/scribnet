@@ -1,5 +1,21 @@
 'use strict'
 
+
+/**
+ * ~TODO~
+ * I beleive there is a wider reckoning for "boundaries" as they relate to Section
+ * Many small, but rather substantial changes, and over all a rather substantial
+ * change in posture, has changed the way I think about and work with Section.
+ * 
+ * For example I'm considering a move to throw away all atom-index based
+ * moves (except possibly "at"). Or refurbishing the _locateAtomBoundary 
+ * to properly reflect the changes. Then most functions can continue to
+ * operate on boundary indices rather than character indices (which are
+ * in a certain view also boundary indices)
+ * 
+ * 
+ */
+
 class Section {
 
   constructor() {
@@ -61,7 +77,16 @@ class Section {
     return this.copyFrom( ...this.subPieces, ...other.subPieces )
   }
 
+  /**
+   * Merge is the inverse of "split"
+   * 
+   * @param other Section to merge
+   * @returns 
+   */
   merge(other) {
+    // TODO enable a "depth" limit to merge, so that it only merges /up to/ a point? likewise for
+    //  split, only start splitting /after/ a point?
+
     if (other === undefined) return this
 
     const middleLeft = this.subPieces.at(-1)
@@ -121,7 +146,7 @@ class Section {
   }
 
   cutEmpty() {
-    return this.copyFrom(...this.subPieces.filter(sec => !sec.empty()))
+    return this.copyFrom(...this.subPieces.filter(sec => !sec.empty()).map( sec => sec.cutEmpty() ))
   }
 
   //===================================================
