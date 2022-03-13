@@ -56,7 +56,23 @@ class Section {
   }
 
   join(other) {
+    if (other === undefined) return this
     return this.copyFrom( ...this.subPieces, ...other.subPieces )
+  }
+
+  merge(other) {
+    if (other === undefined) return this
+
+    const middleLeft = this.subPieces.at(-1)
+    const middleRight = other.subPieces.at(0)
+    // would have been a good case for the Maybe type here. Could have done (maybe1).merge(maybe2) and let the unpacking sort out the details.
+    // monadically. or well. you know.
+
+    const middle = middleLeft?.merge(middleRight) ?? middleRight
+
+    if (middle === undefined) return this
+
+    return this.copyFrom( ...this.subPieces.slice(0, -1), middle, ...other.subPieces.slice(1) )
   }
 
   splice(start, length, ...sections) {
@@ -250,6 +266,17 @@ class Section {
 
   }
 
+  deleteBoundary(startBoundary, endBoundary = undefined) {
+    if (endBoundary === undefined) endBoundary = this.boundariesLength - 1
+
+    const [ leftSectionIndex, leftOffset ] = this._locateBoundary(startBoundary)
+    const [ rightSectionIndex, rightOffset ] = this._locateBoundary(endBoundary)
+    const patchedSection = this.subPieces[leftSectionIndex].deleteBoundary(leftOffset).merge(this.subPieces[rightSectionIndex].deleteBoundary(0, rightOffset))
+
+    return this.splice(leftSectionIndex, 1 + (rightSectionIndex - leftSectionIndex), patchedSection ).cutEmpty()
+
+  }
+
   insert(location, atoms) {
     // TODO to fit the general pattern, might use the rest operator for all "sections" and "atoms" parameters, particularly here in insert.
     // TODO also I noticed I pluralized "newSecs" below, we could support inserting creating multiple new segments. E.g in a case where 
@@ -371,6 +398,12 @@ class Section {
     }
     return false;
   }
+
+  _showBoundaries() {
+    if (this.empty()) return ''
+    return this.subPieces.map( sp => sp._showBoundaries() ).join('|')
+  }
+
 }
 
 /**
@@ -455,6 +488,10 @@ class AtomicSection extends Section {
     return this
   }
 
+  merge(other) {
+    return this.join(other)
+  }
+
   // ============
   insert(location, atoms) {
     const newSection = this.copy()
@@ -467,11 +504,19 @@ class AtomicSection extends Section {
     newSection.subPieces.splice(start, end - start)
     return newSection
   }
+  deleteBoundary(start, end = undefined) {
+    return this.delete(start, end)
+  }
 
   map(func) {
     if (this.answers(func))
       return func(this.copy())
     return this.copyFrom( ...this.subPieces.map(func) )
+  }
+
+
+  _showBoundaries() {
+    return this.atoms.join('|') + '|'
   }
 
 }

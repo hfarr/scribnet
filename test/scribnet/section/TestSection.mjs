@@ -45,6 +45,17 @@ describe(`${MODULE} module`, function () {
   const mixedSection = SectionSubclassA.from(...complexSections)
 
 
+  const testSection = Section.from(
+    Section.from(AtomicSection.from(...'AaA'), AtomicSection.from(...'BbB'), AtomicSection.from(), AtomicSection.from(...'CcC')),
+    AtomicSection.from(...'DdD'),
+    AtomicSection.from(...'EeE'),
+    Section.from(),
+    AtomicSection.from(...'FfF'),
+    Section.from(AtomicSection.from(...'GgG'), AtomicSection.from(...'HhH')),
+    Section.from(AtomicSection.from(...'IiI')),
+    AtomicSection.from(...'JjJ')
+  )
+
   describe('AtomicSection', function () {
     it('equals itself', function () {
       assert(basicAtomicSection.eq(basicAtomicSection))
@@ -180,6 +191,34 @@ describe(`${MODULE} module`, function () {
         assert.equal(result.atoms.join(''), 'AACC')
       })
 
+    })
+
+    describe('deleteBoundary', function() {
+      it('deletes correctly', function () {
+        const result = testSection.deleteBoundary(4, 5)
+
+        testSection.deleteBoundary(3, 4)
+
+        const expectedString = 'AAABBBCCCAAABBBCCCAAABBBCCCAAA'
+
+      })
+    })
+
+    describe('merge', function () {
+
+      it('deeply joins', function () {
+        const sec1 = Section.from(Section.from(AtomicSection.from(...'AaA')))
+        const sec2 = Section.from(Section.from(AtomicSection.from(...'BbB')))
+        const result = sec1.merge(sec2)
+        const expectedString = 'AaABbB'
+
+        assert.strictEqual(result.atoms.join(''), expectedString)
+        assert.strictEqual(result.subPieces.length, 1)
+        assert.strictEqual(result.subPieces[0].subPieces.length, 1)
+        assert.strictEqual(result.subPieces[0].subPieces[0].subPieces.length, expectedString.length )
+        // assert.strictEqual(result.subPieces[0].subPieces.length, 1)
+
+      })
     })
 
     describe('insert', function () {
