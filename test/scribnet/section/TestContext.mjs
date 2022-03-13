@@ -225,6 +225,17 @@ describe('Context', function() {
       // it ('')
     })
 
+    describe('contextBreak', function () {
+      const testDoc = Doc.from(testContext1, Context.from(), testContext2)
+      it('results in one more Context subPiece than original', function () {
+        for (let i = 0; i < testDoc.boundariesLength; i++) {
+          const result = testDoc.contextBreakAt(i)
+          assert.strictEqual(result.contexts.length, testDoc.contexts.length + 1)
+
+        }
+      })
+    })
+
     it('is a place for me to test', function() {
       [Segment, Context, Doc]
 
