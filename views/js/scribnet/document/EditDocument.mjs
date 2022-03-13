@@ -1,6 +1,6 @@
 'use strict'
 
-import { treeTraverse, traversePruneTokens, treeFoldr } from './DOM.mjs'
+import { treeTraverse, traversePruneTokens, treeFoldr, offsetToDOM, boundaryOffsetToDOM } from './DOM.mjs'
 import { TokenVisitor } from './Token.mjs'
 // import { Segment, ListSegment } from './Segment.mjs'
 import { Doc, Context, Segment } from '../section/Context.mjs'
@@ -97,6 +97,14 @@ function charOffset(rootElement, node, nodeOffset) {
   return totalCharacters + characterOffset - nodeCharacterLength
 }
 
+/**
+ * Compute the offset of the cursor in the DOM, as if it were a document
+ * 
+ * @param rootElement Element containing the document
+ * @param node Node the cursor is in
+ * @param nodeOffset Offset within the node of the cursor
+ * @returns Offset of the cursor in an theoretical EditDocument
+ */
 function cursorOffset(rootElement, node, nodeOffset) {
   const tokens = treeTraverse(traversePruneTokens(node), rootElement)
 
@@ -111,6 +119,11 @@ function cursorOffset(rootElement, node, nodeOffset) {
 
   return boundariesUpToNode + boundaryOffset
 
+}
+
+function cursorOffsetToDOM(rootElement, editDocOffset) {
+
+  return offsetToDOM(rootElement, editDocOffset)
 }
 
 
@@ -334,6 +347,11 @@ class _EditDocument {
   }
   get isCollapsed() {
     return this.focusOffset === this.anchorOffset
+  }
+
+  get offsetsInDOMComputers() {
+    const that = this
+    return { anchorOffsetComputer(root) { return cursorOffsetToDOM(root, that.anchorOffset) }, focusOffsetComputer(root) { return cursorOffsetToDOM(root, that.focusOffset) } }
   }
 
   // ----- Builders ------

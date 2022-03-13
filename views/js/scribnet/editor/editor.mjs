@@ -2,7 +2,7 @@
 
 import { renderTextFold, foldrDOM } from '../document/DOM.mjs';
 
-import { formatDocument, offsetToDOM } from '../document/DOM.mjs';
+import { formatDocument } from '../document/DOM.mjs';
 import { treeFoldr, foldElements } from '../document/DOM.mjs';
 
 import EditDocument from '../document/EditDocument.mjs'
@@ -234,9 +234,12 @@ export class Editor {
    * 
    */
   selectInDOM() {
-    const [ anchorNode, anchorOffset ] = offsetToDOM(this.component, this.currentDocument.anchorOffset)
-    const [ focusNode, focusOffset ] = offsetToDOM(this.component, this.currentDocument.focusOffset)
-    window.getSelection().setBaseAndExtent(anchorNode, anchorOffset, focusNode, focusOffset)
+    // const [ anchorNode, anchorOffset ] = offsetToDOM(this.component, this.currentDocument.anchorOffset)
+    // const [ focusNode, focusOffset ] = offsetToDOM(this.component, this.currentDocument.focusOffset)
+    // window.getSelection().setBaseAndExtent(anchorNode, anchorOffset, focusNode, focusOffset)
+
+    const { anchorOffsetComputer, focusOffsetComputer } = this.currentDocument.offsetsInDOMComputers
+    window.getSelection().setBaseAndExtent(...anchorOffsetComputer(this.component), ...focusOffsetComputer(this.component))
   }
 
   /**
