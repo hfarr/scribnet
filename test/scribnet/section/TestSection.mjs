@@ -129,6 +129,23 @@ describe(`${MODULE} module`, function () {
       }
     })
 
+    describe('_locateBoundary', function() {
+      const testSection = Section.from(AtomicSection.from(...'AAAAA'), Section.from(), Section.from(AtomicSection.from(), AtomicSection.from()), AtomicSection.from(...'BBBBB'))
+
+      it('yields expected boundary locations', function () {
+        // overly prescriptive? maybe not. Suggests to me, though, that maybe I should just make this the implementation. Each section is just 1 + its normal length!
+        // but I think I like demonstrating that the recursive definition is equal to this "closed form".
+        assert.deepStrictEqual(testSection._locateBoundary(0), [0, 0] )
+        assert.deepStrictEqual(testSection._locateBoundary(5), [0, 5] )
+        assert.deepStrictEqual(testSection._locateBoundary(6), [1, 0] )
+        assert.deepStrictEqual(testSection._locateBoundary(7), [2, 0] )
+        assert.deepStrictEqual(testSection._locateBoundary(8), [2, 1] )
+        assert.deepStrictEqual(testSection._locateBoundary(9), [2, 2] )
+        assert.deepStrictEqual(testSection._locateBoundary(10), [3, 0] )
+        assert.deepStrictEqual(testSection._locateBoundary(15), [3, 5] )
+      })
+    })
+
     describe('delete', function () {
       it('deletes correctly', function () {
         const result = basicSection.delete(10, 23)
