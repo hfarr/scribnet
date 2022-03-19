@@ -30,6 +30,11 @@ describe('EditDocument', function() {
     Context.createContext('p', Segment.createSegment([], 'KkkkkLllll')),
   ])
 
+
+  const docHasTagAnywhere = (doc, tag) => {
+    return doc.document.contexts.some(ctx => ctx.segments.some(seg => seg.hasTag(tag)))
+  }
+
   describe('selection', function() {
     it ('selected the correct string', function() {
       editDoc.select(34, 44)
@@ -39,15 +44,7 @@ describe('EditDocument', function() {
   })
 
   describe('applyTag', function() {
-    const taggedDoc = Doc.from(
-      Context.createContext('h1', Segment.from(..."Document Title")),
-      Context.createContext('p', Segment.from(..."Intro paragraph")),
-      Context.createContext('p', Segment.from(..."Body paragraph. It has some longer text.")),
-    ).applyTags(['strong'], 34, 43)
 
-    const docHasTagAnywhere = (doc, tag) => {
-      return doc.document.contexts.some(ctx => ctx.segments.some(seg => seg.hasTag(tag)))
-    }
 
     it('does not change the content', function() {
       editDoc.select(34, 43)
