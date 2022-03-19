@@ -113,6 +113,17 @@ describe('EditDocument', function() {
 
       assert.deepStrictEqual(result.toString(), expected)
     })
+
+    it('inserts into expected location after toggling a tag from earlier location', function () {
+      testDocAlpha.select(24, 26)
+      const result1 = testDocAlpha.applyTag('tag1')
+      result1.select(38)  // cursor resting on the empty context from testDocAlpha
+      const result2 = result1.write('a')  
+
+      assert.deepStrictEqual(result2.document.contexts[2].atoms, 'EeeeeFffffGgggg'.split(''), "expect writing after toggling a tag to write to correct location")
+      assert.deepStrictEqual(result2.document.contexts[3].atoms, ['a'], "expect writing after toggling a tag to write to correct location")
+
+    })
   })
 
   describe('delete', function() {
