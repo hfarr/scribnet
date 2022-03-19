@@ -61,13 +61,21 @@ describe('EditDocument', function() {
       assert.strictEqual(nextDoc.focus, editDoc.focus)
     })
 
-    it('resulting doc has the tag', function() {
-      // TODO this test doesn't actually test if tags are "applied correctly"
+    it('has the tag after applying', function() {
       testDocAlpha.select(24, 26)
       const result = testDocAlpha.applyTag('tag1')
       assert(!docHasTagAnywhere(testDocAlpha, 'tag1'), "Expected test doc to start without 'tag1' tag")
       assert(docHasTagAnywhere(result, 'tag1'), "Expected document result of applying 'tag1' to contain 'tag1'")
-
+    })
+    it('applies the tag in the correct place', function() {
+      testDocAlpha.select(24, 26)
+      const resultDoc = testDocAlpha.applyTag('tag1').document
+      assert(resultDoc.contexts[2].segments[1].hasTag('tag1'), "expect correct segment to have tag")
+      
+      const resultDivisionOfStrings = resultDoc.contexts[2].segments.map(s => s.atoms.join(''))
+      // the middle 'ee' segment is the segment to which the tag is applied. If the tagged portion were different, the resulting
+      // division of the segments into the strings they represent would not match the array.
+      assert.deepStrictEqual(resultDivisionOfStrings, ['Ee', 'ee', 'eFffffGgggg'], "expect tagged portion to cover correct piece")
     })
 
   })
