@@ -126,6 +126,27 @@ describe('EditDocument', function() {
     })
   })
 
+  describe('enterNewline', function() {
+
+    // it('advances cursor position to start of new context', function () {
+    it('breaks at every possible cursor location and advances cursor position to start of new context', function () {
+      testDocAlpha.select(10)
+      // const position = 10
+      const testPosition = pos => {
+        testDocAlpha.select(pos)
+        const result = testDocAlpha.enterNewline()
+        assert.strictEqual(result.cursorOffset, pos + 1, "expect cursor position in result to be one greater than start position")
+      }
+      // testDocAlpha.select(position)
+      // const result = 
+      const totalCursorPositions = testDocAlpha.document.contexts.reduce((p, c) => p + c.length + 1, 0)
+      for (let i = 0; i < totalCursorPositions; i++) {
+        testPosition(i)
+      }
+      // testPosition(10)
+    })
+  })
+
   describe('delete', function() {
     it('deletes correctly', function () {
 
