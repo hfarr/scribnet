@@ -399,6 +399,37 @@ class Section {
     
   }
 
+  operateBoundary(func, startBoundary, endBoundary) {
+    // const [ left, mid, right ] = this.triSplit(start)
+    return this.operate(func, startBoundary, endBoundary)
+  }
+  mapRangeBoundary(func, startBoundary, endBoundary) {
+    if (this.subPieces.some(sec => sec.answers(func)))
+      return this.operateBoundary(func, startBoundary, endBoundary)
+    
+    const [ leftSectionIndex, leftBoundaryOffset ] = this._locateBoundary(startBoundary)
+    const [ rightSectionIndex, rightBoundaryOffset ] = this._locateBoundary(endBoundary)
+    const resultSections = []
+
+    for (let i = 0, cumulativeLength = 0; i < this.subPieces.length; cumulativeLength += this.subPieces[i].boundariesLength, i++) {
+
+      const section = this.subPieces[i]
+      // const [ lb, rb ] = [ i === leftSectionIndex ? startBoundary - cumulativeLength : 0, i === rightSectionIndex ? endBoundary - cumulativeLength : section.boundariesLength ]
+
+      if (i < leftSectionIndex || i > rightSectionIndex) {
+        resultSections.push(section)
+      } else if (i > leftSectionIndex && i < rightSectionIndex) {
+        resultSections.push(section.map(func));
+      } else  {
+        const lb = i === leftSectionIndex ? startBoundary - cumulativeLength : 0
+        const rb = i === rightSectionIndex ? endBoundary - cumulativeLength : section.boundariesLength
+        resultSections.push(section.mapRangeBoundary(func, lb, rb))
+      }
+    }
+    
+    return this.copyFrom(...resultSections).cutEmpty()
+  }
+
   answers(func) {
     // Thought- this is a edging close to a visitor pattern. I can also envision like a table, where we
     // specify functions on one dimension and subclasses of section on the other. consulting the table
@@ -551,6 +582,12 @@ class AtomicSection extends Section {
   }
   deleteBoundary(start, end = undefined) {
     return this.delete(start, end)
+  }
+
+
+  answers(func) {
+    // AtomicSection always answers because it has no Section it can pass operations on to
+    return true
   }
 
   map(func) {

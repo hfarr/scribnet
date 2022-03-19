@@ -140,6 +140,15 @@ describe('Context', function() {
     const testContext3 = Context.from(...testSegments3)
     const testDoc = Doc.from(testContext1, testContext2)
 
+    const testDocAlpha = Doc.from(
+      Context.createContext('h1', Segment.createSegment([], 'AaaaaBbbbb')),
+      Context.createContext('p', Segment.createSegment([], 'CccccDdddd')),
+      Context.createContext('p', Segment.createSegment([], 'EeeeeFffffGgggg')),
+      Context.createContext('p'),
+      Context.createContext('h1', Segment.createSegment([], 'HhhhhIiii\u{1F310}Jjjjj')),
+      Context.createContext('p', Segment.createSegment([], 'KkkkkLllll')),
+    )
+
     it('is equal to its own split', function() {
       // Docs split and produce another doc, unlike most Section which split into a list of Section (or subclasses of Section)
       const result = doc.splitInterior(5)
@@ -223,6 +232,51 @@ describe('Context', function() {
 
     describe('insert', function() {
       // it ('')
+    })
+
+    describe('tag operations', function() {
+      //  TODO I need to map character indices to boundary indices. it's not enough to just count the cursor position of the document.
+      //    better yet, need to map cursor indices to the correct boundary indicies. e.g we observe all boundaries of Context but only character Boundaries in Segment.
+
+
+      describe('applyTags', function() {
+
+      })
+      describe('removeTags', function() {
+
+      })
+      describe('toggleTags', function() {
+
+        it ('toggles on covering a single character', function() {
+
+          // going by cursor position
+          const lb = testDocAlpha.cursorToBoundary(25)
+          const rb = testDocAlpha.cursorToBoundary(26)
+
+          const result = testDocAlpha.toggleTags(['tag1'], lb, rb)  // covering just the fourth 'e'
+          const resultSegments = result.contexts[2].segments
+
+          // assert.strictEqual(resultSegments.length, 3) // should end with three segments
+          assert(resultSegments.some(seg => seg.hasTag('tag1')), "Should have applied the tag")
+
+        })
+        it ('toggles off covering a single character', function() {
+
+          const _testDocAlpha = testDocAlpha.copy()
+          _testDocAlpha.contexts[2].segments.splice(0, 1, Segment.createSegment([], 'Eee'), Segment.createSegment(['tag1'], 'e'), Segment.createSegment([], 'eFffffGgggg'))
+          // using same cursor positions from the above test, this is essentially the "inverse"
+          const lb = _testDocAlpha.cursorToBoundary(25)
+          const rb = _testDocAlpha.cursorToBoundary(26)
+
+          const result = _testDocAlpha.toggleTags(['tag1'], lb, rb)  // covering just the fourth 'e'
+          const resultSegments = result.contexts[2].segments
+
+          // assert.strictEqual(resultSegments.length, 1) // should end with one
+          assert(resultSegments.every(seg => !seg.hasTag('tag1')), "Should have removed the tag")
+
+        })
+
+      })
     })
 
     describe('contextBreak', function () {

@@ -399,13 +399,13 @@ class Doc extends Section {
   }
 
   applyTags(tags, start, end) {
-    return this.mapRange(function applyTags(seg) { return seg.applyTags(tags) }, start, end)
+    return this.mapRangeBoundary(function applyTags(seg) { return seg.applyTags(tags) }, start, end)
   }
   removeTags(tags, start, end) {
-    return this.mapRange(function applyTags(seg) { return seg.removeTags(tags) }, start, end)
+    return this.mapRangeBoundary(function applyTags(seg) { return seg.removeTags(tags) }, start, end)
   }
   toggleTags(tags, start, end) {
-    return this.mapRange(function applyTags(seg) { return seg.toggleTags(tags) }, start, end)
+    return this.mapRangeBoundary(function applyTags(seg) { return seg.toggleTags(tags) }, start, end)
   }
 
   toString() {
