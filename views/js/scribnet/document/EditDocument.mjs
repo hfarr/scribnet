@@ -354,12 +354,20 @@ class _EditDocument {
     return { anchorOffsetComputer(root) { return cursorOffsetToDOM(root, that.anchorOffset) }, focusOffsetComputer(root) { return cursorOffsetToDOM(root, that.focusOffset) } }
   }
 
+
+  get _startBoundary() {
+    return this.document.cursorToBoundary(this.startOffset)
+  }
+  get _endBoundary() {
+    return this.document.cursorToBoundary(this.endOffset)
+  }
+
   // ----- Builders ------
 
   applyTag(tag) {
 
     const newDoc = this.copy()
-    newDoc.document = this.document.applyTags([tag], this.startOffset, this.endOffset)
+    newDoc.document = this.document.applyTags([tag], this._startBoundary, this._endBoundary)
     newDoc.notifySelectListeners()
 
     return newDoc
@@ -367,7 +375,7 @@ class _EditDocument {
 
   toggleTags(tags) {
     const newDoc = this.copy()
-    newDoc.document = this.document.toggleTags(tags, this.startOffset, this.endOffset)
+    newDoc.document = this.document.toggleTags(tags, this._startBoundary, this._endBoundary)
     newDoc.notifySelectListeners()
     return newDoc
   }
