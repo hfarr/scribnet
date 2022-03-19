@@ -85,8 +85,8 @@ class Segment extends AtomicSection {
     super()
     this.tags = []
   }
-  static createSegment(tags, ...characters) {
-    const result = this.from(...characters)
+  static createSegment(tags, string) {
+    const result = this.from(...string)
     result.tags = Array.isArray(tags) ? tags : [ tags ]
     return result
   }
