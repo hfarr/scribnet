@@ -312,6 +312,13 @@ class Doc extends Section {
 
   }
 
+  updateBlock(blockTag, boundaryLocation) {
+    const [ contextIndex, _ ] = this._locateBoundary(boundaryLocation)
+    const result = this.copy()
+    result.subPieces.splice(contextIndex, 1, result.contexts[contextIndex].updateBlock(blockTag))
+    return result
+  }
+
   writeBoundary(string, cursorLocation=undefined) {
     if (cursorLocation === undefined) cursorLocation = this.boundariesLength
 

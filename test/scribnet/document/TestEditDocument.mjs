@@ -130,20 +130,26 @@ describe('EditDocument', function() {
 
     // it('advances cursor position to start of new context', function () {
     it('breaks at every possible cursor location and advances cursor position to start of new context', function () {
-      testDocAlpha.select(10)
-      // const position = 10
+
       const testPosition = pos => {
         testDocAlpha.select(pos)
         const result = testDocAlpha.enterNewline()
         assert.strictEqual(result.cursorOffset, pos + 1, "expect cursor position in result to be one greater than start position")
       }
-      // testDocAlpha.select(position)
-      // const result = 
+
       const totalCursorPositions = testDocAlpha.document.contexts.reduce((p, c) => p + c.length + 1, 0)
       for (let i = 0; i < totalCursorPositions; i++) {
         testPosition(i)
       }
       // testPosition(10)
+    })
+
+    it('sets the new element to a paragraph block', function () {
+      testDocAlpha.select(8)
+      const result = testDocAlpha.enterNewline()
+
+      assert.notStrictEqual(testDocAlpha.document.contexts[0].block, 'p', "expect first block to not be paragraph")
+      assert.strictEqual(result.document.contexts[1].block, 'p', "expect second block to be paragraph")
     })
   })
 

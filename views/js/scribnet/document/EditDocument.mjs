@@ -495,6 +495,9 @@ class _EditDocument {
     result.document = result.document.contextBreakAt(this._startBoundary)
     result.select(result.endOffset + 1)
 
+    // Set new Context to a paragraph.
+    result.document = result.document.updateBlock('p', result._endBoundary)
+
     if (notify) result.notifySelectListeners()
     return result
   }
