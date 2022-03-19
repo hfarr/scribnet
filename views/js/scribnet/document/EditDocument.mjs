@@ -466,7 +466,7 @@ class _EditDocument {
     let result = this.copy()
 
     if (!this.isCollapsed) result = result.delete(false)
-    result.document = result.document.writeBoundary(string, this.startOffset)
+    result.document = result.document.writeBoundary(string, this._startBoundary)
     result.select(result.startOffset + [...string].length)
 
     if (notify) result.notifySelectListeners()  // todo changing
