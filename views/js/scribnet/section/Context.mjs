@@ -203,12 +203,6 @@ class Context extends Section {
     return this.insert(boundaryLocation, string)
   }
 
-  get boundariesLength() {
-    // TODO in one sense I'd like this to be the only step one must take to cause a Section to "collapse" interior boundaries
-    //  I do not have the full shape of that concept in my mind yet to approach it properly
-    return this.length + 1
-  }
-
   // ---------------------------
 
   updateBlock(blockTag) {
@@ -358,6 +352,37 @@ class Doc extends Section {
     // TODO would like to generalize this pattern (joining adjacent Section) into Sections
     //    call it "Squeeze". Love our non-commutative binary operator friends (join could be considered a non commutative binary operation).
     //    and... what do we get when we apply a binary operation over a range of elements...? that's right, reduction! a fold! functors! er.. foldables!
+
+  }
+
+  // --------
+  cursorToBoundary(cursorPosition) {
+
+    let offset = cursorPosition
+    let boundary = 0
+
+    // position counts by cursor positions, boundary counts up by boundaries
+    for (const ctx of this.contexts) {
+      // if (positiion < ctx.cursorPosLength) {
+      if (offset < ctx.length + 1) {
+        for (const seg of ctx.segments) {
+          if (offset < seg.length + 1) {
+            return boundary + offset  // we add 1 to the offset to account for the skipped left-most boundary
+          }   
+
+          boundary += seg.boundariesLength
+          offset -= seg.length  // cursorPositions length excludes boundary between Segments.
+        }
+      }
+      boundary += ctx.boundariesLength
+      offset -= ctx.length + 1  // so-called "cursorPositions" length, which includes bndry between Context.
+    }
+
+    // stub
+    return 0
+  }
+
+  boundaryToCursor(boundary) {
 
   }
 

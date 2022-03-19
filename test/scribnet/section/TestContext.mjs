@@ -236,6 +236,33 @@ describe('Context', function() {
       })
     })
 
+    describe('cursorToBoundary', function() {
+      const testDocAlpha2 = Doc.from(
+        Context.createContext('p', Segment.createSegment([], 'Eee'), Segment.createSegment([], 'ee'), Segment.createSegment([], 'Fffff')),
+        Context.createContext('p', Segment.createSegment([], 'Gg')),
+        Context.createContext('p'),
+        Context.createContext('p', Segment.createSegment([], 'ggg')),
+        Context.createContext('p', Segment.createSegment([], 'Hhh'), Segment.createSegment([], 'hh'), Segment.createSegment([], 'Ii'), Segment.createSegment([], 'iii'), ),
+      )
+      it('maps cursor positions correctly', function() {
+        // TODO split these into more "it" declarations
+        assert.strictEqual(testDocAlpha2.cursorToBoundary(3), 3)
+        assert.strictEqual(testDocAlpha2.cursorToBoundary(4), 5)
+        assert.strictEqual(testDocAlpha2.cursorToBoundary(7), 9)
+        assert.strictEqual(testDocAlpha2.cursorToBoundary(10), 12)
+        assert.strictEqual(testDocAlpha2.cursorToBoundary(11), 13)
+        assert.strictEqual(testDocAlpha2.cursorToBoundary(13), 15)
+        assert.strictEqual(testDocAlpha2.cursorToBoundary(14), 16)
+        assert.strictEqual(testDocAlpha2.cursorToBoundary(15), 17)
+        assert.strictEqual(testDocAlpha2.cursorToBoundary(18), 20)
+        assert.strictEqual(testDocAlpha2.cursorToBoundary(19), 21)
+        assert.strictEqual(testDocAlpha2.cursorToBoundary(22), 24)
+        assert.strictEqual(testDocAlpha2.cursorToBoundary(23), 26)
+        // assert.strictEqual(testDocAlpha2.cursorToBoundary(11), 13)
+
+      })
+    })
+
     it('is a place for me to test', function() {
       [Segment, Context, Doc]
 
