@@ -230,6 +230,28 @@ describe('Context', function() {
       })
     })
 
+    describe('deleteBoundary', function() {
+
+      it('does not merge Segments if tags are different', function () {
+        // or maybe... it only merges when appropriate. such as when they have the same tags. Or, don't merge generally.
+        // testDocAlpha.select(27,30)
+        const lb = testDocAlpha.cursorToBoundary(27)
+        const rb = testDocAlpha.cursorToBoundary(30)
+        const original = testDocAlpha.applyTags(['tag1'], lb, rb)
+        // original.select(27)
+        const resultLB = original.cursorToBoundary(27)
+        const resultRB = original.cursorToBoundary(28)
+        const result = original.deleteBoundary(resultLB, resultRB)
+
+        const expected = [ ...original.contexts[2].atoms.slice(0, 5), ...original.contexts[2].atoms.slice(6)]
+
+        assert.deepStrictEqual(result.contexts[2].atoms, expected, "expect result of deleted to match")
+        assert.strictEqual(result.contexts[2].segments.length, 3, "expect result to not merge segments")
+        assert(result.contexts[2].segments.some(seg => seg.hasTag), "expect result to have 'tag1' tag")
+
+      })
+    })
+
     describe('insert', function() {
       // it ('')
     })
