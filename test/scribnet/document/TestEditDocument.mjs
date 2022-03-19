@@ -177,5 +177,22 @@ describe('EditDocument', function() {
       assert(docHasTagAnywhere(original, 'tag1'))
       assert(docHasTagAnywhere(result, 'tag1'), 'expect result to have tag1')
     })
+
+    it('preserves tags of segments involved in delete', function() {
+      // TODO my tests for EditDoc know a little too much about the underlying "Doc". For now... that is okay. What I need is more "query" capabilities to ask
+      //  an edit doc things about itself so I don't have to unpack its guts.
+      testDocAlpha.select(24, 27)
+      const temp = testDocAlpha.applyTag('tag1')
+      temp.select(27, 30)
+      const original = temp.applyTag('tag2')
+
+      original.select(27) // - 1 because behavior of delete on collapsed is to select boundary under cursor and one immediately after it (e.g becoming deleteBoundary(54, 55))
+      const result = original.delete()
+
+      assert(docHasTagAnywhere(result, 'tag1'), "expected result to have 'tag1'")
+      assert(docHasTagAnywhere(result, 'tag2'), "expected result to have 'tag2'")
+      assert.deepStrictEqual(result.document.contexts[2].atoms, 'EeeeeffffGgggg'.split(''), "Expect correct character to be deleted")
+
+    })
   })
 })
