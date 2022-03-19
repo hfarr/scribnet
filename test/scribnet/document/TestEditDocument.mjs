@@ -114,4 +114,21 @@ describe('EditDocument', function() {
       assert.deepStrictEqual(result.toString(), expected)
     })
   })
+
+  describe('delete', function() {
+    it('deletes correctly', function () {
+
+    })
+
+    it('deletes single boundary correctly when cursor positioned after a Context with more than one segment', function () { 
+      // a mouthful of a test function. But a peculiar edge case we want to allow for.
+      testDocAlpha.select(24, 26)
+      const result1 = testDocAlpha.applyTag('tag1')
+      result1.select(38)  // cursor resting on the empty context from testDocAlpha
+      const result2 = result1.delete()  
+
+      assert.strictEqual(result2.document.contexts.length, testDocAlpha.document.contexts.length - 1, "expect delete on the boundary of an empty context to remove that context")
+
+    })
+  })
 })
