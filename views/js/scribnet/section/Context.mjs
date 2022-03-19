@@ -97,7 +97,7 @@ class Segment extends AtomicSection {
     return clone
   }
 
-  answers(func) {
+  targetedBy(func) {
     // TODO would like to make this polymorphic yknow. But I don't want to put it back in "Section". Need some multi inheritance. Maybe I should inject it on the constructor.
     return table.check(this.constructor, func)  
   }

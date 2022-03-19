@@ -439,6 +439,17 @@ class Section {
     return false;
   }
 
+  targetedBy(func) {
+    // TODO: Mix of "targetedBy" and "answers". Q: Is it the case that targetedBy implies answers in all cases? should we enforce that? what would targetedBy but not "answers" mean?
+    // these are controls for influencing how "map" behaves. Assuming for now targetedBy => answers
+
+    // if answers, call propogation stops
+    //    If targtedBy (and there fore also answers), then the function is applied to <<this>> 
+    //    if not targeted by, then func is mapped over the segments array
+    // if not answers call propogates to children by mapping over segments and calling .map on each segment
+    return false
+  }
+
   /**
    * Apply function to all entries
    * 
@@ -591,7 +602,10 @@ class AtomicSection extends Section {
   }
 
   map(func) {
-    if (this.answers(func))
+    // need a way to override the behavior. So that, yes, AtomiCsection always answers.
+    // But critically sometimes the function applies to the section (maybe... targetedBy?)
+    // othertimes it maps over the subpieces
+    if (this.targetedBy(func))
       return func(this.copy())
     return this.copyFrom( ...this.subPieces.map(func) )
   }
