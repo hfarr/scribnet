@@ -141,7 +141,6 @@ describe('EditDocument', function() {
       for (let i = 0; i < totalCursorPositions; i++) {
         testPosition(i)
       }
-      // testPosition(10)
     })
 
     it('sets the new element to a paragraph block', function () {
