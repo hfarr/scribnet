@@ -102,6 +102,8 @@ class EditorComponent extends HTMLElement {
           // Newline chars will construct paragraphs
           // this.editor.write('\n')
           this.editor.enterNewline();
+          ie.preventDefault();
+          this.render()
           break
         }
         case 'insertFromPaste': {
