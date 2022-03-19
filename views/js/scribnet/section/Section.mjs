@@ -436,7 +436,14 @@ class Section {
     // reveals whether a given section answers the call, or propogates it. Actually, in terms of 
     // patterns, that reminds me of the event handling pattern. Might use a table, reminds me of Clox
     // and the unary/binary operator table.
-    return false;
+    
+    // Note: For a generic "Section" this is always false. Passing the result as the answer to "targetedBy"
+    //  let's the code state something about the truth value. We have that for a section,
+    //  "targetedBy" implies "answers". This way a child can override only targetedBy without breaking the
+    //  conditional statement. A child can override both to exercise maximum control over the logic but
+    //  must be careful to maintain the truth value, i.e it would be a contradiction to return true for
+    //  "targetedby" but false for "answers"
+    return this.targetedBy(func);
   }
 
   targetedBy(func) {
@@ -451,14 +458,24 @@ class Section {
   }
 
   /**
-   * Apply function to all entries
+   * Apply function according to some controls.
+   * If "this" doesn't "answer" the function, then mapping recurses to childSegments
+   * If "this" answers and is "targetedBy", then func is applied to "this"
+   * If "this" answers and is not "targetedBy", then func is applied to children directly
+   * 
+   * Note that in either "answers" case the call propogation stops, no more recursion
    * 
    * @param func Function to apply
    */
   map(func) {
-    if (this.answers(func))
-      return func(this.copy())
-
+    // TODO test the use of "controls" like this, particularly as a means to also implement "AtomicSection" map behavior
+    if (this.answers(func)) {
+      if (this.targetedBy(func)) {
+        return func(this.copy())
+      } else {
+        return this.copyFrom(...this.subPieces.map( func ))
+      }
+    }
     return this.copyFrom(...this.subPieces.map( sec => sec.map(func)))
   }
 
@@ -601,14 +618,14 @@ class AtomicSection extends Section {
     return true
   }
 
-  map(func) {
-    // need a way to override the behavior. So that, yes, AtomiCsection always answers.
-    // But critically sometimes the function applies to the section (maybe... targetedBy?)
-    // othertimes it maps over the subpieces
-    if (this.targetedBy(func))
-      return func(this.copy())
-    return this.copyFrom( ...this.subPieces.map(func) )
-  }
+  // map(func) {
+  //   // need a way to override the behavior. So that, yes, AtomiCsection always answers.
+  //   // But critically sometimes the function applies to the section (maybe... targetedBy?)
+  //   // othertimes it maps over the subpieces
+  //   if (this.targetedBy(func))
+  //     return func(this.copy())
+  //   return this.copyFrom( ...this.subPieces.map(func) )
+  // }
 
 
   _showBoundaries() {
