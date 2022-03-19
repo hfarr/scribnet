@@ -13,6 +13,7 @@ class DocHistory {
   constructor(firstDocument) {
     this.lengthLimit = 100
     this.history = [ ]
+    this.meta = [ ]
     this.add(firstDocument)
 
   }
@@ -21,10 +22,13 @@ class DocHistory {
     return this.history.at(-1)
   }
 
-  add(newDoc) {
+  add(newDoc, message = 'No mesage') {
+    const { startOffset, endOffset, _startBoundary, _endBoundary } = newDoc
     this.history.push(newDoc)
+    this.meta.push({ doc: newDoc, message, startOffset, endOffset, _startBoundary, _endBoundary } )
     if (this.history.length > this.lengthLimit) {
       this.history.shift()
+      this.meta.shift()
     }
   }
 }
@@ -87,7 +91,7 @@ export class Editor {
 
     // newDoc = loadHTML(this.component)
     // this.docHistory.add(domFunctions.loadHTML(this.component))
-    this.docHistory.add(domFunctions.loadDocument(this.component))
+    this.docHistory.add(domFunctions.loadDocument(this.component), 'Load from DOM')
 
   }
 
@@ -178,52 +182,52 @@ export class Editor {
    * Toggle properties of the selected text
    */
   toggleBold() {
-    this.docHistory.add(this.currentDocument.toggleTag('strong'))
+    this.docHistory.add(this.currentDocument.toggleTag('strong'), "Toggle bold")
   }
 
   toggleItalic() {
-    this.docHistory.add(this.currentDocument.toggleTag('em'))
+    this.docHistory.add(this.currentDocument.toggleTag('em'), "Toggle italic")
   }
 
   toggleHighlight() {
-    this.docHistory.add(this.currentDocument.toggleTag('mark'))
+    this.docHistory.add(this.currentDocument.toggleTag('mark'), "Toggle highlight")
   }
   /**
    * *Set* properties of the selected text
    */
   setBold() {
-    this.docHistory.add(this.currentDocument.applyTag('strong'))
+    this.docHistory.add(this.currentDocument.applyTag('strong'), "Set bold")
   }
 
   setItalic() {
-    this.docHistory.add(this.currentDocument.applyTag('em'))
+    this.docHistory.add(this.currentDocument.applyTag('em'), "Set italic")
   }
 
   setHighlight() {
-    this.docHistory.add(this.currentDocument.applyTag('mark'))
+    this.docHistory.add(this.currentDocument.applyTag('mark'), "Set highlight")
   }
 
   applyColor(color) {
     // TODO work on interface for tags. Pass an object for attributes? An instance of a class?
     // TODO escape the color incase someone tries something... unsafe
-    this.docHistory.add(this.currentDocument.applyTag('span', `style="background-color: ${color};"`))
+    this.docHistory.add(this.currentDocument.applyTag('span', `style="background-color: ${color};"`), "Apply color")
   }
 
   /**
    * Text insertion & deletion
    */
   write(text) {
-    this.docHistory.add(this.currentDocument.write(text))
+    this.docHistory.add(this.currentDocument.write(text), `Write: ${text}`)
   }
   delete() {
-    this.docHistory.add(this.currentDocument.delete())
+    this.docHistory.add(this.currentDocument.delete(), 'Delete')
   }
   backspace() {
     if (this.currentDocument.isCollapsed) this.currentDocument.select(this.currentDocument.cursorOffset - 1)
-    this.docHistory.add(this.currentDocument.delete())
+    this.docHistory.add(this.currentDocument.delete(), 'Backspace')
   }
   enterNewline() {
-    this.docHistory.add(this.currentDocument.enterNewline())
+    this.docHistory.add(this.currentDocument.enterNewline(), 'Enter key')
   }
 
   // -----------------------
