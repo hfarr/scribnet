@@ -40,6 +40,7 @@ permalink: "note/{{ noteItem.name | slug }}/"
   #}
 <a id="edit-button" href="/edit/{{ noteItem.name | slug }}">Edit</a>
 <a id="view-button" href="/note/{{ noteItem.name | slug }}">View</a>
+<a id="db-button" href="/note/{{ noteItem.name | slug }}" ping="http://localhost:3000/api/db-reload/">Reset page</a>
 <!-- <a id="edit-button" onclick="return false;" href="#">Edit</a> -->
 <!-- <button id="edit-button" -->
 <br>
@@ -63,6 +64,7 @@ permalink: "note/{{ noteItem.name | slug }}/"
   const contentWrapper = document.querySelector("#content")
   const editButton = document.querySelector("#edit-button")
   const viewButton = document.querySelector("#view-button")
+  const dbButton = document.querySelector("#db-button")
 
   const url = "/api/graphql"
 
@@ -198,6 +200,9 @@ permalink: "note/{{ noteItem.name | slug }}/"
     evt.preventDefault()
     engageViewMode();
   })
+  // dbButton.addEventListener("click", (evt) => {
+  //   evt.preventDefault()
+  // })
 
   applyState()
 

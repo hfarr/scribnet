@@ -227,6 +227,13 @@ publicNotes.post('/note/:noteName', async (req, res) => {
 })
 mainRouter.use('/api', publicNotes)
 
+const devOnly = express.Router()
+mainRouter.use('/api', devOnly)
+devOnly.post('/db-reload', async (req, res) => {
+  res.status(200).send('OK')
+  await fs.copyFile(`${DATA_FOLDER}/dbfile.bkp`, `${DATA_FOLDER}/dbfile`)
+})
+
 
 // mainApp.get('/api/notes', async (req, res) => {
 //   // likely need to pass url-safe over these, so we can have all valid filenames (spaces come to mind)
