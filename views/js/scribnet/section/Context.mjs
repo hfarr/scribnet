@@ -419,6 +419,10 @@ class Doc extends Section {
     return this._boundariesLength
   }
 
+  get totalCursorPositions() {
+    return this.length + this.contexts.length
+  }
+
 }
 /* 
  on map/operate,

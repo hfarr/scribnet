@@ -362,6 +362,10 @@ class _EditDocument {
     return this.document.cursorToBoundary(this.endOffset)
   }
 
+  get totalCursorPositions() {
+    return this.document.totalCursorPositions
+  }
+
   // ----- Builders ------
 
   applyTag(tag) {
@@ -390,8 +394,8 @@ class _EditDocument {
     // Honestly after reading Crafting Interpreters I can't get +1 in a bounds check out of my head (as opposed to >= ). 
     // Like I read it differently- "If the next index after anchor would be out of bounds," using + is like left shift
     // with +1 we can think of it as "nth"s, like index 0 is 1st, index 10 is 11th, index length - 1 is "length"th
-    if (anchorIndex < 0 || anchorIndex + 1 > this.length) anchorIndex = 0
-    if (focusIndex < 0 || focusIndex + 1 > this.length) focusIndex = this.length - 1
+    if (anchorIndex < 0 || anchorIndex + 1 > this.totalCursorPositions) anchorIndex = 0
+    if (focusIndex < 0 || focusIndex + 1 > this.totalCursorPositions) focusIndex = this.totalCursorPositions - 1
 
     if (focusIndex === undefined) focusIndex = anchorIndex
     this.anchor = anchorIndex
@@ -487,7 +491,8 @@ class _EditDocument {
     let result = this.copy()
 
     if (!this.isCollapsed) result = result.delete(false)
-    result.document = result.document.contextBreakAt(this.startOffset)
+    // a delete collapses the cursor. Then this._startBoundary === this._endBoundary
+    result.document = result.document.contextBreakAt(this._startBoundary)
     result.select(result.endOffset + 1)
 
     if (notify) result.notifySelectListeners()
