@@ -488,6 +488,7 @@ class _EditDocument {
 
     if (!this.isCollapsed) result = result.delete(false)
     result.document = result.document.contextBreakAt(this.startOffset)
+    result.select(result.endOffset + 1)
 
     if (notify) result.notifySelectListeners()
     return result
