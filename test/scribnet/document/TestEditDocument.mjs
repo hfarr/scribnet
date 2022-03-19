@@ -167,5 +167,15 @@ describe('EditDocument', function() {
       assert.strictEqual(result2.document.contexts.length, testDocAlpha.document.contexts.length - 1, "expect delete on the boundary of an empty context to remove that context")
 
     })
+
+    it('preserves tags of first Segment in a Context when merging with the Context just before', function () {
+      testDocAlpha.select(55, 58)
+      const original = testDocAlpha.applyTag('tag1')
+      original.select(55 - 1) // - 1 because behavior of delete on collapsed is to select boundary under cursor and one immediately after it (e.g becoming deleteBoundary(54, 55))
+      const result = original.delete()
+
+      assert(docHasTagAnywhere(original, 'tag1'))
+      assert(docHasTagAnywhere(result, 'tag1'), 'expect result to have tag1')
+    })
   })
 })
