@@ -446,8 +446,8 @@ class _EditDocument {
    */
   delete(notify = true ) {
     const result = this.copy()
-    const from = this.startOffset
-    const to = this.isCollapsed ? this.cursorOffset + 1 : this.endOffset
+    const from = this._startBoundary
+    const to = this.isCollapsed ? this._startBoundary + 1 : this._endBoundary
     result.document = result.document.deleteBoundary(from, to)
     result.select(this.startOffset)
 
