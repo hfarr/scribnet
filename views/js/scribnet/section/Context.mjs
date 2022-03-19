@@ -203,6 +203,10 @@ class Context extends Section {
     return this.insert(boundaryLocation, string)
   }
 
+  merge(other) {
+    return this.join(other)
+  }
+
   // ---------------------------
 
   updateBlock(blockTag) {
