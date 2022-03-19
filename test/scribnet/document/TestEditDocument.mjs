@@ -47,11 +47,13 @@ describe('EditDocument', function() {
 
 
     it('does not change the content', function() {
+      // TODO remove/rewrite
       editDoc.select(34, 43)
       const nextDoc = editDoc.applyTag('strong')
       assert.strictEqual(nextDoc.toString(), editDoc.toString())
     })
     it('has the same selection', function() {
+      // TODO remove/rewrite
       editDoc.select(34, 43)
       const nextDoc = editDoc.applyTag('strong')
       assert.strictEqual(nextDoc.anchor, editDoc.anchor)
@@ -75,6 +77,29 @@ describe('EditDocument', function() {
       assert.deepStrictEqual(resultDivisionOfStrings, ['Ee', 'ee', 'eFffffGgggg'], "expect tagged portion to cover correct piece")
     })
 
+  })
+
+  describe('toggleTag', function() {
+    it('toggles on', function(){ 
+      testDocAlpha.select(24, 26)
+      const result = testDocAlpha.toggleTag('tag1')
+      assert(!docHasTagAnywhere(testDocAlpha, 'tag1'), "Expected test doc to start without 'tag1' tag")
+      assert(docHasTagAnywhere(result, 'tag1'), "Expected document result of toggling 'tag1' to contain 'tag1'")
+    })
+    it('toggles off', function(){ 
+      testDocAlpha.select(24, 26)
+      const original = testDocAlpha.applyTag('tag1')
+      const result = original.toggleTag('tag1')
+      assert(docHasTagAnywhere(original, 'tag1'), "Expected original doc to start with 'tag1' tag")
+      assert(!docHasTagAnywhere(result, 'tag1'), "Expected result doc to not have 'tag1' tag")
+    })
+    it('toggles on and off', function(){ 
+      testDocAlpha.select(24, 26)
+      const result1 = testDocAlpha.toggleTag('tag1')
+      const result2 = result1.toggleTag('tag1')
+      assert(docHasTagAnywhere(result1, 'tag1'), "Expected result1 to have 'tag1' tag")
+      assert(!docHasTagAnywhere(result2, 'tag1'), "Expected result2 to not have 'tag1' tag")
+    })
   })
 
   describe('write', function() {
