@@ -282,13 +282,12 @@ describe('Context', function() {
         })
         it ('toggles off covering a single character', function() {
 
-          const _testDocAlpha = testDocAlpha.copy()
-          _testDocAlpha.contexts[2].segments.splice(0, 1, Segment.createSegment([], 'Eee'), Segment.createSegment(['tag1'], 'e'), Segment.createSegment([], 'eFffffGgggg'))
+          const taggedDocAlpha = testDocAlpha.splice(2, 1, Context.from(Segment.createSegment([], 'Eee'), Segment.createSegment(['tag1'], 'e'), Segment.createSegment([], 'eFffffGgggg')))
           // using same cursor positions from the above test, this is essentially the "inverse"
-          const lb = _testDocAlpha.cursorToBoundary(25)
-          const rb = _testDocAlpha.cursorToBoundary(26)
+          const lb = taggedDocAlpha.cursorToBoundary(25)
+          const rb = taggedDocAlpha.cursorToBoundary(26)
 
-          const result = _testDocAlpha.toggleTags(['tag1'], lb, rb)  // covering just the fourth 'e'
+          const result = taggedDocAlpha.toggleTags(['tag1'], lb, rb)  // covering just the fourth 'e'
           const resultSegments = result.contexts[2].segments
 
           // assert.strictEqual(resultSegments.length, 1) // should end with one
