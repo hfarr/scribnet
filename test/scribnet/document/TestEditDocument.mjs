@@ -37,14 +37,14 @@ describe('EditDocument', function() {
 
   describe('selection', function() {
     it ('selected the correct string', function() {
-      editDoc.select(34, 44)
+      editDoc.select(36, 46)
       assert.strictEqual(editDoc.selection(), "paragraph.")
 
     })
 
     it ('selects across Context correctly', function (){
       testDocAlpha.select(14, 25)
-      assert.strictEqual(testDocAlpha.selection(), 'ccDddddEe')
+      assert.strictEqual(testDocAlpha.selection(), 'ccDddddEee')
 
     })
 
