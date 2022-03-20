@@ -385,6 +385,13 @@ class _EditDocument {
   }
   toggleTag(tag) {
     // return this.toggleTags([tag], [attributes])
+
+    const lb = this._startBoundary
+    const rb = this._endBoundary
+    if (this.document.selectionHasTag(tag, lb, rb) && !this.document.selectionEntirelyHasTag(tag, lb, rb)) {
+      // if the selection has a mix of tagged segments and untagged segments then applyTag
+      return this.applyTag(tag)
+    }
     return this.toggleTags([tag])
   }
 

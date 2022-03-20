@@ -112,6 +112,15 @@ describe('EditDocument', function() {
       const result = testDocAlpha.toggleTag('tag1')
       assert(docHasTagAnywhere(result, 'tag1'), 'expect result to have \'tag1\'')
     })
+    it('applies tag if selection has mix of tagged and untagged Segments', function () {
+      testDocAlpha.select(24,26)
+      const original = testDocAlpha.applyTag('tag1')
+      const lb = 25
+      const rb = 32
+      original.select(lb, rb)
+      const result = original.toggleTag('tag1')
+      assert(result.document.selectionEntirelyHasTag('tag1', lb, rb), 'expect entire selection to have tag1')
+    })
   })
 
   describe('write', function() {

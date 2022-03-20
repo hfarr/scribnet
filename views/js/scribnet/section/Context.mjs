@@ -453,6 +453,22 @@ class Doc extends Section {
     return this.mapRangeBoundary(function applyTags(seg) { return seg.toggleTags(tags) }, start, end)
   }
 
+  selectionHasTag(tag, start, end) {
+    const [ left, middle, right ] = this.triSplit(start, end)
+
+    const result = middle.contexts.map(ctx => ctx.segments).flat()
+
+    return result.some(seg => seg.hasTag(tag))
+  }
+  selectionEntirelyHasTag(tag, start, end) {
+    const [ left, middle, right ] = this.triSplit(start, end)
+
+    // cut empty because some of the Segment are produced as empty and un-tagged
+    const result = middle.cutEmpty().contexts.map(ctx => ctx.segments).flat()
+
+    return result.every(seg => seg.hasTag(tag))
+  }
+
   toString() {
     return this.characters.join('')
   }

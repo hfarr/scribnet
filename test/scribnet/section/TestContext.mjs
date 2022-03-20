@@ -337,6 +337,33 @@ describe('Context', function() {
       })
     })
 
+    describe('selectonHasTag', function() {
+      it('detects existence of given tag in at least one Segment', function () {
+
+        // testDocAlpha.select(19, 24)
+        const original = testDocAlpha.applyTags(['tag1'], 19, 24)
+
+        assert(original.selectionHasTag('tag1', 19, 24), 'expect selection matching applyTags selection to test positive')
+        assert(original.selectionHasTag('tag1', 16, 21), 'expect selection containing first segment with tag1 to test positive')
+        assert(original.selectionHasTag('tag1', 16, 20), 'expect selection overlapping first segment with tag1 to test positive')
+        assert(original.selectionHasTag('tag1', 22, 27), 'expect selection containing second segment with tag1 to test positive')
+        assert(original.selectionHasTag('tag1', 23, 27), 'expect selection overlapping second segment with tag1 to test positive')
+      })
+    })
+    describe('selectonEntirelyHasTag', function() {
+      it('detects existence of given tag in every Segment within range', function () {
+
+        // testDocAlpha.select(19, 24)
+        const original = testDocAlpha.applyTags(['tag1'], 19, 24)
+
+        assert(original.selectionEntirelyHasTag('tag1', 19, 24), 'expect selection matching applyTags selection to test positive')
+        assert(!original.selectionEntirelyHasTag('tag1', 16, 21), 'expect selection containing first segment with tag1 and other segments to test negative')
+        assert(!original.selectionEntirelyHasTag('tag1', 16, 20), 'expect selection overlapping first segment with tag1 and other segments to test negative')
+        assert(!original.selectionEntirelyHasTag('tag1', 22, 27), 'expect selection containing second segment with tag1 and other segments to test negative')
+        assert(!original.selectionEntirelyHasTag('tag1', 23, 27), 'expect selection overlapping second segment with tag1 and other segments to test negative')
+      })
+    })
+
     it('is a place for me to test', function() {
       [Segment, Context, Doc]
 
