@@ -349,6 +349,16 @@ class Doc extends Section {
     return result
   }
 
+  updateBlocks(blockTag, startBoundary, endBoundary) {
+    const [ leftSectionIndex, leftOffset ] = this._locateBoundary(startBoundary)
+    const [ rightSectionIndex, rightOffset ] = this._locateBoundary(endBoundary)
+
+    const patchedContexts = this.contexts.filter((_, index) => index >= leftSectionIndex && index <= rightSectionIndex)
+      .map( ctx => ctx.updateBlock(blockTag))
+
+    return this.splice(leftSectionIndex, (rightSectionIndex - leftSectionIndex) + 1, ...patchedContexts)
+  }
+
   writeBoundary(string, cursorLocation=undefined) {
     if (cursorLocation === undefined) cursorLocation = this.boundariesLength
 

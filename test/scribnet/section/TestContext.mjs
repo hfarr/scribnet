@@ -298,6 +298,17 @@ describe('Context', function() {
       })
     })
 
+    describe('updateBlocks', function () {
+      it('updates blocks correctly', function() {
+        const newBlock = 'pre'.toLocaleLowerCase()
+        const result = testDocAlpha.updateBlocks(newBlock, 14, 38)
+
+        assert(result.contexts.slice(1, 4).every(ctx => ctx.block.toLowerCase() === newBlock), 'expect Contexts covering selection to have new block tag')
+        assert(result.contexts.slice(0, 1).every(ctx => ctx.block.toLowerCase() !== newBlock), 'expect Contexts before the selection to not have new block tag')
+        assert(result.contexts.slice(4).every(ctx => ctx.block.toLowerCase() !== newBlock), 'expect Contexts after the selection to not have the new block tag')
+      })
+    })
+
     describe('contextBreak', function () {
       const testDoc = Doc.from(testContext1, Context.from(), testContext2)
       it('results in one more Context subPiece than original', function () {
