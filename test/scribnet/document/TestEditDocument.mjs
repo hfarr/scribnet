@@ -100,6 +100,11 @@ describe('EditDocument', function() {
       assert(docHasTagAnywhere(result1, 'tag1'), "Expected result1 to have 'tag1' tag")
       assert(!docHasTagAnywhere(result2, 'tag1'), "Expected result2 to not have 'tag1' tag")
     })
+    it('works across Context boundaries', function() {
+      testDocAlpha.select(14,25)
+      const result = testDocAlpha.toggleTag('tag1')
+      assert(docHasTagAnywhere(result, 'tag1'), 'expect result to have \'tag1\'')
+    })
   })
 
   describe('write', function() {
