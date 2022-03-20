@@ -441,7 +441,7 @@ class Section {
     const [ rightSectionIndex, rightBoundaryOffset ] = this._locateBoundary(endBoundary)
     const resultSections = []
 
-    for (let i = 0, cumulativeLength = 0; i < this.subPieces.length; cumulativeLength += this.subPieces[i].boundariesLength, i++) {
+    for (let i = 0; i < this.subPieces.length; i++) {
 
       const section = this.subPieces[i]
       // const [ lb, rb ] = [ i === leftSectionIndex ? startBoundary - cumulativeLength : 0, i === rightSectionIndex ? endBoundary - cumulativeLength : section.boundariesLength ]
@@ -451,8 +451,8 @@ class Section {
       } else if (i > leftSectionIndex && i < rightSectionIndex) {
         resultSections.push(section.map(func));
       } else  {
-        const lb = i === leftSectionIndex ? startBoundary - cumulativeLength : 0
-        const rb = i === rightSectionIndex ? endBoundary - cumulativeLength : section.boundariesLength - 1
+        const lb = i === leftSectionIndex ? leftBoundaryOffset : 0
+        const rb = i === rightSectionIndex ? rightBoundaryOffset : section.boundariesLength - 1
         resultSections.push(section.mapRangeBoundary(func, lb, rb))
       }
     }
