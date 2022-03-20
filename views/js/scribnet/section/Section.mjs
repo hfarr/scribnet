@@ -452,7 +452,7 @@ class Section {
         resultSections.push(section.map(func));
       } else  {
         const lb = i === leftSectionIndex ? startBoundary - cumulativeLength : 0
-        const rb = i === rightSectionIndex ? endBoundary - cumulativeLength : section.boundariesLength
+        const rb = i === rightSectionIndex ? endBoundary - cumulativeLength : section.boundariesLength - 1
         resultSections.push(section.mapRangeBoundary(func, lb, rb))
       }
     }
