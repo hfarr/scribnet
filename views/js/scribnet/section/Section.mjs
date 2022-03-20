@@ -90,16 +90,43 @@ class Section {
     if (other === undefined) return this
     if (other instanceof AtomicSection) return this.addSubSections(other) // Not sure how 'natural' this is. It is a bit awkward merging Atomic and nonAtomic Sections
 
+    if (this.subPieces.length === 0) return this.copyFrom(...other.subPieces)
+    if (other.subPieces.length === 0) return this
+
     const middleLeft = this.subPieces.at(-1)
     const middleRight = other.subPieces.at(0)
-    // would have been a good case for the Maybe type here. Could have done (maybe1).merge(maybe2) and let the unpacking sort out the details.
-    // monadically. or well. you know.
+    
+    const mixed = middleLeft.mix(middleRight)
 
-    const middle = middleLeft?.merge(middleRight) ?? middleRight
+    return this.copyFrom( ...this.subPieces.slice(0, -1), ...mixed, ...other.subPieces.slice(1) )
+  }
 
-    if (middle === undefined) return this
+  mixesWith(other) {
+    return true
+  }
 
-    return this.copyFrom( ...this.subPieces.slice(0, -1), middle, ...other.subPieces.slice(1) )
+  /**
+   * Mix is a bit like "merge" except it wraps the result in an Array
+   * Callers must handle array results.
+   * By wrapping results in an array we don't make assumptions about the
+   * parent Section that should hold the result, unlike merge which
+   * has a result that is a Section.
+   * Use case is say have two Section which we want to merge sometimes and
+   * other times not. We'd have to use a lot of client code outside to
+   * handle these cases, instead we only need to handle an Array. If we
+   * mix them the array has a single value, if we don't it has two, and
+   * clients treat it the same.
+   * 
+   * @param other Section to mix
+   * @returns 
+   */
+  mix(other) {
+    if (other === undefined) return [ this ]
+    if (other instanceof AtomicSection) return [ this.addSubSections(other) ] // Not sure how 'natural' this is. It is a bit awkward merging Atomic and nonAtomic Sections
+
+    if ( !this.mixesWith(other)) return [ this, other ]
+    return [ this.merge(other) ]
+
   }
 
   splice(start, length, ...sections) {
@@ -299,9 +326,12 @@ class Section {
 
     const [ leftSectionIndex, leftOffset ] = this._locateBoundary(startBoundary)
     const [ rightSectionIndex, rightOffset ] = this._locateBoundary(endBoundary)
-    const patchedSection = this.subPieces[leftSectionIndex].deleteBoundary(leftOffset).merge(this.subPieces[rightSectionIndex].deleteBoundary(0, rightOffset))
+    const patchedSections = this.subPieces[leftSectionIndex].deleteBoundary(leftOffset).mix(this.subPieces[rightSectionIndex].deleteBoundary(0, rightOffset))
 
-    return this.splice(leftSectionIndex, 1 + (rightSectionIndex - leftSectionIndex), patchedSection ).cutEmpty()
+    return this.splice(leftSectionIndex, 1 + (rightSectionIndex - leftSectionIndex), ...patchedSections ).cutEmpty()
+    // const patchedSection = this.subPieces[leftSectionIndex].deleteBoundary(leftOffset).merge(this.subPieces[rightSectionIndex].deleteBoundary(0, rightOffset))
+
+    // return this.splice(leftSectionIndex, 1 + (rightSectionIndex - leftSectionIndex), patchedSection ).cutEmpty()
 
   }
 
@@ -583,6 +613,12 @@ class AtomicSection extends Section {
     return this
   }
 
+  mix(other) {
+    if (this.mixesWith(other))
+      return [ this.merge(other) ]
+
+    return [ this, other ]
+  }
   merge(other) {
 
     if (other === undefined) return this

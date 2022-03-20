@@ -102,6 +102,10 @@ class Segment extends AtomicSection {
     return table.check(this.constructor, func)  
   }
 
+  mixesWith(other) {
+    return other instanceof Segment && this._eqTags(other)
+  }
+
   ////////
   _filterTags(tags) {
     const unique = new Set(tags.map(str => str.toLowerCase()).filter(filterInline))
@@ -203,9 +207,22 @@ class Context extends Section {
     return this.insert(boundaryLocation, string)
   }
 
-  merge(other) {
-    return this.join(other)
-  }
+
+  // deleteBoundary(startBoundary, endBoundary = undefined) {
+
+  //   if (this.boundariesLength === 1) return this
+  //   if (endBoundary === undefined) endBoundary = this.boundariesLength - 1
+
+  //   const [ leftSectionIndex, leftOffset ] = this._locateBoundary(startBoundary)
+  //   const [ rightSectionIndex, rightOffset ] = this._locateBoundary(endBoundary)
+  //   const leftSection = this.subPieces[leftSectionIndex].deleteBoundary(leftOffset)
+  //   const rightSection = this.subPieces[rightSectionIndex].deleteBoundary(0, rightOffset)
+
+  //   const patchedSection = leftSection._eqTags(rightSection) ? [ leftSection.merge(rightSection) ] : [ leftSection, rightSection ]
+
+  //   return this.splice(leftSectionIndex, 1 + (rightSectionIndex - leftSectionIndex), ...patchedSection ).cutEmpty()
+
+  // }
 
   // ---------------------------
 
