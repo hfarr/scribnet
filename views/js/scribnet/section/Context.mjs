@@ -424,6 +424,7 @@ class Doc extends Section {
   }
 
   selection(cursorStart, cursorEnd) {
+    // TODO should we add new lines for Context? Otherwise all selections are this "flat" result. Probably should. . . . later.
     const lb = this.cursorToBoundary(cursorStart)
     const rb = this.cursorToBoundary(cursorEnd)
 
