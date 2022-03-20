@@ -39,6 +39,9 @@ describe('EditDocument', function() {
     it ('selected the correct string', function() {
       editDoc.select(34, 44)
       assert.strictEqual(editDoc.selection(), "paragraph.")
+
+      testDocAlpha.select(14, 25)
+      assert.strictEqual(testDocAlpha.selection(), 'ccDddddEe')
     })
 
   })
