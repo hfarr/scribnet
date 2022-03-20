@@ -417,7 +417,7 @@ class _EditDocument {
   }
   selection() {
 
-    return this.document.characters.slice(this.startOffset, this.endOffset).join('')
+    return this.document.selection(this.startOffset, this.endOffset)
   }
 
   // ----------------------

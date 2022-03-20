@@ -423,6 +423,13 @@ class Doc extends Section {
 
   }
 
+  selection(cursorStart, cursorEnd) {
+    const lb = this.cursorToBoundary(cursorStart)
+    const rb = this.cursorToBoundary(cursorEnd)
+
+    return this.atomSlice(lb, rb).join('')
+  }
+
   // _locateBoundary()
 
   // -------------------

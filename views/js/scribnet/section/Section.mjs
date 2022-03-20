@@ -521,6 +521,13 @@ class Section {
     return atomOffset + this.subPieces[sectionIndex].boundaryToAtomBoundary(offset)
   }
 
+  atomSlice(startBoundary, endBoundary = undefined) {
+    if (endBoundary === undefined) endBoundary = this.boundariesLength - 1
+    const lb = this.boundaryToAtomBoundary(startBoundary)
+    const rb = this.boundaryToAtomBoundary(endBoundary)
+    return this.atoms.slice(lb, rb)
+  }
+
   at(offset) {
     return this.atoms.at(offset)
   }
