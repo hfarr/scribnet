@@ -40,8 +40,12 @@ describe('EditDocument', function() {
       editDoc.select(34, 44)
       assert.strictEqual(editDoc.selection(), "paragraph.")
 
+    })
+
+    it ('selects across Context correctly', function (){
       testDocAlpha.select(14, 25)
       assert.strictEqual(testDocAlpha.selection(), 'ccDddddEe')
+
     })
 
   })
