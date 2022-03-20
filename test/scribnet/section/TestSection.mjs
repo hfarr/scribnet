@@ -448,6 +448,11 @@ describe(`${MODULE} module`, function () {
         const testBoundary = testSection.boundariesLength + 100
         testPair(testBoundary, testSection.length)
       })
+
+      it('yields 0 for a Section without subPieces', function () {
+        const test = Section.from()
+        assert.strictEqual(test.boundaryToAtomBoundary(0), 0)
+      })
     })
 
 

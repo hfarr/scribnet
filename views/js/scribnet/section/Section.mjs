@@ -283,6 +283,7 @@ class Section {
   // also wow I'm getting my names mixed up.
 
   _locateBoundary(boundaryIndex) {
+    // if (this.subPieces.length === 0) return [ undefined, undefined ] // TODO probably want something like this. TODO we need test cases for _locateBoundary when there are no subSections. Can't just test happy paths.
     let sectionIndex = 0;
     while (boundaryIndex >= this.subPieces[sectionIndex].boundariesLength) {
       boundaryIndex -= this.subPieces[sectionIndex].boundariesLength
@@ -513,6 +514,8 @@ class Section {
 
   boundaryToAtomBoundary(boundaryLocation) {
     // Kinda like "boundary to cursor". Multiple boundaries can "collapse" to the same "index" over the atoms, e.g two adjacent boundaries always do.
+
+    if (this.subPieces.length === 0) return 0
 
     if (boundaryLocation >= this.boundariesLength) boundaryLocation = this.boundariesLength - 1
     const [ sectionIndex, offset ] = this._locateBoundary(boundaryLocation)
