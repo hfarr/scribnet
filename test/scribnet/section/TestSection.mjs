@@ -427,5 +427,26 @@ describe(`${MODULE} module`, function () {
     })
 
 
+    describe('boundaryToAtomBoundary', function () {
+      it('locates correct "index" in the atoms', function () {
+        const result = testSection.copy()
+        
+        const testPair = (input, output) => assert.strictEqual(result.boundaryToAtomBoundary(input), output)
+
+        const cases = [
+          [0, 0], [3, 3], [4, 3], [7, 6], [8, 6], [9, 6],
+          [12, 9], [13,9], [16, 12], [17, 12],
+          [18, 13], [19, 14],
+          [20, 15], [21, 15], [22, 15],
+          [ result.boundariesLength - 1, result.length ]
+        ]
+        for (const [ input, output ] of cases) {
+          testPair(input, output)
+        }
+
+      })
+    })
+
+
   })
 })

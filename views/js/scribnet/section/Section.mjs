@@ -509,6 +509,16 @@ class Section {
     return this.copyFrom(...this.subPieces.map( sec => sec.map(func)))
   }
 
+  
+
+  boundaryToAtomBoundary(boundaryLocation) {
+    // Kinda like "boundary to cursor". Multiple boundaries can "collapse" to the same "index" over the atoms, e.g two adjacent boundaries always do.
+    const [ sectionIndex, offset ] = this._locateBoundary(boundaryLocation)
+    const atomOffset = this.subPieces.slice(0, sectionIndex).reduce((p, c) => p + c.length, 0)
+
+    return atomOffset + this.subPieces[sectionIndex].boundaryToAtomBoundary(offset)
+  }
+
   at(offset) {
     return this.atoms.at(offset)
   }
@@ -663,6 +673,9 @@ class AtomicSection extends Section {
   //   return this.copyFrom( ...this.subPieces.map(func) )
   // }
 
+  boundaryToAtomBoundary(boundaryLocation) {
+    return boundaryLocation
+  }
 
   _showBoundaries() {
     return this.atoms.join('|') + '|'
