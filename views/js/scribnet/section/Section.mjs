@@ -513,6 +513,8 @@ class Section {
 
   boundaryToAtomBoundary(boundaryLocation) {
     // Kinda like "boundary to cursor". Multiple boundaries can "collapse" to the same "index" over the atoms, e.g two adjacent boundaries always do.
+
+    if (boundaryLocation >= this.boundariesLength) boundaryLocation = this.boundariesLength - 1
     const [ sectionIndex, offset ] = this._locateBoundary(boundaryLocation)
     const atomOffset = this.subPieces.slice(0, sectionIndex).reduce((p, c) => p + c.length, 0)
 
