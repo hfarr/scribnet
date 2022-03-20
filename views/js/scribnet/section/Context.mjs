@@ -198,13 +198,22 @@ class Context extends Section {
   // On the /original/ hand though we might not wish to make that the case
   // in /all/ circumstances, which are as of yet unrevealed to me.
   // we'll change it if we need to later. Such is software.
-  insertBoundary(boundaryLocation, string) {
-    // in this way it acts a bit like an AtomicSection.
-    // The combination of boundariesLength being length + 1 and forcing insertBoundary to be insert does the trick there
-    // might impact delete too.
-    // The way to sum that up is "treats boundary indices like atom indices", I think.
-    // return super.insertBoundary(boundaryLocation, string)
-    return this.insert(boundaryLocation, string)
+  // insertBoundary(boundaryLocation, string) {
+  //   // in this way it acts a bit like an AtomicSection.
+  //   // The combination of boundariesLength being length + 1 and forcing insertBoundary to be insert does the trick there
+  //   // might impact delete too.
+  //   // The way to sum that up is "treats boundary indices like atom indices", I think.
+  //   // return super.insertBoundary(boundaryLocation, string)
+  //   return this.insert(boundaryLocation, string)
+  // }
+
+  insertBoundary(boundaryLocation, atoms) {
+    // if (this.length === 0) {
+    if (this.segments.length === 0) {
+      const result = this.addSubSections(Segment.from())
+      return result.insertBoundary(boundaryLocation, atoms)
+    }
+    return super.insertBoundary(boundaryLocation, atoms)
   }
 
 

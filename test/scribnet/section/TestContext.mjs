@@ -63,18 +63,16 @@ describe('Context', function() {
     const testDoc = Doc.from(testContext1, testContext2, testContext3, testContext4)
 
     describe('insertBoundary', function() {
-      it('inserts without respect to Segment boundaries', function() {
-        const result1 = testContext1.insertBoundary(3, '_')
-        const result2 = testContext1.insertBoundary(4, '_')
 
-        assert.notDeepStrictEqual(result1.toString(), result2.toString())
-      })
+      it('creates a new Segment if the context has none before inserting', function () {
 
-      it('inserts with respect to Context boundaries', function () {
-        const result1 = testDoc.insertBoundary(9, '_')
-        const result2 = testDoc.insertBoundary(10, '_')
+        const testContext = Context.from()
+        const result = testContext.insertBoundary(0, 'test string')
 
-        assert.deepStrictEqual(result1.toString(), result2.toString())
+        assert.strictEqual(testContext.segments.length, 0, 'expect test component to not have any Segment')
+        assert.strictEqual(result.segments.length, 1, 'expect result to have a single Segment')
+        assert.strictEqual(result.characters.join(''), 'test string')
+
       })
 
     })

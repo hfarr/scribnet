@@ -104,14 +104,12 @@ describe('EditDocument', function() {
 
   describe('write', function() {
     it('writes in the expected location', function() {
-      const copy = testEditDoc.copy()
-      copy.select(24, 24)
-      const result = copy.write('_')
+      testDocAlpha.select(33)
+      const result = testDocAlpha.write('_')
 
-      const charIndex = 24 - 2  // left shift two to account for the two +1 the cursor position gets by being in the context at index 2
-      const expected = testEditDoc.toString().slice(0, charIndex) + '_' + testEditDoc.toString().slice(charIndex)
+      const expected = 'AaaaaBbbbbCccccDddddEeeeeFffffG_ggggHhhhhIiii🌐JjjjjKkkkkLllll'
 
-      assert.deepStrictEqual(result.toString(), expected)
+      assert.deepStrictEqual(result.toString(), expected, 'expect strings to match')
     })
 
     it('inserts into expected location after toggling a tag from earlier location', function () {
