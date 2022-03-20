@@ -137,6 +137,11 @@ class EditorComponent extends HTMLElement {
         default: ie.preventDefault(); 
       }
 
+      // Debug---- TODO undo this or make it permanent.
+      ie.preventDefault()
+      this.render()
+      //----------
+
       // Okay- i've just learned the power of pasting formatting. the formatting
       // from vs code comments carried over to the demo page!!
       // can I exploit that, or. At least. Handle it?
