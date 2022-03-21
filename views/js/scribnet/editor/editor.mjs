@@ -213,6 +213,10 @@ export class Editor {
     this.docHistory.add(this.currentDocument.applyTag('span', `style="background-color: ${color};"`), "Apply color")
   }
 
+  setBlockTag(tag) {
+    this.docHistory.add(this.currentDocument.setBlockTag(tag))
+  }
+
   /**
    * Text insertion & deletion
    */

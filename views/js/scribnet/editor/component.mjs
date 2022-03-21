@@ -69,6 +69,9 @@ class EditorComponent extends HTMLElement {
     const keyState = {  // booleans indicating whether the key is down or not
       'ctrl-KeyB': false,
       'ctrl-KeyI': false,
+      'ctrl-KeyH': false,
+      'ctrl-KeyP': false,
+      'ctrl-KeyT': false,
     }
 
     // Note- I need to fix ctrl-a
@@ -83,6 +86,9 @@ class EditorComponent extends HTMLElement {
     const actionsKeyDown = {
       'ctrl-KeyB': () => { this.editor.toggleBold(); this.render() },
       'ctrl-KeyI': () => { this.editor.toggleItalic(); this.render() },
+      'ctrl-KeyH': () => { this.editor.setBlockTag('h2'); this.render() },
+      'ctrl-KeyP': () => { this.editor.setBlockTag('p'); this.render() },
+      'ctrl-KeyT': () => { this.editor.setBlockTag('h1'); this.render() },
     }
 
     const beforeInput = ie => {
