@@ -329,7 +329,7 @@ describe('Context', function() {
         Context.createContext('p', Segment.createSegment([], 'Hhh'), Segment.createSegment([], 'hh'), Segment.createSegment([], 'Ii'), Segment.createSegment([], 'iii'), ),
       )
       it('maps cursor positions correctly', function() {
-        // TODO split these into more "it" declarations
+        assert.strictEqual(testDocAlpha2.cursorToBoundary(0), 0)
         assert.strictEqual(testDocAlpha2.cursorToBoundary(3), 3)
         assert.strictEqual(testDocAlpha2.cursorToBoundary(4), 5)
         assert.strictEqual(testDocAlpha2.cursorToBoundary(7), 9)
@@ -342,7 +342,19 @@ describe('Context', function() {
         assert.strictEqual(testDocAlpha2.cursorToBoundary(19), 21)
         assert.strictEqual(testDocAlpha2.cursorToBoundary(22), 24)
         assert.strictEqual(testDocAlpha2.cursorToBoundary(23), 26)
-        // assert.strictEqual(testDocAlpha2.cursorToBoundary(11), 13)
+        assert.strictEqual(testDocAlpha2.cursorToBoundary(testDocAlpha2.totalCursorPositions - 1), testDocAlpha2.boundariesLength - 1)
+
+      })
+
+      it('correctly maps cursor from last position to last boundary when the last 2 Contexts have no Segments', function() {
+        const testDocAlpha3 = testDocAlpha2.addSubSections(Context.createContext('p'), Context.createContext('p'))
+
+        const lastBoundaryPosition = testDocAlpha3.boundariesLength - 1
+        const lastCursorPosition = testDocAlpha3.totalCursorPositions - 1
+        const result = testDocAlpha3.cursorToBoundary(lastCursorPosition)
+
+        assert.notStrictEqual(result, 0, "expect to not be equal to the stubbed output")
+        assert.strictEqual(result, lastBoundaryPosition, "expect to match last boundary position")
 
       })
     })

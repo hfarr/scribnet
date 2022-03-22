@@ -414,12 +414,14 @@ class Doc extends Section {
       if (offset < ctx.length + 1) {
         for (const seg of ctx.segments) {
           if (offset < seg.length + 1) {
-            return boundary + offset  // we add 1 to the offset to account for the skipped left-most boundary
+            break;
+            // return boundary + offset  // we add 1 to the offset to account for the skipped left-most boundary
           }   
 
           boundary += seg.boundariesLength
           offset -= seg.length  // cursorPositions length excludes boundary between Segments.
         }
+        return boundary + offset
       }
       boundary += ctx.boundariesLength
       offset -= ctx.length + 1  // so-called "cursorPositions" length, which includes bndry between Context.
@@ -431,6 +433,24 @@ class Doc extends Section {
 
   boundaryToCursor(boundary) {
 
+  }
+
+  /**
+   * Computes the cursor positions by summing the length (in
+   * atoms) plus the number of contexts. 
+   *
+   * Roughly, a cursor can exist 
+   * - between each atom (this.length - 1 positions)
+   * - at an extra position between each context 
+   *   (this.contexts - 1 positions) 
+   * - at the beginning and end (2 positions)
+   * yielding the sum formula.
+   * 
+   * @returns Total number of "cursor positions" in this Doc
+   */
+  totalCursorPositions() {
+    // Total
+    return this.length + this.contexts.length
   }
 
   selection(cursorStart, cursorEnd) {
