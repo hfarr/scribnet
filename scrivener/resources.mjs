@@ -1,7 +1,7 @@
 'use strict'
 // import crypto from 'crypto';
 
-import { graphql, buildSchema } from 'graphql'
+import { graphql, buildSchema, execute } from 'graphql'
 
 import Dataccess from "./datasystem/Dataccess.mjs"
 import Note from './notes/Note.mjs'
@@ -234,6 +234,19 @@ const root = {
 }
 const schema = buildSchema(schemaStr)
 
+
+
+
+function authenticatePreStep(execArgs) {
+
+  if (process.env.DEVELOPMENT === 'true') {
+    // console.log('GQL Execuction args:', execArgs)
+    console.log('Authenticated user:', execArgs.contextValue.user)
+  }
+
+  return execute(execArgs)
+}
+
 /*
 const schema = buildSchema(gql`
   type RandomDie {
@@ -334,4 +347,6 @@ const rootValue2 = {
 
 // export default { schema, rootValue }
 
-export default { schema: schema, rootValue: root }
+const graphqlHTTPOptions = { schema: schema, rootValue: root, customExecuteFn: authenticatePreStep }
+
+export default graphqlHTTPOptions

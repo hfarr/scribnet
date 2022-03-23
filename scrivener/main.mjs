@@ -5,6 +5,8 @@ import fs from 'fs/promises'
 
 import express, { application } from 'express'
 import { graphqlHTTP } from 'express-graphql'
+import cookieParser from 'cookie-parser'
+import jwt from 'express-jwt'
 
 import { staticLocation } from './static/Static.mjs'
 // import { Notes } from './notes/NoteController.mjs'
@@ -18,6 +20,11 @@ const PATH = '/'
 const BIND_IP = '127.0.0.1'
 const BIND_PORT = 3000
 const DIR_ROOT = process.env.PWD
+
+const ADMIN_SECRET = process.env.ADMIN_SECRET
+const PUBLIC_SECRET = process.env.PUBLIC_SECRET ?? 'public'
+const PUBLIC_TOKEN = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJhdWQiOiJwdWJsaWMifQ.oja9ZXRtjPLpuVpqSmZITSHm8lA4Y_Js5_nLifQl8jo'
+
 
 // TODO think about allocating a 'public' directory? for resource acquisition without needing authoriziation?
 const SITE_ROOT = path.resolve('site')  
@@ -166,9 +173,36 @@ mainRouter.get('/edit/:notename', async (req, res) => {
   ===============
 */
 
+const secretCallback = (req, payload, done) => {
+  if (payload['aud'] === 'public') return done(null, PUBLIC_SECRET)
+
+  return done(null, ADMIN_SECRET)
+}
+
+const getToken = (req) => {
+  if (req.headers.authorization !== undefined && req.headers.authorization.split(' ')[0] === 'Bearer') {
+    return req.headers.authorization.split(' ')[1]
+  } else if (req.query?.token !== undefined) {
+    return req.query.token
+  } else if (req.cookies['__scrivener_token'] !== undefined) {
+    return req.cookies['__scrivener_token']
+  }
+  
+  return PUBLIC_TOKEN 
+}
+
+console.log('secret:', ADMIN_SECRET)
 // mainApp.use('/api', express.json())
-mainRouter.use('/api', (req, res, next) => {
+mainRouter.use('/api',
+  cookieParser(),
+  jwt({ 
+    secret: secretCallback, 
+    algorithms: ['HS256'],
+    getToken: getToken
+  }),
+  (req, res, next) => {
   // res.set('Content-Type', 'application/json')
+  console.log('JWT Payload', req.user)
   next()
 })
 
