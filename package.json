@@ -12,7 +12,7 @@
     "test": "mocha test/**/*.mjs",
     "build-serve": "npx @11ty/eleventy --serve",
     "build-watch": "npx @11ty/eleventy --watch",
-    "static": "env $(sed '/^#/d' .env) DEV_FETCH_FAILS_BUILD=false npx @11ty/eleventy --watch",
+    "static": "eval \"$(grep -v '^#' .env | xargs -d '\n') npx @11ty/eleventy --watch\"",
     "db-reload": "cp data-folder/dbfile.bkp data-folder/dbfile",
     "db-copy": "cp data-folder/dbfile data-folder/dbfile.bkp"
   },
