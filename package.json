@@ -7,7 +7,7 @@
     "build": "npx @11ty/eleventy",
     "build-static": "DEV_STATIC_ONLY=true npx @11ty/eleventy",
     "clean": "rm -r ./site/* && touch views/index.njk",
-    "scrivener": "env $(sed '/^#/d' .env) node scrivener/main.mjs",
+    "scrivener": "eval \"$(grep -v '^#' .env | xargs -d '\n') node scrivener/main.mjs\"",
     "server": "node scrivener/main.mjs",
     "test": "mocha test/**/*.mjs",
     "build-serve": "npx @11ty/eleventy --serve",
