@@ -218,6 +218,64 @@ console.log('secret:', ADMIN_SECRET)
 //    session, its about the authentication activity. This point isn't
 //    super compelling, even to me ha. Perhaps I should contemplate
 //    more.
+//
+// merr http://cryto.net/~joepie91/blog/2016/06/13/stop-using-jwt-for-sessions/
+//  https://datatracker.ietf.org/doc/html/rfc7519
+//  http://cryto.net/%7Ejoepie91/blog/2016/06/19/stop-using-jwt-for-sessions-part-2-why-your-solution-doesnt-work/
+//  seems like. okay. Not "seems like". The impression I get is the
+//  author agrees with JWTs as assertions of permissions. "This user
+//  has these permissions". That's not a session per se it's more like
+//  a permanent credential, certificate. 
+//  Still suffers a revocation issue I'd say, but the validation of the
+//  token, performed on the resource server, can involve communicating
+//  back to the authentication server. Here the authentication server
+//  can deny handing out a key, for example, because it does statefully
+//  track client validity. In that case, we can imagine the token is
+//  able to be turned "on and off" based on whether the authentication
+//  server hands out the key or not. Lower the permission of a client,
+//  toss out the key. Temporarily disable, stop handing out keys for
+//  that client.
+//  here the concept of "session" isn't relevant. Right? we aren't
+//  talking about a "user" and as far as I know "session" isn't really
+//  applicable to APIs (not that you couldn't implement that.)
+//  It's a combination of sessions and tokens, which I feel is the key
+//  or...
+//  Not sessions. It's tokens and something else.
+// and...
+//  JWTs can also stand on their own. I'd like to refine this idea.
+//
+// more reading https://blog.logrocket.com/jwt-authentication-best-practices/#tl-dr-what-are-they-good-for
+//  read this one before the cryto guy but I think it linked to cryto
+//  https://developer.okta.com/blog/2017/08/17/why-jwts-suck-as-session-tokens
+//  "3 or more parties involved in a request" this covers OAUTH use
+//  cases I reckon. See and it hits that sweet spot of combining with
+//  something stateful. A user, an API, a 3rd party application. auth
+//  server can track client ids (of the application) and revoke based
+//  on those, users can control the privleges. But I guess it's still..
+//  just as simple, if not simpler, to simply send the client id/secret
+//  each time? Fetching a token, it would seem to act identically to
+//  having a username/password.
+//  like, the permissions checking happens anyway when the data are
+//  sent. Oh me of little faith. What advantages to JWTs make them
+//  worth the tradeoffs? are there any "perfect" use cases where
+//  something else isn't better? is asking these questions limiting
+//  "the scope of my imagination"?
+//  I guess Single Sign On? But the auth server can hand back any
+//  piece of signed data, identifying a user. It's still up to each
+//  resource server to check authorization.
+
+//  from https://developer.okta.com/blog/2017/08/17/why-jwts-suck-as-session-tokens
+//  again, in a comment, "JWTs were not designed for this purpose—
+//  they were designed to pass signed data around between untrusted
+//  parties"
+//  I think there's a bit of a communication barrier. Between me and
+//  the authors, those rascalls. It often feels like they're disagreeing
+//  with their own points but I need some more comprehension to
+//  sift through, not sure it's exactly an issue on their end but.
+//  I am feeling mixed messaging. Not sure. I am tired. Sign off.
+
+// sorry https://jwt.io, Im not friends with https://token.dev/
+
 
 mainRouter.use('/api',
   cookieParser(),
