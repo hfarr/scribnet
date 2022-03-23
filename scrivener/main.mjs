@@ -188,7 +188,8 @@ const getToken = (req) => {
     return req.cookies['__scrivener_token']
   }
   
-  return PUBLIC_TOKEN 
+  // return PUBLIC_TOKEN 
+  return null
 }
 
 console.log('secret:', ADMIN_SECRET)
@@ -198,6 +199,7 @@ mainRouter.use('/api',
   jwt({ 
     secret: secretCallback, 
     algorithms: ['HS256'],
+    credentialsRequired: !(process.env.DEVELOPMENT === 'true'),
     getToken: getToken
   }),
   (req, res, next) => {
