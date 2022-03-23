@@ -241,7 +241,11 @@ function authenticatePreStep(execArgs) {
 
   if (process.env.DEVELOPMENT === 'true') {
     // console.log('GQL Execuction args:', execArgs)
-    console.log('Authenticated user:', execArgs.contextValue.user)
+    // console.log('Authenticated user:', execArgs.contextValue.user)
+
+    const isAdmin = execArgs.contextValue.user?.admin ?? false
+    console.log("Is admin request:", isAdmin)
+    // if (isAdmin) console.log("Admin request")
   }
 
   return execute(execArgs)
