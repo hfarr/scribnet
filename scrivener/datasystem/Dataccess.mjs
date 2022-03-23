@@ -137,6 +137,25 @@ export default class Dataccess {
 
     return this.fromPacked(data)
   }
+
+  /*-------------------------------------------------
+    TODO 
+    I want to restrict create/update by authorization
+    and more broadly, I want refined granularity for 
+    accessing individual capabilities. However...
+    That might be better to implement at the 
+    capability level. Or not!
+    I think I'll start there though. That approach
+    might require hooks into the Dataccess anyway.
+    Perhaps we can think of levels of restrictions.
+    And different granularities. I might allow an
+    entire resource, or only individual capabilities
+    on that resource.
+    Additionally adding the ability to "allow" at the
+    capability level when requests from outside the
+    server are received. At least two layers there.
+    -------------------------------------------------*/
+
   async update(constructorFunc, indexKey, data) {
     const index = this.indices[constructorFunc.name]
     const { [index.field]: newIndexKey, ...rest } = data

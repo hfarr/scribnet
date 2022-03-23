@@ -39,44 +39,13 @@ const mainApp = express()
 mainApp.use(mainRouter)
 
 const staticAll = makeStatic(NOTES_ROOT)
-const staticEdit = makeStatic(EDIT_ROOT)
 
 ///// load all note files (for a premier vertical slice, all notes will be loaded, there is only one set of notes, viva la revolucion)
-const NOTE_FOLDER = "note-folder" 
 const DATA_FOLDER = "data-folder"
 const DATA_DB_FILE = `${DATA_FOLDER}/dbfile`
+
 // mmmm yeah. This file (that is, main.mjs) is like the early editor.njk, a kinda grunge forceps
 // holding open meaty internals, taking whatever steps needed to exercise a maturing code base
-// const names = await fs.readdir(NOTE_FOLDER)  // yeah I could jsut use fs and not the promise version. oh well.
-// const notes = Notes.newNotes()
-// for (const noteName of names) {
-//   notes.update
-// }
-const dacc = await Dataccess.initFromFile(DATA_DB_FILE)
-// dacc.register(Note)
-dacc.registerWithIndex(Note, "name", String)
-
-// const pairEm = (name, promise) => Promise.all([Promise.resolve(name), promise])
-
-// const notes = await fs.readdir(NOTE_FOLDER)
-  // .then( noteNames => Promise.all(noteNames.map(name => pairEm(name, fs.readFile(`${NOTE_FOLDER}/${name}`, {encoding: "utf-8" })))) )
-  // .then( notesList => Notes.fromNotesMap(new Map(notesList)) )
-
-
-// I am thinking presently... yes, we don't want to organize by functionality, or by 'layer', it's all about capabilities
-// and interfaces. okay. So, a "notes controller" should probably own the responsibility of storing/saving notes. that in
-// turn might go to a content managing module, but again I am imagining that saving/loading, reading/writing is incidental
-// to a "Note", but a "Note" still knows it saves and loads. okay. So, some class might provide saving and loading 
-// capabilities and it would make sense to segment that out. As opposed to "This is the module that manages all resources,
-// when you register a resource you must also update these files xyz.." so we *will* split out handling i/o to a package
-// or module. Provided we don't violate capab*boundaries* (capability boundaries)
-// in other words, code like we have here - "wiring up" code - does violate that boundary. We're saying "A notes 
-// controller spontaneously comes into existence with this piece of data", that data being a collection of notes, but it
-// the 'wiring up' is, in my mind, notionally a part of a collection of notes. which might belong to something else, for
-// example *this* notes controller belongs to the "main app" which is why the main app will specify parameters for the
-// notes controller, but won't over-specify the details. Helpful for me to type it out.
-
-console.log("Notes loaded")
 
 /////
 
@@ -87,15 +56,6 @@ console.log("Notes loaded")
 //  two kinda views for the page. I see this as being managed by a custom component.
 
 // authenticator that controls access to static resources
-
-// TODO might be nice to decouple an authenticators actions for a given path from the authenticator
-//  itself. That's a bit confusing, consider this example-
-//  I log in to my account. I get a userAuthenticator. Access to my resources are controlled by that
-//  authenticator. If it's a page resource, say I am an Admin user, then the authenticator might
-//  default to returning pages on a failure. If it's an API resource, say my user data, then the auth
-//  fail responses should be in JSON. But I'd like to log in with just /one/ authenticator and then
-//  the resource access guides the actions. for now, auth will send a page, and if we hit with API
-//  the reader will have to work off the response code.
 
 //////
 
@@ -128,7 +88,7 @@ mainRouter.get('/login', (req, res) => {
 // supplying a redirect param essentially prevents the default action. I think it would behoove me to
 // make that a part of the Authenticator, which right now offloads a lot of work to a helper function
 // that assigns all the routes.
-console.log(`http://localhost:3000/login?${authenticator.accessParam}&redirect=note`)
+// console.log(`http://localhost:3000/login?${authenticator.accessParam}&redirect=note`)
 
 /////
 
@@ -296,56 +256,6 @@ console.log(`DEVELOPMENT: ${process.env.DEVELOPMENT}`)
 const gqlArgs = { ...gqlObj, graphiql: process.env.DEVELOPMENT === 'true' }
 mainRouter.use('/api/graphql', graphqlHTTP(gqlArgs))
 
-// mainRouter.use('/api', allNotesAPI.app)
-// temp
-const publicNotes = express.Router()
-publicNotes.use('/', (req, res, next) =>{
-  res.set('Content-Type', 'application/json')
-  console.log("Request received", req.method, req.originalUrl)
-  next()
-})
-publicNotes.use('/', express.json())
-publicNotes.get('/notes', (req, res) => {
-  const data = dacc.getIndexList(Note)
-  res.status(200).send(data)
-})
-publicNotes.use('/note/:noteName', 
-  (req, res, next) => {
-    const replaced = req.params.noteName.replace(/%20/g, "-")
-    req.params.noteName = replaced
-    next()
-  }, 
-  express.text('utf-8')
-  )
-publicNotes.get('/note/:noteName', async (req, res) => {
-  const data = await dacc.get(Note, req.params.noteName)
-  if (data === undefined) {
-    res.status(404).send({ error: `No note called '${req.params.noteName}'` })
-    return
-  }
-  res.status(200).send(data)
-})
-publicNotes.put('/note/:noteName', async (req, res) => {
-  const data = dacc.update(Note, req.params.noteName, req.body)
-
-  if (data === undefined) {
-    res.status(404).send(`No note called '${req.params.noteName}'`)
-    return
-  }
-
-  res.status(200).send('OK')
-})
-publicNotes.post('/note/:noteName', async (req, res) => {
-  // shenanigans would ensue if names disagreed, we override it.
-  // in another world we would just post('/note') and take the
-  // name from the body. Might prefer that.
-  const data = { ...req.body, name: req.params.noteName }
-
-  await dacc.create(Note, data)
-  res.status(200).send('OK')
-})
-mainRouter.use('/api', publicNotes)
-
 const devOnly = express.Router()
 mainRouter.use('/api', devOnly)
 devOnly.post('/db-reload', async (req, res) => {
@@ -354,25 +264,9 @@ devOnly.post('/db-reload', async (req, res) => {
 })
 
 
-// mainApp.get('/api/notes', async (req, res) => {
-//   // likely need to pass url-safe over these, so we can have all valid filenames (spaces come to mind)
-//   res.status(200).send( ['test', 'a-note'] )
-// })
-
-// Note that this request is also subject to 'param' above.
-// One thing using a router would get us is parameter name isolation,
-// right now I'm not sure if I want the "establishing" step for the
-// parameter to happen both above and here
-// mainApp.get('/api/note/:notename', async(req, res) => {
-//   // use the loader. Prework that in the param handler?
-//   res.status(200).send( { name: req.noteName, content: `<h2>${req.noteName}</h2><p>Anynote</p>` } )
-// })
-
-
 try {
-  // mainApp.bind()
+  console.log(`Server starting up on ${BIND_IP}:${BIND_PORT}`)
   http.createServer(mainApp).listen(BIND_PORT, BIND_IP)
-
 } catch (e) {
   console.error(e)
 }
