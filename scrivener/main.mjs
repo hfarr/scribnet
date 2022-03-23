@@ -194,6 +194,31 @@ const getToken = (req) => {
 
 console.log('secret:', ADMIN_SECRET)
 // mainApp.use('/api', express.json())
+// sigh
+
+// TODO
+// BOTH! I'll use JWTs AND simpler session IDs. no one can stop meeee
+// https://graphql.org/graphql-js/authentication-and-express-middleware/
+// https://github.com/expressjs/session
+// okay for understanding, the main reason is I like the idea of JWTs to
+// enable programmable access to the API and a possible "oauth" 
+// situation in the future. Sessions though for users and clients 
+// because we don't need the extra complexity. I have been convinced.
+// as a point of order it's true that we could distribute a traditional
+// API key as well and obviate JWTs entirely.
+// but 
+//  1) they're interesting to me
+//  2) I do like the statelessness even though it's not needed. I don't
+//    plan to store sessions based on JWT authentication, the JWTs will
+//    authenticate on each request. if we need to revoke a token then
+//    that's pretty doable too, and yes that's "stateful" to a degree.
+//    see I think a simple way would be to remove the secret key (or
+//    request that the dynamic source of the keys remove it). Or store
+//    "revocation" information. Main point is that it's not about the
+//    session, its about the authentication activity. This point isn't
+//    super compelling, even to me ha. Perhaps I should contemplate
+//    more.
+
 mainRouter.use('/api',
   cookieParser(),
   jwt({ 
