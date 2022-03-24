@@ -30,10 +30,12 @@
   "dependencies": {
     "@11ty/eleventy": "^1.0.0",
     "axios": "^0.24.0",
+    "cluster-store": "^2.0.8",
     "cookie-parser": "^1.4.6",
     "express": "^4.17.2",
     "express-graphql": "^0.12.0",
     "express-jwt": "^6.1.1",
+    "express-session": "^1.17.2",
     "graphql": "^15.3.0"
   },
   "devDependencies": {
