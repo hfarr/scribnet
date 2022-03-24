@@ -14,7 +14,7 @@ import Note from './notes/Note.mjs'
 import RouteNoteController from './notes/NoteController.mjs'
 import Authenticator from './scopes/Access.mjs'
 import Dataccess from './datasystem/Dataccess.mjs'
-// import datasytem, { Dataccess, Datable } from './datasystem/Datable.mjs'
+import session from './session.mjs'
 
 const PATH = '/'
 const BIND_IP = '127.0.0.1'
@@ -77,6 +77,9 @@ const StaticAuthenticator = class extends Authenticator {
   }
 }
 const authenticator = new StaticAuthenticator()
+
+mainRouter.use(session)
+
 // const authenticator = new Authenticator()
 mainRouter.use('/private', authenticator.authApp)
 // mainRouter.use('/edit', authenticator.authApp)  // should actually be an API thing
