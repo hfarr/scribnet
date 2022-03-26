@@ -63,7 +63,7 @@ title: Testing
   }
 
   let editDocRender, htmlRender
-  import('/js/scribnet/document/Renderer.mjs').then(m => {
+  import('/js/scribnet/document/renderer/index.mjs').then(m => {
     const { EditRenderer, HTMLRenderer } = m
     editDocRender = new EditRenderer()
     editDocRender.setWrapper(p3)

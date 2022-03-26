@@ -80,7 +80,7 @@ title: Editing
       .then(body => updateFromHTML(body)) // maybe good on initial load. Maybe not. I want to have the options for both, I reckon most back and forth data will be raw EditDocument though
       .catch(sad => console.warn(sad))
 
-    import('/js/scribnet/document/Renderer.mjs').then(async m => {
+    import('/js/scribnet/document/renderer/index.mjs').then(async m => {
       const { HTMLRenderer } = m
       const htmlRender = new HTMLRenderer()
 

@@ -2,7 +2,7 @@
 import assert from 'assert';
 const PATH = "/home/henry/dev/scribnet/views"
 
-const { Renderer, EditRenderer, HTMLRenderer, wrapOne, wrapOneAttributes, wrapMany, escapeString } = await import(`${PATH}/js/scribnet/document/Renderer.mjs`)
+const { Renderer, EditRenderer, HTMLRenderer, wrapOne, wrapOneAttributes, wrapMany, escapeString } = await import(`${PATH}/js/scribnet/document/renderer/Renderer.mjs`)
 // const { default: EditDocument } = await import(`${PATH}/js/scribnet/document/EditDocument.mjs`)
 // const { Segment, ListSegment } = await import(`${PATH}/js/scribnet/document/Segment.mjs`)
 const { Doc, Context, Segment, Gap } = await import(`${PATH}/js/scribnet/section/Context.mjs`)

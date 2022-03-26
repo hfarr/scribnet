@@ -141,7 +141,7 @@ function updateEditDocLabel(editDoc) {
 }
 
 let editDocDisplay 
-import('/js/scribnet/document/Renderer.mjs').then(m=>{
+import('/js/scribnet/document/renderer/index.mjs').then(m=>{
   const { EditRenderer } = m
   editDocDisplay = new EditRenderer()
   editDocDisplay.setWrapper(p3)

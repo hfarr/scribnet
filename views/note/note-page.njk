@@ -147,7 +147,7 @@ permalink: "note/{{ noteItem.name | slug }}/"
 
     contentWrapper.parentNode.removeChild(contentWrapper)
 
-    import('/js/scribnet/document/Renderer.mjs').then(m => {
+    import('/js/scribnet/document/renderer/index.mjs').then(m => {
       const { HTMLRenderer } = m;
       const htmlRenderer = new HTMLRenderer()
       editor.defaultRenderer = htmlRenderer
