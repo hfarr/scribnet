@@ -112,6 +112,27 @@ describe('Renderer', function () {
 
       assert.strictEqual(actual, expected)
     }) 
+
+    describe('renderContext', function () {
+
+      it('Renders with indentation', function () {
+
+        const testContextsIndent = [
+          testContexts[0],
+          testContexts[1].indent(2),
+          ...testContexts.slice(2)
+        ]
+
+        const testDoc = Doc.from(...testContextsIndent)
+
+        const actual = htmlRenderer.toHTML(testDoc)
+        const expected = `<h1>AAAAA</h1><p style="margin-left: 8">BBBBB</p><p>CCCCC</p><h2>DDDDD</h2><p>EEEEE</p><p>FFFFF</p>`
+
+        assert.strictEqual(actual, expected)
+
+      })
+
+    })
     
   })
 })

@@ -67,6 +67,8 @@ const wrapOneAttributes = (tag, attributes, value) => {
   const formattedAttributes = []
   for ( const [name, value ] of Object.entries(attributes)) 
     formattedAttributes.push(`${name}="${value}"`)
+
+  if (formattedAttributes.length === 0) return wrapOne(tag, value)
   
   const attribution = formattedAttributes.join(' ')
 
@@ -131,7 +133,14 @@ class HTMLRenderer extends Renderer {
   renderContext(context) {
     let result = ""
     const blockTag = context.block
-    const attributes = ""
+    let attributes = {}
+
+    if (context.indentation > 0) {
+      attributes = {
+        ...attributes,
+        style: `margin-left: ${context.indentation * context.indentationWidth}`
+      }
+    }
 
     // if (context.empty()) result += "<br>"
     if (context.length === 0) result += "<br>"
@@ -139,7 +148,8 @@ class HTMLRenderer extends Renderer {
     for (const segment of context.segments)
       result += this.renderSegment(segment)
     
-    return wrapOne(blockTag, result)
+    // return wrapOne(blockTag, result)
+    return wrapOneAttributes(blockTag, attributes, result)
 
   }
 
