@@ -79,6 +79,8 @@ const DataInterface = dataccess => (constructorFunc, indexField) => {
     [`get${typeName}`]: async function ({ [`${indexField}`]: val }) {
       if (process.env.DEVELOPMENT === 'true') console.log(`get${typeName}`, val)
       const instance = await dataccess.get(constructorFunc, val)
+      // Example use of sesssion in gql resolver. Might not fully obliterate all other context data, back in the "execute pre step". This is a demo of how it can be done.
+      // console.log(arguments[1].session)
       if (instance === undefined) throw new Error(`Instance of ${constructorFunc.name} not found`)
       return serialize(instance)
     },
@@ -242,9 +244,11 @@ function authenticatePreStep(execArgs) {
     // console.log('Authenticated user:', execArgs.contextValue.user)
 
     const isAdmin = execArgs.contextValue.user?.admin ?? false
-    console.log("Is admin request:", isAdmin)
+    // console.log("Is admin request:", isAdmin)
     // if (isAdmin) console.log("Admin request")
   }
+
+  execArgs.contextValue = { session: execArgs.contextValue.session }
 
   return execute(execArgs)
 }
