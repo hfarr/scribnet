@@ -184,7 +184,8 @@ export class Editor {
 
   }
 
-  // -- EditDoc "mutations"
+  //=========================
+  //-- EditDoc "mutations" --
 
   /**
    * Toggle properties of the selected text
@@ -229,9 +230,8 @@ export class Editor {
     this.docHistory.add(this.currentDocument.indentBlock(amount))
   }
 
-  /**
-   * Text insertion & deletion
-   */
+  // -- Text insertion & deletion
+
   write(text) {
     this.docHistory.add(this.currentDocument.write(text), `Write: ${text}`)
   }
@@ -246,7 +246,20 @@ export class Editor {
     this.docHistory.add(this.currentDocument.enterNewline(), 'Enter key')
   }
 
-  // -----------------------
+  // -- Other API
+
+  /**
+   * Update the cursor in the document
+   * 
+   * @param offset Offset into segment
+   */
+  select(anchor, focus) {
+    this.currentDocument.select(anchor, focus)
+    this.selectInDOM()  
+  }
+  
+
+  //=========================
 
   /**
    * Inverse (well..) of 'updateSelection'. Takes the currently selected text in the
@@ -262,21 +275,6 @@ export class Editor {
     window.getSelection().setBaseAndExtent(...anchorOffsetComputer(this.component), ...focusOffsetComputer(this.component))
   }
 
-  /**
-   * Update the cursor in the document
-   * 
-   * @param offset Offset into segment
-   */
-  select(anchor, focus) {
-    this.currentDocument.select(anchor, focus)
-    this.selectInDOM()  
-    // (?) Should we always do this? I think so, it's the API we expose and
-    // there are not meant to be direct ways to modify the document. If
-    // someone wanted to they could write extensions in JS and select in the
-    // document without updating.
-    // In fact, editor might even do that. we may yet need a select-no-render
-  }
-  
 
   // Another feature that makes me ask, should I abstract *now*? I don't feel I need it yet, I won't,
   // yet it should be done at some point.
