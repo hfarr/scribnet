@@ -56,41 +56,6 @@ class EditorComponent extends HTMLElement {
   initListeners() {
     this.editor.evtSelChg = async (e) => this.editor.onSelectionChange(e)
 
-    // currently, the input is not customizeable. That'll require more thunks
-    // I am thinking there will be one interface to handle taking in events
-    // and converting them to useful sequences. That can be customized on what
-    // gets intercepted. It will handle controlling the inputs to regulate the
-    // input. For example a key down event is fired repeatedly when the a key
-    // is held, so one step is to fire only once between key ups.
-    // The next step is mapping the events to editor actions. That will be the
-    // customized part, and can finesse, for example, preventing the default
-    // actions of keys (ctrl-l by default sets focus to the URL bar so we can
-    // stop that)
-    const keyState = {  // booleans indicating whether the key is down or not
-      'ctrl-KeyB': false,
-      'ctrl-KeyI': false,
-      'ctrl-KeyH': false,
-      'ctrl-KeyP': false,
-      'ctrl-KeyT': false,
-    }
-
-    // Note- I need to fix ctrl-a
-    // and, I can fix ctrl-a
-    // I can fix it by fixing the selection mechanism to recognize the selection
-    // of the entire outer element, and propogate the selection inward...
-    // or! I can intercept ctrl-a and re-select the window as a selection of all
-    // text. now. The "better" way? would be to fix the selection, ha.
-    // ctrl-a is not the only way to induce a selection on the entire node.
-    // In fact that might not be as hard as I'm thinking.
-
-    const actionsKeyDown = {
-      'ctrl-KeyB': () => { this.editor.toggleBold(); this.render() },
-      'ctrl-KeyI': () => { this.editor.toggleItalic(); this.render() },
-      'ctrl-KeyH': () => { this.editor.setBlockTag('h2'); this.render() },
-      'ctrl-KeyP': () => { this.editor.setBlockTag('p'); this.render() },
-      'ctrl-KeyT': () => { this.editor.setBlockTag('h1'); this.render() },
-    }
-
     const beforeInput = ie => {
       // maybe, create a separate "blockOrNot" method that is async, then calls the beforeInput. blockOrNot then is
       // the handler because I think we want syncrhronous handling in case afterInput fires. Unless there is a mechanism
@@ -157,30 +122,76 @@ class EditorComponent extends HTMLElement {
 
     }
 
+
+    // currently, the input is not customizeable. That'll require more thunks
+    // I am thinking there will be one interface to handle taking in events
+    // and converting them to useful sequences. That can be customized on what
+    // gets intercepted. It will handle controlling the inputs to regulate the
+    // input. For example a key down event is fired repeatedly when the a key
+    // is held, so one step is to fire only once between key ups.
+    // The next step is mapping the events to editor actions. That will be the
+    // customized part, and can finesse, for example, preventing the default
+    // actions of keys (ctrl-l by default sets focus to the URL bar so we can
+    // stop that)
+    const keyState = {  // booleans indicating whether the key is down or not
+      'ctrl-KeyB': false,
+      'ctrl-KeyI': false,
+      'ctrl-KeyH': false,
+      'ctrl-KeyP': false,
+      'ctrl-KeyT': false,
+      'Tab': false,
+      'shift-Tab':  false,
+    }
+
+    // Note- I need to fix ctrl-a
+    // and, I can fix ctrl-a
+    // I can fix it by fixing the selection mechanism to recognize the selection
+    // of the entire outer element, and propogate the selection inward...
+    // or! I can intercept ctrl-a and re-select the window as a selection of all
+    // text. now. The "better" way? would be to fix the selection, ha.
+    // ctrl-a is not the only way to induce a selection on the entire node.
+    // In fact that might not be as hard as I'm thinking.
+
+    const actionsKeyDown = {
+      'ctrl-KeyB': () => { this.editor.toggleBold(); this.render() },
+      'ctrl-KeyI': () => { this.editor.toggleItalic(); this.render() },
+      'ctrl-KeyH': () => { this.editor.setBlockTag('h2'); this.render() },
+      'ctrl-KeyP': () => { this.editor.setBlockTag('p'); this.render() },
+      'Tab': () => { this.editor.indentBlock(1); this.render() },
+      'shift-Tab': () => { this.editor.indentBlock(-1); this.render() },
+    }
+
+    const actionsKeyUp = {
+      'Tab': () => { /* console.log('tab off')  */ }
+    }
+
+    const actionsKeyHeldDown = {
+      'Tab': () => { this.editor.indentBlock(1); this.render() },
+      'shift-Tab': () => { this.editor.indentBlock(-1); this.render() },
+    }
+
     // deprecated aw
     const keyUp = async (keyUp) => {
-      if (keyUp.ctrlKey) {
-        const statekey = `ctrl-${keyUp.code}`
-        if (statekey in keyState) {
-          keyUp.preventDefault()
-          if (keyState[statekey]) {
-            keyState[statekey] = false // in our interface we'd probably implement the 'check&set' in one operation
-            console.debug('key up', statekey)
-          }
+      const statekey = `${keyUp.ctrlKey ? 'ctrl-' : ''}${keyUp.shiftKey ? 'shift-' : ''}${keyUp.code}`
+      if (statekey in keyState) {
+        keyUp.preventDefault()
+        if (keyState[statekey]) {
+          keyState[statekey] = false // in our interface we'd probably implement the 'check&set' in one operation
+          if (statekey in actionsKeyUp) actionsKeyUp[statekey]()
+          console.debug('key up', statekey)
         }
       }
-
     }
     const keyDown = async (keyDown) => {
-      if (keyDown.ctrlKey) {
-        const statekey = `ctrl-${keyDown.code}`
-        if (statekey in keyState ) {
-          keyDown.preventDefault()
-          if (!keyState[statekey]) {
-            keyState[statekey] = true // in our interface we'd probably implement the 'check&set' in one operation
-            actionsKeyDown[statekey]()
-            console.debug('key down',statekey)
-          }
+      const statekey = `${keyDown.ctrlKey ? 'ctrl-' : ''}${keyDown.shiftKey ? 'shift-' : ''}${keyDown.code}`
+      if ( statekey in keyState ) {
+        keyDown.preventDefault()
+        if (!keyState[statekey]) {
+          keyState[statekey] = true // in our interface we'd probably implement the 'check&set' in one operation
+          if (statekey in actionsKeyDown) actionsKeyDown[statekey]()
+          console.debug('key down',statekey)
+        } else {
+          if (statekey in actionsKeyHeldDown) actionsKeyHeldDown[statekey]()
         }
       }
     }
