@@ -66,6 +66,9 @@ permalink: "note/{{ noteItem.name | slug }}/"
   const viewButton = document.querySelector("#view-button")
   const dbButton = document.querySelector("#db-button")
 
+  const contentMap = new Map()
+  contentMap.set(contentWrapper, { serial: null } )
+
   const url = "/api/graphql"
 
   const query = (content,variables) => {
@@ -87,7 +90,7 @@ permalink: "note/{{ noteItem.name | slug }}/"
     return fetch(url, options)
   }
   
-  const saveContent = async data => {
+  const saveNote = async data => {
   // const saveHTML = async content => {
     // likely, a function that "saves html" would first render it into html rather than assume "content" is html. so we'll call it saveContent for now
 
@@ -98,6 +101,11 @@ permalink: "note/{{ noteItem.name | slug }}/"
     return query(`{ getNote(name: "${resourceName}") { data } }`)
       .then(res => res.json())
       .then(body => body.data)
+  }
+
+  const loadNote = async () => {
+    return loadContent()
+      .then(res => JSON.parse(res.getNote.data))
   }
 
   // Toggle functionality- opportunity for a component. TODO
@@ -126,8 +134,17 @@ permalink: "note/{{ noteItem.name | slug }}/"
 
     const editor = document.createElement("editor-hf")
     editor.setAttribute("style", "white-space: pre-wrap;")  // auto part of editor? :S. use that shadow dom?
-    editor.append(...contentWrapper.childNodes)
-    contentWrapper.after(editor)
+
+    if (!contentMap.get(contentWrapper).serial) {
+      // If we don't have serial data to load, just append the nodes - the editor will parse the DOM.
+      // TODO be more intentional with our code. if we're intending to parse DOM nodes rather than serial data, we should be intentional about that.
+      editor.append(...contentWrapper.childNodes)
+      contentWrapper.after(editor)
+    } else {
+      contentWrapper.after(editor)
+      editor.editor.loadDoc(contentMap.get(contentWrapper).serial)
+    }
+
     contentWrapper.parentNode.removeChild(contentWrapper)
 
     import('/js/scribnet/document/Renderer.mjs').then(m => {
@@ -142,8 +159,10 @@ permalink: "note/{{ noteItem.name | slug }}/"
         // some triggers of this command don't even update content (it's a "select" listener).
         // Naming is wrong too really it should just be "addListener" because it listens for
         // nearly all state changes of an EditDocument.
-        const data={ content: htmlRenderer.toHTML(editDoc.document) }
-        return saveContent(data)
+        const serial = JSON.stringify(editDoc.document)
+        const data={ content: htmlRenderer.toHTML(editDoc.document), serial: serial }
+        contentMap.set(contentWrapper, { serial: serial })
+        return saveNote(data)
       })
 
       renderer = new HTMLRenderer()
@@ -157,13 +176,18 @@ permalink: "note/{{ noteItem.name | slug }}/"
 
     const editor = document.querySelector("editor-hf")
     if (editor !== null) {
+      while (contentWrapper.firstChild) {
+        contentWrapper.removeChild(contentWrapper.firstChild)
+      }
       contentWrapper.append(...editor.childNodes)
       editor.after(contentWrapper)
       editor.parentNode.removeChild(editor)  // unnecessary, but eh.
     } else {
-      loadContent()
-        .then(res => JSON.parse(res.getNote.data))
-        .then(note => contentWrapper.innerHTML = note.content)
+
+      loadNote()
+        .then(note => { contentWrapper.innerHTML = note.content; return note } )
+        // .then(note => { console.log("Serialized", note.serial); return note })
+        .then(note => contentMap.set(contentWrapper, { serial: note.serial } ) )
       console.log("Loading fresh note")
     }
   }
