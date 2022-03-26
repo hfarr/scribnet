@@ -96,7 +96,12 @@ describe('Context', function() {
 
       })
 
+    })
 
+    describe('updateAttributes', function() {
+      const result1 = testContext1.updateAttributes({ blockTag: 'pre', indentDelta: 2 })
+      assert.strictEqual(result1.block, 'pre')
+      assert.strictEqual(result1.indentation, testContext1.indentation + 2)
     })
 
   })
