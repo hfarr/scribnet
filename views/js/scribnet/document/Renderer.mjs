@@ -80,6 +80,13 @@ const wrapMany = (tags, content) => tags.length === 0 ? content : wrapOne(tags[0
 // TODO-accept editDoc in constructor? :S would an HTML renderer "own" that or would it be more about the specific place 
 //  where rendering occurs (in a document?) hermngh
 class HTMLRenderer extends Renderer {
+
+  constructor() {
+    super()
+    this.indentationUnits = 'ch'
+    this.indentationUnitsPerTab = 4
+  }
+
   get wrapperStyling() {  // hmmmmmmmmmmmmmmmmmmmm
     return "white-space: pre-wrap;" // yeah. I think. In a shadow-dom world we'd just Not and leave it to the component, but I havent component'd renders yet.
   }
@@ -138,7 +145,7 @@ class HTMLRenderer extends Renderer {
     if (context.indentation > 0) {
       attributes = {
         ...attributes,
-        style: `margin-left: ${context.indentation * context.indentationWidth}ch;`
+        style: `margin-left: ${context.indentation * this.indentationUnitsPerTab}${this.indentationUnits};`
       }
     }
 

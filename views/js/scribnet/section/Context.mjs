@@ -164,7 +164,6 @@ class Context extends Section {
     this.block = 'p'
 
     this.indentationAmount = 0
-    this.indentationWidth = 4
   }
 
   static createContext(blockTag, ...segments) {
@@ -176,7 +175,6 @@ class Context extends Section {
     const clone = super.copy()
     clone.block = this.block
     clone.indentationAmount = this.indentationAmount
-    clone.indentationWidth = this.indentationWidth
     return clone
   }
 
@@ -257,10 +255,6 @@ class Context extends Section {
     } else {
       this.indentationAmount = 0
     }
-  }
-
-  get marginWidth() {
-    return this.indentation * this.indentationWidth
   }
 
   get characters() {
