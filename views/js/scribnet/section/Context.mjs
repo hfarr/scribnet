@@ -225,6 +225,17 @@ class Context extends Section {
     return result
 
   }
+  
+  updateAttributes(options) {
+    const { blockTag = this.block, indentDelta = 0 } = options
+    const result = this.copy()
+
+    result.block = blockTag
+    result.indentation += indentDelta
+
+    return result
+
+  }
 
   set block(tag) {
     if (BLOCKS.includes(tag.toLowerCase())) this.blockTag = tag.toLowerCase()
@@ -241,8 +252,11 @@ class Context extends Section {
     return this.indentationAmount
   }
   set indentation(newAmount) {
-    if (newAmount >= 0) this.indentationAmount = newAmount
-    this.indentationAmount = 0
+    if (newAmount >= 0) {
+      this.indentationAmount = newAmount
+    } else {
+      this.indentationAmount = 0
+    }
   }
 
   get marginWidth() {
@@ -331,20 +345,36 @@ class Doc extends Section {
   }
 
   updateBlock(blockTag, boundaryLocation) {
-    const [ contextIndex, _ ] = this._locateBoundary(boundaryLocation)
-    const result = this.copy()
-    result.subPieces.splice(contextIndex, 1, result.contexts[contextIndex].updateBlock(blockTag))
-    return result
+
+    return this.updateBlockAttributes({ blockTag }, boundaryLocation, boundaryLocation)
   }
 
   updateBlocks(blockTag, startBoundary, endBoundary) {
+    
+    return this.updateBlockAttributes({ blockTag }, startBoundary, endBoundary)
+  }
+
+  indent(amount, startBoundary, endBoundary) {
+    return this.updateBlockAttributes({ indexDelta: amount }, startBoundary, endBoundary)
+  }
+
+  /**
+   * Bulk update attributes of contexts over a range
+   * 
+   * @param {ContextOptions} options Options to update attributes of a Context
+   * @param {*} startBoundary Beginning of range to update
+   * @param {*} endBoundary End of range to update
+   * @returns 
+   */
+  updateBlockAttributes(options, startBoundary, endBoundary) {
     const [ leftSectionIndex, leftOffset ] = this._locateBoundary(startBoundary)
     const [ rightSectionIndex, rightOffset ] = this._locateBoundary(endBoundary)
 
     const patchedContexts = this.contexts.filter((_, index) => index >= leftSectionIndex && index <= rightSectionIndex)
-      .map( ctx => ctx.updateBlock(blockTag))
+      .map( ctx => ctx.updateAttributes(options))
 
     return this.splice(leftSectionIndex, (rightSectionIndex - leftSectionIndex) + 1, ...patchedContexts)
+
   }
 
   writeBoundary(string, cursorLocation=undefined) {
