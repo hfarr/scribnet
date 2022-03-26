@@ -94,6 +94,8 @@ export default class Controller {
     this.sm.transition(`insert ${insertedString}`)
   }
 
-  deleteAction(leftBound, rightBound)
+  deleteAction(leftBound, rightBound) {
+    
+  }
 
 }
