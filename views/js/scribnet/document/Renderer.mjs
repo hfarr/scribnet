@@ -83,8 +83,8 @@ class HTMLRenderer extends Renderer {
 
   constructor() {
     super()
-    this.indentationUnits = 'ch'
-    this.indentationUnitsPerTab = 4
+    this.indentationUnits = 'rem'
+    this.indentationUnitsPerTab = 2
   }
 
   get wrapperStyling() {  // hmmmmmmmmmmmmmmmmmmmm
