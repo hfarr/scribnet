@@ -138,7 +138,7 @@ class HTMLRenderer extends Renderer {
     if (context.indentation > 0) {
       attributes = {
         ...attributes,
-        style: `margin-left: ${context.indentation * context.indentationWidth}`
+        style: `margin-left: ${context.indentation * context.indentationWidth}ch;`
       }
     }
 
