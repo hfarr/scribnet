@@ -162,6 +162,9 @@ class Context extends Section {
   constructor() {
     super()
     this.block = 'p'
+
+    this.indentationAmount = 0
+    this.indentationWidth = 4
   }
 
   static createContext(blockTag, ...segments) {
@@ -215,6 +218,14 @@ class Context extends Section {
     return result
   }
 
+  indent(amount=1) {
+
+    const result = this.copy()
+    result.indentation += amount
+    return result
+
+  }
+
   set block(tag) {
     if (BLOCKS.includes(tag.toLowerCase())) this.blockTag = tag.toLowerCase()
   }
@@ -226,14 +237,17 @@ class Context extends Section {
     return this.subPieces
   }
 
-  // merge(other) {
+  get indentation() {
+    return this.indentationAmount
+  }
+  set indentation(newAmount) {
+    if (newAmount >= 0) this.indentationAmount = newAmount
+    this.indentationAmount = 0
+  }
 
-  //   if (other instanceof Context) 
-  //     return [ this.join(other) ]
-
-  //   return [ this, other ]
-
-  // }
+  get marginWidth() {
+    return this.indentation * this.indentationWidth
+  }
 
   get characters() {
     return this.atoms
