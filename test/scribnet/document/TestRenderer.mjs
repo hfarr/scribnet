@@ -2,7 +2,7 @@
 import assert from 'assert';
 const PATH = "/home/henry/dev/scribnet/views"
 
-const { Renderer, EditRenderer, HTMLRenderer, wrapOne, wrapOneAttributes, wrap, escapeString } = await import(`${PATH}/js/scribnet/document/Renderer.mjs`)
+const { Renderer, EditRenderer, HTMLRenderer, wrapOne, wrapOneAttributes, wrapMany, escapeString } = await import(`${PATH}/js/scribnet/document/Renderer.mjs`)
 // const { default: EditDocument } = await import(`${PATH}/js/scribnet/document/EditDocument.mjs`)
 // const { Segment, ListSegment } = await import(`${PATH}/js/scribnet/document/Segment.mjs`)
 const { Doc, Context, Segment, Gap } = await import(`${PATH}/js/scribnet/section/Context.mjs`)
@@ -49,17 +49,17 @@ describe('Renderer', function () {
       })
     })
 
-    describe('wrap', function () {
+    describe('wrapMany', function () {
       it('returns the input if no tags are given', function() {
         // base case
         const expected = "I am a string"
-        const result = wrap([], expected)
+        const result = wrapMany([], expected)
 
         assert.strictEqual(result, expected)
 
       })
       it('wraps a single piece of content multiple tags', function() {
-        const result = wrap(['bold', 'em'], "I am a string")
+        const result = wrapMany(['bold', 'em'], "I am a string")
 
         const expected = "<bold><em>I am a string</em></bold>"
 

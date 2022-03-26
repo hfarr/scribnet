@@ -73,7 +73,7 @@ const wrapOneAttributes = (tag, attributes, value) => {
   return `<${tag.toLowerCase()} ${attribution}>${value}</${tag.toLowerCase()}>`
   
 }
-const wrap = (tags, content) => tags.length === 0 ? content : wrapOne(tags[0], wrap(tags.slice(1), content))
+const wrapMany = (tags, content) => tags.length === 0 ? content : wrapOne(tags[0], wrapMany(tags.slice(1), content))
 
 // TODO-accept editDoc in constructor? :S would an HTML renderer "own" that or would it be more about the specific place 
 //  where rendering occurs (in a document?) hermngh
@@ -124,7 +124,7 @@ class HTMLRenderer extends Renderer {
 
   renderSegment(inlineSegment) {
     
-    return wrap(inlineSegment.tags, inlineSegment.toString())
+    return wrapMany(inlineSegment.tags, inlineSegment.toString())
 
   }
 
@@ -200,4 +200,4 @@ class EditRenderer extends Renderer {
 export { EditRenderer, HTMLRenderer }
 
 // for testing
-export { Renderer, escapeString, escapskies, wrapOne, wrapOneAttributes, wrap }
+export { Renderer, escapeString, escapskies, wrapOne, wrapOneAttributes, wrapMany }
