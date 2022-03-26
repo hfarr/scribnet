@@ -3,10 +3,10 @@
 import { renderTextFold, foldrDOM } from '../document/DOM.mjs';
 
 import { formatDocument } from '../document/DOM.mjs';
-import { treeFoldr, foldElements } from '../document/DOM.mjs';
 
 import EditDocument from '../document/EditDocument.mjs'
 import { domFunctions } from '../document/EditDocument.mjs'
+import { HTMLController } from '../document/controller/index.mjs'
 
 class DocHistory {
 
@@ -47,6 +47,7 @@ export class Editor {
     this.characterAtCursor = ""
 
     this.docHistory = new DocHistory(EditDocument.newDocument())
+    this.controller = new HTMLController()
     // this.editDocument = loadHTML(this.component)
     this.listeners = {}
     this.listeners[Editor.EVENT_SELECTION_CHANGE] = []
@@ -88,14 +89,13 @@ export class Editor {
   readDOM() {
 
     // newDoc = loadHTML(this.component)
-    // this.docHistory.add(domFunctions.loadHTML(this.component))
-    this.docHistory.add(domFunctions.loadDocument(this.component), 'Load from DOM')
+    this.pushNewDoc(domFunctions.loadDocument(this.component), 'Load from DOM')
 
   }
 
   loadDoc(serialDoc) {
 
-    this.docHistory.add(EditDocument.fromSerializedDocSection(serialDoc))
+    this.pushNewDoc(EditDocument.fromSerializedDocSection(serialDoc))
 
   }
 
@@ -173,6 +173,11 @@ export class Editor {
 
   }
 
+  pushNewDoc(editDocument, message) {
+    this.docHistory.add(editDocument, message)
+    this.controller.editDocument = editDocument
+  }
+
   //========================
 
   // -- View functionality (listening for changes)
@@ -191,59 +196,59 @@ export class Editor {
    * Toggle properties of the selected text
    */
   toggleBold() {
-    this.docHistory.add(this.currentDocument.toggleTag('strong'), "Toggle bold")
+    this.pushNewDoc(this.currentDocument.toggleTag('strong'), "Toggle bold")
   }
 
   toggleItalic() {
-    this.docHistory.add(this.currentDocument.toggleTag('em'), "Toggle italic")
+    this.pushNewDoc(this.currentDocument.toggleTag('em'), "Toggle italic")
   }
 
   toggleHighlight() {
-    this.docHistory.add(this.currentDocument.toggleTag('mark'), "Toggle highlight")
+    this.pushNewDoc(this.currentDocument.toggleTag('mark'), "Toggle highlight")
   }
   /**
    * *Set* properties of the selected text
    */
   setBold() {
-    this.docHistory.add(this.currentDocument.applyTag('strong'), "Set bold")
+    this.pushNewDoc(this.currentDocument.applyTag('strong'), "Set bold")
   }
 
   setItalic() {
-    this.docHistory.add(this.currentDocument.applyTag('em'), "Set italic")
+    this.pushNewDoc(this.currentDocument.applyTag('em'), "Set italic")
   }
 
   setHighlight() {
-    this.docHistory.add(this.currentDocument.applyTag('mark'), "Set highlight")
+    this.pushNewDoc(this.currentDocument.applyTag('mark'), "Set highlight")
   }
 
   applyColor(color) {
     // TODO work on interface for tags. Pass an object for attributes? An instance of a class?
     // TODO escape the color incase someone tries something... unsafe
-    this.docHistory.add(this.currentDocument.applyTag('span', `style="background-color: ${color};"`), "Apply color")
+    this.pushNewDoc(this.currentDocument.applyTag('span', `style="background-color: ${color};"`), "Apply color")
   }
 
   setBlockTag(tag) {
-    this.docHistory.add(this.currentDocument.setBlockTag(tag))
+    this.pushNewDoc(this.currentDocument.setBlockTag(tag))
   }
 
   indentBlock(amount) {
-    this.docHistory.add(this.currentDocument.indentBlock(amount))
+    this.pushNewDoc(this.currentDocument.indentBlock(amount))
   }
 
   // -- Text insertion & deletion
 
   write(text) {
-    this.docHistory.add(this.currentDocument.write(text), `Write: ${text}`)
+    this.pushNewDoc(this.currentDocument.write(text), `Write: ${text}`)
   }
   delete() {
-    this.docHistory.add(this.currentDocument.delete(), 'Delete')
+    this.pushNewDoc(this.currentDocument.delete(), 'Delete')
   }
   backspace() {
     if (this.currentDocument.isCollapsed) this.currentDocument.select(this.currentDocument.cursorOffset - 1)
-    this.docHistory.add(this.currentDocument.delete(), 'Backspace')
+    this.pushNewDoc(this.currentDocument.delete(), 'Backspace')
   }
   enterNewline() {
-    this.docHistory.add(this.currentDocument.enterNewline(), 'Enter key')
+    this.pushNewDoc(this.currentDocument.enterNewline(), 'Enter key')
   }
 
   // -- Other API
