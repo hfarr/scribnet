@@ -404,6 +404,15 @@ class _EditDocument {
     return newDoc
   }
 
+  indentBlock(amount = 1) {
+    const lb = this._startBoundary
+    const rb = this._endBoundary
+    const newDoc = this.copy()
+    newDoc.document = this.document.indent(amount, lb, rb)
+    newDoc.notifySelectListeners()  // TODO gotta do away with this pattern... or update it... something.
+    return newDoc
+  }
+
   // ----- Accessors ------
 
   select(anchorIndex=0, focusIndex=undefined) {

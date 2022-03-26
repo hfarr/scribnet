@@ -355,7 +355,7 @@ class Doc extends Section {
   }
 
   indent(amount, startBoundary, endBoundary) {
-    return this.updateBlockAttributes({ indexDelta: amount }, startBoundary, endBoundary)
+    return this.updateBlockAttributes({ indentDelta: amount }, startBoundary, endBoundary)
   }
 
   /**

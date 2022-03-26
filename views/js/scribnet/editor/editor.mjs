@@ -217,6 +217,10 @@ export class Editor {
     this.docHistory.add(this.currentDocument.setBlockTag(tag))
   }
 
+  indentBlock(amount) {
+    this.docHistory.add(this.currentDocument.indentBlock(amount))
+  }
+
   /**
    * Text insertion & deletion
    */
