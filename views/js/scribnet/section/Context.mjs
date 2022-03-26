@@ -172,17 +172,21 @@ class Context extends Section {
   copy() {
     const clone = super.copy()
     clone.block = this.block
+    clone.indentationAmount = this.indentationAmount
+    clone.indentationWidth = this.indentationWidth
     return clone
   }
 
+  /**
+   * Determines whether this Section is considered "empty".
+   * Contexts are always non-empty, even if they have 0
+   * sub sections. 
+   * TODO change the name to something less confusing, so that
+   *  "empty" <=> length === 0
+   * 
+   * @returns false
+   */
   empty() {
-    // Context are a lot like Gaps in that we allow 0-length versions of them that are not considered "empty".
-    // Therefore /no/ Context is considered empty. This is awkward as empty is not a recursive definition,
-    // for most Section it is based on the atoms. 
-    // TODO This could cause a confusing interface. A brand new Doc will be considered "empty", as it has
-    //  length 0. But it will have a subPiece Context which is /not/ empty. Doesn't seem to follow logically,
-    //  how can something empty hold something not empty? Begs the question whether I should pick a different
-    //  name, or make this "private" to Section.
     return false
   }
 
@@ -192,23 +196,8 @@ class Context extends Section {
     return super.insert(location, string)
 
   }
-  // maybe writeBoundary, I am unsure if I want to override in all Context.
-  // OTOH I think it's okay to prescribe this relation: Within a context we 
-  // don't consider boundaries (that is, between Segment)
-  // On the /original/ hand though we might not wish to make that the case
-  // in /all/ circumstances, which are as of yet unrevealed to me.
-  // we'll change it if we need to later. Such is software.
-  // insertBoundary(boundaryLocation, string) {
-  //   // in this way it acts a bit like an AtomicSection.
-  //   // The combination of boundariesLength being length + 1 and forcing insertBoundary to be insert does the trick there
-  //   // might impact delete too.
-  //   // The way to sum that up is "treats boundary indices like atom indices", I think.
-  //   // return super.insertBoundary(boundaryLocation, string)
-  //   return this.insert(boundaryLocation, string)
-  // }
 
   insertBoundary(boundaryLocation, atoms) {
-    // if (this.length === 0) {
     if (this.segments.length === 0) {
       const result = this.addSubSections(Segment.from())
       return result.insertBoundary(boundaryLocation, atoms)
@@ -217,23 +206,8 @@ class Context extends Section {
   }
 
 
-  // deleteBoundary(startBoundary, endBoundary = undefined) {
-
-  //   if (this.boundariesLength === 1) return this
-  //   if (endBoundary === undefined) endBoundary = this.boundariesLength - 1
-
-  //   const [ leftSectionIndex, leftOffset ] = this._locateBoundary(startBoundary)
-  //   const [ rightSectionIndex, rightOffset ] = this._locateBoundary(endBoundary)
-  //   const leftSection = this.subPieces[leftSectionIndex].deleteBoundary(leftOffset)
-  //   const rightSection = this.subPieces[rightSectionIndex].deleteBoundary(0, rightOffset)
-
-  //   const patchedSection = leftSection._eqTags(rightSection) ? [ leftSection.merge(rightSection) ] : [ leftSection, rightSection ]
-
-  //   return this.splice(leftSectionIndex, 1 + (rightSectionIndex - leftSectionIndex), ...patchedSection ).cutEmpty()
-
-  // }
-
   // ---------------------------
+  //  Context Specific functions
 
   updateBlock(blockTag) {
     const result = this.copy()
