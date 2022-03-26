@@ -79,6 +79,19 @@ const StaticAuthenticator = class extends Authenticator {
 const authenticator = new StaticAuthenticator()
 
 mainRouter.use(session)
+mainRouter.use('/note', (req, res, next) => {
+
+  const sess = req.session
+
+  if ('views' in sess) {
+    console.log(sess.views)
+    sess.views += 1
+  } else {
+    sess.views = 1
+  }
+
+  next()
+})
 
 // const authenticator = new Authenticator()
 mainRouter.use('/private', authenticator.authApp)
@@ -249,10 +262,16 @@ mainRouter.use('/api',
     getToken: getToken
   }),
   (req, res, next) => {
-  // res.set('Content-Type', 'application/json')
-  console.log('JWT Payload', req.user)
-  next()
-})
+    // res.set('Content-Type', 'application/json')
+    console.log('JWT Payload', req.user)
+    next()
+  },
+  (req, res, next) => {
+    console.log("user session? ", req.session !== undefined)
+    if (req.session.views) console.log(req.session.views)
+    next()
+  }
+)
 
 import gqlObj from './resources.mjs'
 console.log(`DEVELOPMENT: ${process.env.DEVELOPMENT}`)
