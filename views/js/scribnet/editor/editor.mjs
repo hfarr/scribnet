@@ -44,8 +44,6 @@ export class Editor {
     this.component = component
     this.internalNode = undefined
 
-    this.cursor = 0
-    this.selectedText = ""
     this.characterAtCursor = ""
 
     this.docHistory = new DocHistory(EditDocument.newDocument())
@@ -162,7 +160,10 @@ export class Editor {
   }
 
   containsWindowSelection() {
-    const sel = window.getSelection()
+    return this.containsSelection(window.getSelection())
+  }
+
+  containsSelection(sel) {
     const containsFocus = Boolean(this.component.compareDocumentPosition(sel.focusNode) & (Node.DOCUMENT_POSITION_CONTAINED_BY))
     const containsAnchor = Boolean(this.component.compareDocumentPosition(sel.anchorNode) & (Node.DOCUMENT_POSITION_CONTAINED_BY))
     return containsAnchor && containsFocus
@@ -325,53 +326,16 @@ export class Editor {
     const cursorOffset = domFunctions.cursorOffset(this.component, sel.focusNode, sel.focusOffset)
     return cursorOffset
   }
+  get selectedText() {
+    return this.currentDocument.selection()
+  }
 
-  /**
-   * Called on selection change
-   * @param selectionChangeEvent 
-   */
-  async onSelectionChange(selectionChangeEvent) {
-    // TODO extract to Event handler module
+  userUpdateSelection() {
+    this.userNavigated = true
 
     const sel = window.getSelection()
-
-    if (!this.containsWindowSelection()) {
-      return
-    }
+    if (!this.containsSelection(sel)) return
     this.updateSelection(sel)
-    // console.debug(this.currentDocument.at())
-
-
-    // --------------------------------------------------------------
-    // below this line we don't need. We can find selectedText this way
-    // which is neat, cool, so happy 4 u.
-    // in the Way of All Things though it should be grabbing selected
-    // text from the internal document
-
-    const re = sel.getRangeAt(0)  // Not handling multi ranges for now
-
-    const textUpToStart = this.textUpTo(re.startContainer, re.startOffset)
-    const textUpToEnd = this.textUpTo(re.endContainer, re.endOffset) 
-    const cursorOffset = this.textUpTo(sel.focusNode, sel.focusOffset).length //+ sel.focusOffset - sel.focusNode.textContent.length;
-    // We don't need to grab the text up to a selection. We only need to count characters.
-    // It's inefficient, but for right now I like it and will keep it around.
-    // I guess it is useful for selectedText at least. Not that we don't get that 
-    // information anyway when it is sent through an event.
-
-    let selectedText = textUpToEnd.slice(textUpToStart.length)
-    const codePoint = this.component.innerText.codePointAt(cursorOffset)
-    this.characterAtCursor = ''
-    if (codePoint) {
-      this.characterAtCursor = String.fromCodePoint(codePoint)
-    }
-
-    this.cursor = cursorOffset
-    this.selectedText = selectedText
-
-    this.notify('selectionchange')
-
-    console.debug('cursor offset', this.cursorOffset, 'character index', this.currentDocument.cursorOffset)
-
   }
 
 }

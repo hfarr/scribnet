@@ -54,7 +54,6 @@ class EditorComponent extends HTMLElement {
 
 
   initListeners() {
-    this.editor.evtSelChg = async (e) => this.editor.onSelectionChange(e)
 
     const beforeInput = ie => {
       // maybe, create a separate "blockOrNot" method that is async, then calls the beforeInput. blockOrNot then is
@@ -170,11 +169,21 @@ class EditorComponent extends HTMLElement {
       'shift-Tab': () => { this.editor.indentBlock(-1); this.render() },
     }
 
-    // deprecated aw
-    const keyUp = async (keyUp) => {
-      const statekey = `${keyUp.ctrlKey ? 'ctrl-' : ''}${keyUp.shiftKey ? 'shift-' : ''}${keyUp.code}`
+    const isNavKey = (() => {
+      const navKeys = new Set([ "Home", "End", "PageUp", "PageDown", "ArrowUp", "ArrowDown", "ArrowLeft", "ArrowRight" ])
+      return key => navKeys.has(key)
+    })()
+
+    const keyUp = async (keyEvt) => {
+      const statekey = `${keyEvt.ctrlKey ? 'ctrl-' : ''}${keyEvt.shiftKey ? 'shift-' : ''}${keyEvt.code}`
+      if (isNavKey(keyEvt.code)) {
+        // by the time keyUp presses, the window selection should have also updated
+        this.editor.userUpdateSelection()
+        return
+      }
+
       if (statekey in keyState) {
-        keyUp.preventDefault()
+        keyEvt.preventDefault()
         if (keyState[statekey]) {
           keyState[statekey] = false // in our interface we'd probably implement the 'check&set' in one operation
           if (statekey in actionsKeyUp) actionsKeyUp[statekey]()
@@ -182,10 +191,10 @@ class EditorComponent extends HTMLElement {
         }
       }
     }
-    const keyDown = async (keyDown) => {
-      const statekey = `${keyDown.ctrlKey ? 'ctrl-' : ''}${keyDown.shiftKey ? 'shift-' : ''}${keyDown.code}`
+    const keyDown = async (keyEvt) => {
+      const statekey = `${keyEvt.ctrlKey ? 'ctrl-' : ''}${keyEvt.shiftKey ? 'shift-' : ''}${keyEvt.code}`
       if ( statekey in keyState ) {
-        keyDown.preventDefault()
+        keyEvt.preventDefault()
         if (!keyState[statekey]) {
           keyState[statekey] = true // in our interface we'd probably implement the 'check&set' in one operation
           if (statekey in actionsKeyDown) actionsKeyDown[statekey]()
@@ -196,11 +205,38 @@ class EditorComponent extends HTMLElement {
       }
     }
 
+    const mouseState = {
+      // mouseIsDown: false,
+      mouseReleased: false,
+    }
+
+    const mouseDown = mouseEvt => mouseEvent(mouseEvt)
+    const mouseUp = mouseEvt => { mouseState.mouseReleased = true; mouseEvent(mouseEvt) }
+    const mouseEvent = mouseEvt => {
+      console.log("mouse", mouseEvt)
+      this.editor.userUpdateSelection()
+      console.log(this.editor.currentDocument.selection())
+    }
+
+    this.editor.evtSelChg = async (e) => {
+      if (mouseState.mouseReleased) {
+        // It's possible this gets trigger if we select some text, release, then use a navigation key. 
+        // but in that case it just selects twice, and selection is idempotent. There's no concern
+        // on my part if it happens more than once for the "same" input.
+        this.editor.userUpdateSelection()
+        mouseState.mouseReleased = false
+        console.log("post-up", this.editor.currentDocument.selection())
+      }
+    }
+
     this.editor.evtListeners = {
       'keydown': keyDown,
       'keyup': keyUp,
       'beforeinput': beforeInput,
       'input': afterInput,
+      'mousedown': mouseDown,
+      'mouseup': mouseUp,
+      // 'mousemove': mouseMove,
     }
 
   }
