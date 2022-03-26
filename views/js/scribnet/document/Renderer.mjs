@@ -63,6 +63,16 @@ class Renderer {
 }
 
 const wrapOne = (tag, value) => `<${tag.toLowerCase()}>${value}</${tag.toLowerCase()}>`
+const wrapOneAttributes = (tag, attributes, value) => {
+  const formattedAttributes = []
+  for ( const [name, value ] of Object.entries(attributes)) 
+    formattedAttributes.push(`${name}="${value}"`)
+  
+  const attribution = formattedAttributes.join(' ')
+
+  return `<${tag.toLowerCase()} ${attribution}>${value}</${tag.toLowerCase()}>`
+  
+}
 const wrap = (tags, content) => tags.length === 0 ? content : wrapOne(tags[0], wrap(tags.slice(1), content))
 
 // TODO-accept editDoc in constructor? :S would an HTML renderer "own" that or would it be more about the specific place 
@@ -121,6 +131,7 @@ class HTMLRenderer extends Renderer {
   renderContext(context) {
     let result = ""
     const blockTag = context.block
+    const attributes = ""
 
     // if (context.empty()) result += "<br>"
     if (context.length === 0) result += "<br>"
@@ -128,7 +139,7 @@ class HTMLRenderer extends Renderer {
     for (const segment of context.segments)
       result += this.renderSegment(segment)
     
-    return wrapOne(context.blockTag, result)
+    return wrapOne(blockTag, result)
 
   }
 
@@ -189,4 +200,4 @@ class EditRenderer extends Renderer {
 export { EditRenderer, HTMLRenderer }
 
 // for testing
-export { Renderer, escapeString, escapskies }
+export { Renderer, escapeString, escapskies, wrapOne, wrapOneAttributes, wrap }
