@@ -2,7 +2,7 @@
 import assert from 'assert';
 const PATH = "/home/henry/dev/scribnet/views"
 
-const { Renderer, EditRenderer, HTMLRenderer, escapeString } = await import(`${PATH}/js/scribnet/document/Renderer.mjs`)
+const { Renderer, EditRenderer, HTMLRenderer, wrapOne, wrapOneAttributes, wrap, escapeString } = await import(`${PATH}/js/scribnet/document/Renderer.mjs`)
 // const { default: EditDocument } = await import(`${PATH}/js/scribnet/document/EditDocument.mjs`)
 // const { Segment, ListSegment } = await import(`${PATH}/js/scribnet/document/Segment.mjs`)
 const { Doc, Context, Segment, Gap } = await import(`${PATH}/js/scribnet/section/Context.mjs`)
@@ -25,6 +25,49 @@ const testDoc = Doc.from(...testContexts)
 
 
 describe('Renderer', function () {
+  describe('helpers', function () {
+
+    describe('wrapOne', function () {
+      it('produces correct html for single tag', function () {
+        const result = wrapOne('p', 'I am the contents of a paragraph')
+        const expected = "<p>I am the contents of a paragraph</p>"
+        assert.strictEqual(result, expected)
+      })
+    })
+
+    describe('wrapOneAttributes', function () {
+      it('produces correct html for single tag with attributes', function () {
+
+        // Not wise to HTML semantics, otherwise we could, e.g, use a list of strings for class
+        const attributes = {
+          style: 'color: red;',
+          class: 'class1 class2 class3'
+        }
+        const result = wrapOneAttributes('p', attributes, 'contents')
+        const expected = `<p style="color: red;" class="class1 class2 class3">contents</p>`
+        assert.strictEqual(result, expected)
+      })
+    })
+
+    describe('wrap', function () {
+      it('returns the input if no tags are given', function() {
+        // base case
+        const expected = "I am a string"
+        const result = wrap([], expected)
+
+        assert.strictEqual(result, expected)
+
+      })
+      it('wraps a single piece of content multiple tags', function() {
+        const result = wrap(['bold', 'em'], "I am a string")
+
+        const expected = "<bold><em>I am a string</em></bold>"
+
+        assert.strictEqual(result, expected)
+      })
+    })
+  })
+
   describe('escapeString', function () {
     const unescaped = "Silly ' little \"<\" characters > &"
     const actual = escapeString(unescaped)
