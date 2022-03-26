@@ -77,6 +77,28 @@ describe('Context', function() {
 
     })
 
+    describe('indentation', function () {
+
+      it('has a default indentation of 0', function() {
+        assert.strictEqual(testContext1.indentation, 0)
+      })
+
+      it('clamps indentation to gte 0', function() {
+
+        const cases = [
+          testContext1.indent(-1),
+          testContext1.indent(5),
+          testContext1.indent(-4),
+          testContext1.indent(0),
+        ]
+
+        cases.forEach( c => assert(c.indentation >= 0))
+
+      })
+
+
+    })
+
   })
 
   describe('Gap', function () {
