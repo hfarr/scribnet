@@ -55,7 +55,7 @@ permalink: "note/{{ noteItem.name | slug }}/"
 <script>
 
   let hfeditor;
-  let hfdocument;
+  let renderer;
   // const resourceName = window.location.pathname.match(/[^\/]*$/)[0] // grabs the string in the url past the last forward slash
   const resourceName = "{{ noteItem.name }}"
   const slugName = "{{ noteItem.name | slug }}"
@@ -145,6 +145,8 @@ permalink: "note/{{ noteItem.name | slug }}/"
         const data={ content: htmlRenderer.toHTML(editDoc.document) }
         return saveContent(data)
       })
+
+      renderer = new HTMLRenderer()
     })
 
     hfeditor = editor.editor
