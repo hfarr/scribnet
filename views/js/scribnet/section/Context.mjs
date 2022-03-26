@@ -309,6 +309,17 @@ class Doc extends Section {
     
   }
 
+  static parseSerialDoc(serializedDoc) {
+    // throws error if JSON.parse throws error
+    let serialDocObj = JSON.parse(serializedDoc)
+    // const result = Object.create(this.prototype, Object.getOwnPropertyDescriptors(serialDocObj))
+
+    // result.subPiecees = [ ...serialDocObj.map(Context.parseContext) ]
+
+    return this.parse(serialDocObj)
+
+  }
+
   static isBlock(tag) {
     return isBlock(tag)
   }
@@ -530,6 +541,26 @@ class Doc extends Section {
   its a "generalization" (or.. specification, maybe) over "map". well. yeah. Specialization of map.
   but t'would be nice to also do e.g filter, reduce.... fold...
  */
+
+
+// Parse tools
+const childType = {
+  [Doc.name]: Context,
+  [Context.name]: Segment,
+  [Segment.name]: null
+}
+function parse(serialObj) {
+  const result = Object.create(this.prototype, Object.getOwnPropertyDescriptors(serialObj))
+  if (childType[this.name] !== null)
+    result.subPieces = [ ...result.subPieces.map(childType[this.name].parse) ]
+  return result
+}
+function registerParse(constructor) { constructor.parse = parse.bind(constructor) }
+
+registerParse(Doc)
+registerParse(Context)
+registerParse(Segment)
+
 
 class Table {
   constructor() {

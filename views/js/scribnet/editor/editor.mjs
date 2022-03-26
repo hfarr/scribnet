@@ -95,6 +95,13 @@ export class Editor {
 
   }
 
+  loadDoc(serialDoc) {
+
+    this.docHistory.add(EditDocument.fromSerializedDocSection(serialDoc))
+
+  }
+
+
   formatDOM() {
     // -------------
     // use DOM tools to traverse & grep in text. i.e what renderedText does now, but owned by Editor instead

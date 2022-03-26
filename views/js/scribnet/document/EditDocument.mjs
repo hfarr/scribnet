@@ -310,6 +310,18 @@ class _EditDocument {
     doc.document = docSection
     return doc
   }
+  static fromSerializedDocSection(serialDocSection) {
+    const doc = EditDocument.newDocument()
+    try {
+      // const docSection = JSON.parse(serialDocSection)
+      // doc.document = Object.create(Doc.prototype, Object.getOwnPropertyDescriptors(docSection))
+      doc.document = Doc.parseSerialDoc(serialDocSection)
+      return doc
+    } catch (e) {
+      console.warn(e)
+      throw e
+    }
+  }
 
   copy() {
     const doc = EditDocument.newDocument()
