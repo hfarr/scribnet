@@ -193,6 +193,7 @@ class EditorComponent extends HTMLElement {
     }
     const keyDown = async (keyEvt) => {
       const statekey = `${keyEvt.ctrlKey ? 'ctrl-' : ''}${keyEvt.shiftKey ? 'shift-' : ''}${keyEvt.code}`
+      mouseState.mouseReleased = false
       if ( statekey in keyState ) {
         keyEvt.preventDefault()
         if (!keyState[statekey]) {

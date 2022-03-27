@@ -91,11 +91,16 @@ export class Editor {
     // newDoc = loadHTML(this.component)
     this.pushNewDoc(domFunctions.loadDocument(this.component), 'Load from DOM')
 
+    // TODO Maybe not. We have a lot of quirks when it comes to loading data into an editor, e.g automatic readDOMs from the component which we may or may not want
+    // this.controller.selectAction()
   }
 
   loadDoc(serialDoc) {
 
     this.pushNewDoc(EditDocument.fromSerializedDocSection(serialDoc))
+
+    // a piece of state initialization
+    this.controller.selectAction()
 
   }
 
@@ -248,6 +253,7 @@ export class Editor {
   backspace() {
     if (this.currentDocument.isCollapsed) this.currentDocument.select(this.currentDocument.cursorOffset - 1)
     this.pushNewDoc(this.currentDocument.delete(), 'Backspace')
+    this.controller.deleteAction()
   }
   enterNewline() {
     this.pushNewDoc(this.currentDocument.enterNewline(), 'Enter key')

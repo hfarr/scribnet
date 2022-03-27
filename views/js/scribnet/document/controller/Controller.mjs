@@ -80,6 +80,9 @@ class StateMachine {
   setTransition(fromState, action, toState) {
     this.stateTable.setTransition(fromState, action, toState)
   }
+  setTransitionSelf(fromState, action) {
+    this.setTransition(fromState, action, fromState)
+  }
 
   onTransition(toState, sideEffect) {
     this.onTransitionFuncs[toState] = sideEffect
@@ -109,7 +112,10 @@ export default class Controller {
     // check selected ^
     if (QueryDoc.isSelectionAtStartOfBlock(this.editDocument)) {
       this.sm.transition('select ^')
+      return
     }
+
+    this.sm.transition('select')
   }
 
   insertAction(insertedString) {

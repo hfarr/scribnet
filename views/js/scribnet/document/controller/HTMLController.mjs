@@ -11,6 +11,7 @@ export default class HTMLController extends Controller {
 
     this.sm.setTransitionFromInit('select ^', '^|')
     this.sm.setTransition('^|', 'insert *', '^*|')
+    this.sm.setTransitionSelf('^|', 'select ^')
     this.sm.setTransition('^*|', 'insert  ', '^* |')
     this.sm.onTransition('^* |', sm => {
       console.log('Start, star, space!')
