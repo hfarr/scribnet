@@ -154,6 +154,9 @@ export class Token {
       case 'H1':
       case 'H2':
       case 'H3':
+      case 'UL':
+      case 'OL':
+      case 'LI':
       case 'P': {
         // return [Token.tokenBlock(), ...children, Token.tokenBlock()]
         return Token.tokenBlock(node)
