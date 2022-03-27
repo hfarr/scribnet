@@ -295,18 +295,20 @@ class Context extends Section {
     let offset = cursorPosition
     let boundary = 0
 
-    const modifier = favorLeft ? 0 : 1
+    const allSegChild = this.subPieces.every(sec => sec instanceof Segment)
+    const cursorPosMod = allSegChild && !favorLeft ? 1 : 0
+    const resultMod = allSegChild && !favorLeft ? this.subPieces.length - 1 : 0
 
     for (const sec of this.subPieces) {
-      const cursorPosModifier = sec instanceof Segment ? modifier : 0
-      if ( offset < sec.totalCursorPositions - cursorPosModifier )
+      // const cursorPosModifier = sec instanceof Segment ? modifier : 0
+      if ( offset < sec.totalCursorPositions - cursorPosMod )
         return boundary + sec.cursorToBoundary(offset)
 
       boundary += sec.boundariesLength
       offset -= (sec instanceof Segment) ? sec.length : sec.totalCursorPositions
     }
 
-    return 0
+    return boundary - resultMod
 
   }
 

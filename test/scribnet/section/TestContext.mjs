@@ -460,6 +460,23 @@ describe('Context', function() {
         assert.strictEqual(testDocAlpha3.cursorToBoundary(3, false), 4)
         assert.strictEqual(testDocAlpha3.cursorToBoundary(10, false), 12)
       })
+      it('favors either side correctly with empty Segment', function () {
+        // note that EmptySegment are typically not present. But they ARE present when we, e.g, split,
+        //  without cutting them out.
+        const testDocAlpha3Mod = testDocAlpha3.copy().addSubSections(Context.from(Segment.from(), Segment.from(), Segment.from(...'Eee')))
+
+        //  Cursor pos  b-left  b-right verbal
+        //  13          15      15      End of second context
+        //  14          16      18      start of third context. Skips empty Segment at start of 3rd Context when favor right
+        //  15          19      19      these match because there is no ambiguity of which boundary can be mapped to. this is the boundary between first and second char of 3rd segment
+
+        assert.strictEqual(testDocAlpha3Mod.cursorToBoundary(13), 15)
+        assert.strictEqual(testDocAlpha3Mod.cursorToBoundary(14), 16)
+        assert.strictEqual(testDocAlpha3Mod.cursorToBoundary(13, false), 15)
+        assert.strictEqual(testDocAlpha3Mod.cursorToBoundary(14, false), 18)
+        assert.strictEqual(testDocAlpha3Mod.cursorToBoundary(15), 19)
+        assert.strictEqual(testDocAlpha3Mod.cursorToBoundary(15, false), 19)
+      })
       it('Has correct granularities', function() {  // TODO test naming
 
         // granularities
