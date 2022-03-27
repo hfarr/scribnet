@@ -504,15 +504,15 @@ describe('Context', function() {
 
         it('determines correct boundary from cursor', function () {
           const testCases = [
-            // [ 0, 0 ],
-            // [ 5, 5 ], [ 6, 7 ], [16, 17 ], [ 17, 19 ],
-            // [24, 26], [25, 27],
-            // [24, 26], [25, 27],
-            // [26, 28], [27, 29],
-            // [28, 30], [30, 32],
+            [ 0, 0 ],
+            [ 5, 5 ], [ 6, 7 ], [16, 17 ], [ 17, 19 ],
+            [24, 26], [25, 27],
+            [24, 26], [25, 27],
+            [26, 28], [27, 29],
+            [28, 30], [30, 32],
             [37, 39], [39, 41],
             [40, 42], [41, 43],
-            // [ testDocWithNested.totalCursorPositions - 1, testDocWithNested.boundariesLength - 1 ],
+            [ testDocWithNested.totalCursorPositions - 1, testDocWithNested.boundariesLength - 1 ],
           ]
           /*
                       Cursors   Boundaries
