@@ -516,7 +516,7 @@ class Section {
   // by which I mean decent functions with pending names
 
   predicateSlice(pred, startBoundary, endBoundary = undefined) {
-    if (endBoundary === undefined) endBoundary = this.boundariesLength - 1  // notsure this works for "most" actually, then again. No, it should be right.
+    if (endBoundary === undefined || endBoundary >= this.boundariesLength) endBoundary = this.boundariesLength - 1  // notsure this works for "most" actually, then again. No, it should be right.
 
     const [ l, mid, r ] = this.triSplit(startBoundary, endBoundary)
     if (pred(this)) {
