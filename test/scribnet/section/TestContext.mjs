@@ -428,6 +428,10 @@ describe('Context', function() {
         Context.createContext('p', Segment.createSegment([], 'ggg')),
         Context.createContext('p', Segment.createSegment([], 'Hhh'), Segment.createSegment([], 'hh'), Segment.createSegment([], 'Ii'), Segment.createSegment([], 'iii'), ),
       )
+      const testDocAlpha3 = Doc.from(
+        Context.from(Segment.from(...'Aaa'), Segment.from(...'Bbb')),
+        Context.from(Segment.from(...'Ccc'), Segment.from(...'Ddd')),
+      )
       it('maps cursor positions correctly', function() {
         // TODO split these into more "it" declarations
         assert.strictEqual(testDocAlpha2.cursorToBoundary(3), 3)
@@ -443,6 +447,25 @@ describe('Context', function() {
         assert.strictEqual(testDocAlpha2.cursorToBoundary(22), 24)
         assert.strictEqual(testDocAlpha2.cursorToBoundary(23), 26)
         // assert.strictEqual(testDocAlpha2.cursorToBoundary(11), 13)
+
+      })
+
+      it('supports favoring left, right boundaries when several are adjacent', function() {
+        
+        // favor left
+        assert.strictEqual(testDocAlpha3.cursorToBoundary(3), 3)
+        assert.strictEqual(testDocAlpha3.cursorToBoundary(10), 11)
+        
+        // favor right
+        assert.strictEqual(testDocAlpha3.cursorToBoundary(3, false), 4)
+        assert.strictEqual(testDocAlpha3.cursorToBoundary(10, false), 12)
+      })
+      it('Has correct granularities', function() {  // TODO test naming
+
+        // granularities
+        assert.strictEqual(testDocAlpha3.boundariesLength, 16)       // 16 boundaries (Section)
+        assert.strictEqual(testDocAlpha3.totalCursorPositions, 14)   // 14 cursor positions (EditDoc)
+        assert.strictEqual(testDocAlpha3.length, 12)                 // 12 atom indices (strings)
 
       })
     })
@@ -466,7 +489,21 @@ describe('Context', function() {
         // testDocAlpha.select(19, 24)
         const original = testDocAlpha.applyTags(['tag1'], 19, 24)
 
-        assert(original.selectionEntirelyHasTag('tag1', 19, 24), 'expect selection matching applyTags selection to test positive')
+        // applying tags involves splitting. Splitting creates new boundaries.
+        // therefore when checking the success of the tag application we must update the boundaries as appropriate.
+        // 19, 24 before split
+        // ,C,c,c,c,c,D,d,d|d,d,
+        // ,E,e|e,e,e,F,f,f,f,f,
+
+        // 19, 24 after split. < and > denote the boundaries exactly covering the Segments
+        // ,C,c,c,c,c,D,d,d|<d,d,
+        // ,E|e>,e,e,e,F,f,f,f,f,
+        const leftmost = 19 + 1
+        const rightmost = 24 + 1
+
+        // fun fact, we only noticed an issue when we swapped the implementation out with the predicateSlice. Very precise.
+
+        assert(original.selectionEntirelyHasTag('tag1', leftmost, rightmost), 'expect selection matching applyTags selection to test positive')
         assert(!original.selectionEntirelyHasTag('tag1', 16, 21), 'expect selection containing first segment with tag1 and other segments to test negative')
         assert(!original.selectionEntirelyHasTag('tag1', 16, 20), 'expect selection overlapping first segment with tag1 and other segments to test negative')
         assert(!original.selectionEntirelyHasTag('tag1', 22, 27), 'expect selection containing second segment with tag1 and other segments to test negative')

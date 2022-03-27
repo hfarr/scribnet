@@ -290,13 +290,16 @@ class Context extends Section {
     
   }
 
-  cursorToBoundary(cursorPosition) {
+  cursorToBoundary(cursorPosition, favorLeft=true) {
 
     let offset = cursorPosition
     let boundary = 0
 
+    const modifier = favorLeft ? 0 : 1
+
     for (const sec of this.subPieces) {
-      if ( offset < sec.totalCursorPositions )
+      const cursorPosModifier = sec instanceof Segment ? modifier : 0
+      if ( offset < sec.totalCursorPositions - cursorPosModifier )
         return boundary + sec.cursorToBoundary(offset)
 
       boundary += sec.boundariesLength
@@ -489,7 +492,7 @@ class Doc extends Section {
   }
 
   // --------
-  cursorToBoundary(cursorPosition) {
+  cursorToBoundary(cursorPosition, favorLeft=true) {
 
     // offset counts by cursor positions, boundary counts up by boundaries
     let offset = cursorPosition
@@ -497,7 +500,7 @@ class Doc extends Section {
 
     for (const ctx of this.contexts) {
       if (offset < ctx.totalCursorPositions)
-        return boundary + ctx.cursorToBoundary(offset)
+        return boundary + ctx.cursorToBoundary(offset, favorLeft)
 
       boundary += ctx.boundariesLength
       offset -= ctx.length + 1
