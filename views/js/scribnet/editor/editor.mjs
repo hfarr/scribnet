@@ -289,6 +289,16 @@ export class Editor {
       // this.controller.deleteAction()
 
     })
+
+    this.controller.setTransitoryEffect('(?)|', () => {
+      console.debug('question mark!')
+      this.currentDocument.select(this.currentDocument.startOffset - 3, this.currentDocument.startOffset)
+      this.pushNewDoc(this.currentDocument.delete().write('❓'))
+      // tempEd = tempED.setBlockTag('ul')
+
+      // this.controller.deleteAction()
+
+    })
   }
 
 

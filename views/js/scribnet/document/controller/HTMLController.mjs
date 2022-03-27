@@ -13,6 +13,15 @@ function configureStartStarSpace(sm) {
   // })
 }
 
+function configureQuestionMark(sm) {
+  // sm.setTransitionFromInit('select ^', '^|')
+  // sm.setTransitionFromInit('delete ^', '^|')
+  sm.setDefaultActionTransition('insert (', '(|')
+  sm.setTransition('(|', 'insert ?', '(?|')
+  sm.setTransition('(?|', 'insert )', '(?)|')
+
+}
+
 export default class HTMLController extends Controller {
 
   constructor() {
@@ -24,6 +33,7 @@ export default class HTMLController extends Controller {
 
   _initActions() {
     configureStartStarSpace(this.sm)
+    configureQuestionMark(this.sm)
 
   }
 

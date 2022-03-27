@@ -73,6 +73,10 @@ class StateMachine {
   }
   //---- modify table
 
+  setDefaultActionTransition(action, toState) {
+    this.stateTable.actionDefaultTransitions[action] = toState
+  }
+
   setTransitionFromInit(action, toState) {
     this.stateTable.setTransition(StateTableDefaults.initialState, action, toState)
   }
