@@ -152,6 +152,16 @@ class Segment extends AtomicSection {
     return this.atoms
   }
 
+  get totalCursorPositions() {
+    return this.boundariesLength
+  }
+
+  cursorToBoundary(cursorPosition) {
+    if (cursorPosition < this.totalCursorPositions) return cursorPosition
+  
+    return 0
+  }
+
   toString() {
     return this.characters.join('')
   }
@@ -164,6 +174,13 @@ class Context extends Section {
     this.block = 'p'
 
     this.indentationAmount = 0
+  }
+
+  static from(...sections) {
+    if (sections.some(sec => sec instanceof Context))
+      sections = sections.map(sec => sec instanceof Context ? sec : NakedContext.from(sec))
+
+    return super.from(...sections)
   }
 
   static createContext(blockTag, ...segments) {
@@ -259,6 +276,35 @@ class Context extends Section {
 
   get characters() {
     return this.atoms
+  }
+
+  get totalCursorPositions() {
+    if (this._numCursorPos === undefined) {
+      if (this.subPieces.every(sec => sec instanceof AtomicSection)) {
+        this._numCursorPos = 1 + this.length
+      } else {
+        this._numCursorPos = this.subPieces.reduce((prev, sec) => prev + sec.totalCursorPositions, 0)
+      }
+    }
+    return this._numCursorPos
+    
+  }
+
+  cursorToBoundary(cursorPosition) {
+
+    let offset = cursorPosition
+    let boundary = 0
+
+    for (const sec of this.subPieces) {
+      if ( offset < sec.totalCursorPositions )
+        return boundary + sec.cursorToBoundary(offset)
+
+      boundary += sec.boundariesLength
+      offset -= (sec instanceof Segment) ? sec.length : sec.length + 1
+    }
+
+    return 0
+
   }
 
   toString() {
@@ -445,27 +491,17 @@ class Doc extends Section {
   // --------
   cursorToBoundary(cursorPosition) {
 
+    // offset counts by cursor positions, boundary counts up by boundaries
     let offset = cursorPosition
     let boundary = 0
 
-    // position counts by cursor positions, boundary counts up by boundaries
     for (const ctx of this.contexts) {
-      // if (positiion < ctx.cursorPosLength) {
-      if (offset < ctx.length + 1) {
-        for (const seg of ctx.segments) {
-          if (offset < seg.length + 1) {
-            return boundary + offset  // we add 1 to the offset to account for the skipped left-most boundary
-          }   
+      if (offset < ctx.totalCursorPositions)
+        return boundary + ctx.cursorToBoundary(offset)
 
-          boundary += seg.boundariesLength
-          offset -= seg.length  // cursorPositions length excludes boundary between Segments.
-        }
-      }
       boundary += ctx.boundariesLength
-      offset -= ctx.length + 1  // so-called "cursorPositions" length, which includes bndry between Context.
+      offset -= ctx.length + 1
     }
-
-    // stub
     return 0
   }
 
@@ -532,22 +568,11 @@ class Doc extends Section {
 
 
   get totalCursorPositions() {
-    const contextCompute = section => {
-      if (section instanceof AtomicSection) return section.length
-      if (section.subPieces.every(sec => sec instanceof AtomicSection)) return 1 + section.length
-      
-      const amountAtomicChildren = section.subPieces.filter(sec => sec instanceof AtomicSection).length
-      const recursiveResult = section.subPieces.map(contextCompute).reduce( (c,p)=> c + p, 0 )
-
-      return amountAtomicChildren + recursiveResult
+    if (this._numCursorPos === undefined) {
+      this._numCursorPos = this.subPieces.reduce( (prev, sec) => prev + sec.totalCursorPositions, 0 )
     }
-    return contextCompute(this)
+    return this._numCursorPos
   }
-
-  // this works only if the contexts do not nest other contexts
-  // get totalCursorPositions() {
-  //   return this.length + this.contexts.length
-  // }
 
 }
 /* 
