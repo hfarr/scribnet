@@ -134,6 +134,33 @@ describe('Renderer', function () {
       })
 
     })
+
+    describe('Render Nested', function () {
+      const idk ='<ul><li></li><li><ul><li><ul><li></li></ul></li><li></li></ul></li><li></li></ul>'
+
+      const testNestedContext = Context.createContext('ul',
+        Context.createContext('li', Segment.from('A')),
+        Context.createContext('li', Segment.from('B')),
+        Context.createContext('li', 
+          Segment.from('C'), 
+          Context.createContext('ul',
+            Context.createContext('li', Segment.from(...'cA')),
+            Context.createContext('li', Segment.from(...'cB')),
+            Context.createContext('li', Segment.from(...'cC')),
+            Context.createContext('li', Segment.from(...'cD'))
+          ),
+        ),
+        Context.createContext('li', Segment.from('D')),
+      )
+      const testNestedDoc = Doc.from(testNestedContext)
+
+      it('renders correct html', function () {
+        // const expected = '<ul><li>A</li><li>B</li><ul><li>C<li>cA</li><li>cB</li><li>cC</li><li>cD</li></li></ul><li>D</li></ul>'
+        const actual = htmlRenderer.toHTML(testNestedDoc)
+        const expected = '<ul><li>A</li><li>B</li><li>C<ul><li>cA</li><li>cB</li><li>cC</li><li>cD</li></ul></li><li>D</li></ul>'
+        assert.strictEqual(actual, expected)
+      })
+    })
     
   })
 })

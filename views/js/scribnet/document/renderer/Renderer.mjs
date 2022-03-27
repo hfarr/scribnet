@@ -1,5 +1,7 @@
 'use strict';
 
+import { Context, Segment } from "../../section/Context.mjs";
+
 // import EditDocument from "./Document.mjs";
 function escapskies(codePoint) {
   switch (codePoint) {
@@ -150,10 +152,20 @@ class HTMLRenderer extends Renderer {
     }
 
     // if (context.empty()) result += "<br>"
-    if (context.length === 0) result += "<br>"
+    if (context.length === 0 && !['ul','ol','li'].includes(blockTag)) result += "<br>"
 
-    for (const segment of context.segments)
-      result += this.renderSegment(segment)
+    for (const subsection of context.subPieces) {
+      switch(subsection.constructor.name) {
+        case Context.name:
+          result += this.renderContext(subsection)
+          break;
+        case Segment.name:
+          result += this.renderSegment(subsection)
+          break
+      }
+    }
+    // for (const segment of context.segments)
+    //   result += this.renderSegment(segment)
     
     // return wrapOne(blockTag, result)
     return wrapOneAttributes(blockTag, attributes, result)
