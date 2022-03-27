@@ -510,6 +510,30 @@ class Section {
     return this.copyFrom(...this.subPieces.map( sec => sec.map(func)))
   }
 
+
+  // =====================
+  // -- Experiment Zone --
+  // by which I mean decent functions with pending names
+
+  predicateSlice(pred, startBoundary, endBoundary = undefined) {
+    if (endBoundary === undefined) endBoundary = this.boundariesLength - 1  // notsure this works for "most" actually, then again. No, it should be right.
+
+    const [ l, mid, r ] = this.triSplit(startBoundary, endBoundary)
+    if (pred(this)) {
+      return mid
+    }
+
+    return [ ...mid.subPieces.map(section => section.predicateSlice(pred, 0)) ].flat()
+
+  }
+
+  kindSlice(kind, startBoundary, endBoundary) {
+
+    return this.predicateSlice( section => section.constructor.name === kind, startBoundary, endBoundary)
+
+  }
+
+  // =====================
   
 
   boundaryToAtomBoundary(boundaryLocation) {
@@ -619,7 +643,7 @@ class AtomicSection extends Section {
   }
 
   slice(start, end) {
-    return AtomicSection.from(this.subPieces.slice(start, end))
+    return this.copyFrom(...this.subPieces.slice(start, end))
   }
 
   split(index) {
@@ -668,6 +692,14 @@ class AtomicSection extends Section {
   }
   deleteBoundary(start, end = undefined) {
     return this.delete(start, end)
+  }
+
+  // ============
+  predicateSlice(pred, startBoundary, endBoundary) {
+
+    if (pred(this)) return [ this.slice(startBoundary, endBoundary) ]
+
+    return []
   }
 
 

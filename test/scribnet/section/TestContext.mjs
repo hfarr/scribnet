@@ -535,6 +535,28 @@ describe('Context', function() {
 
       })
 
+      describe('predicateSlice', function() {
+        it('correctly flattens', function () {
+
+        })
+      })
+
+      describe('kindSlice', function() {
+        it('grabs all Sections of given kind', function () {
+
+          const seggos = testDocWithNested.kindSlice(Segment.name,18)
+          assert(seggos.every(s => s instanceof Segment))
+
+        })
+        it('grabs correct portions', function () {
+
+          const seggos = testDocWithNested.kindSlice(Segment.name,18)
+          const expectedEq = Segment.from(...'DddddABCcAcBcCcDD')
+          assert(Context.from(...seggos).eq(expectedEq))
+
+        })
+      })
+
     })
 
     it('is a place for me to test', function() {
