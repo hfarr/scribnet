@@ -267,6 +267,23 @@ class Context extends Section {
 
 }
 
+class NakedContext extends Context {
+  updateBlock(blockTag) {
+    const result = Context.createContext(blockTag, ...this.subPieces)
+    result.indentationAmount = this.indentationAmount
+    return result
+  }
+  updateAttributes(options) {
+    const result = super.updateAttributes(options)
+    if (options.blockTag !== undefined || options.blockTag !== '') {
+      return result.updateBlock(options.blockTag)
+    }
+    return result
+  }
+  set block(tag) {}
+  get block() { return '' }
+}
+
 class Gap extends Section {
   // maybe Gap should have a block tag. Then at least when we merge we can "preserve" the block tag from the context.
   empty() {
@@ -305,7 +322,7 @@ class Gap extends Section {
 
 class Doc extends Section {
 
-  static createSection(tag, ...subPiecees) {
+  static createSection(tag, ...subPieces) {
     
   }
 
@@ -314,7 +331,7 @@ class Doc extends Section {
     let serialDocObj = JSON.parse(serializedDoc)
     // const result = Object.create(this.prototype, Object.getOwnPropertyDescriptors(serialDocObj))
 
-    // result.subPiecees = [ ...serialDocObj.map(Context.parseContext) ]
+    // result.subPieces = [ ...serialDocObj.map(Context.parseContext) ]
 
     return this.parse(serialDocObj)
 
