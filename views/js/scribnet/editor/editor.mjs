@@ -48,6 +48,7 @@ export class Editor {
 
     this.docHistory = new DocHistory(EditDocument.newDocument())
     this.controller = new HTMLController()
+    this.initStates()
     // this.editDocument = loadHTML(this.component)
     this.listeners = {}
     this.listeners[Editor.EVENT_SELECTION_CHANGE] = []
@@ -262,7 +263,8 @@ export class Editor {
   // -- Other API
 
   /**
-   * Update the cursor in the document
+   * Update the cursor in the document.
+   * Side effect: Updated position reflects back to DOM
    * 
    * @param offset Offset into segment
    */
@@ -274,6 +276,25 @@ export class Editor {
   
 
   //=========================
+  //-- Statefulness ---------
+
+  initStates() {
+    // transitoryEffect always moves to 'init' state after. May not want that, or maybe can supply a "final" state as an argument.
+    this.controller.setTransitoryEffect('^* |', () => {
+      console.debug('start, star, space!')
+      this.currentDocument.select(this.currentDocument.startOffset - 2, this.currentDocument.startOffset)
+      this.pushNewDoc(this.currentDocument.delete().setBlockTag('ul'))
+      // tempEd = tempED.setBlockTag('ul')
+
+      // this.controller.deleteAction()
+
+    })
+  }
+
+
+  //=========================
+
+
 
   /**
    * Inverse (well..) of 'updateSelection'. Takes the currently selected text in the

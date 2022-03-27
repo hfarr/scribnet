@@ -123,6 +123,10 @@ export default class Controller {
   }
 
   deleteAction(leftBound, rightBound) {
+    if (QueryDoc.isSelectionAtStartOfBlock(this.editDocument)) {
+      this.sm.transition('delete ^')
+      return
+    }
     this.sm.transition('delete')
   }
 
