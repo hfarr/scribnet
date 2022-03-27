@@ -10,11 +10,14 @@ describe('Context', function() {
   const testNestedContext = Context.createContext('ul',
     Context.createContext('li', Segment.from('A')),
     Context.createContext('li', Segment.from('B')),
-    Context.createContext('ul', Segment.from('C'),
-      Context.createContext('li', Segment.from(...'cA')),
-      Context.createContext('li', Segment.from(...'cB')),
-      Context.createContext('li', Segment.from(...'cC')),
-      Context.createContext('li', Segment.from(...'cD')),
+    Context.createContext('li', 
+      Segment.from('C'), 
+      Context.createContext('ul',
+        Context.createContext('li', Segment.from(...'cA')),
+        Context.createContext('li', Segment.from(...'cB')),
+        Context.createContext('li', Segment.from(...'cC')),
+        Context.createContext('li', Segment.from(...'cD'))
+      ),
     ),
     Context.createContext('li', Segment.from('D')),
   )
@@ -143,10 +146,19 @@ describe('Context', function() {
         }
         const nextLevel = [ 
           [0,0], [0,1], // the letter 'C'
-          [1,0], [1,1], [1,2], [2,0], [2,1], [2,2], [3,0], [3,1], [3,2], [4, 0], [4, 1], [4, 2] // cA ... cD
+          [1,0], [1,1], [1,2], [1,3], [1,4], [1,5], [1,6], [1,7], [1,8], [1,9], [1, 10], [1, 11], [1, 12] // cA ... cD
         ]
         for (let i = 0; i < testNestedContext.subPieces[2].boundariesLength; i++ ) {
           assert.deepStrictEqual(testNestedContext.subPieces[2]._locateBoundary(i), nextLevel[i])
+        }
+        const lastLevel = [ 
+          [0,0], [0,1], [0,2],
+          [1,0], [1,1], [1,2],
+          [2,0], [2,1], [2,2],
+          [3,0], [3,1], [3,2],
+        ]
+        for (let i = 0; i < testNestedContext.subPieces[2].subPieces[1].boundariesLength; i++ ) {
+          assert.deepStrictEqual(testNestedContext.subPieces[2].subPieces[1]._locateBoundary(i), lastLevel[i])
         }
       })
 
@@ -464,8 +476,42 @@ describe('Context', function() {
 
     describe('Doc with Nested Context', function () {
 
+      const testDocWithNested = Doc.from(
+        Context.createContext('h1', Segment.from(...'Aaaaa'), Segment.from(...'Bbbbb')),
+        Context.createContext('p', Segment.from(...'Ccccc'), Segment.from(...'Ddddd')),
+        testNestedContext
+      )
+
       describe('cursorToBoundary', function () {
 
+        it('reports the correct number of cursor positions', function () {
+          const tmpTest = Doc.from(testNestedContext)
+          assert.strictEqual(tmpTest.totalCursorPositions, tmpTest.length + 8)
+
+        })
+
+        it('determines correct boundary from cursor', function () {
+          const testCases = [
+            [ 0, 0 ],
+            [ 5, 5 ], [ 6, 7 ], [16, 17 ], [ 17, 19 ],
+            // [ testDocWithNested.totalCursorPositions - 1, testDocWithNested.boundariesLength - 1 ],
+          ]
+          /*
+          AaaaaBbbbb  0..10   0..11
+          CccccDdddd  11..21  12..23
+          A   22..23  24..25  
+          B
+          C
+          cA
+          cB
+          cC
+          cD
+          D
+          */
+          for ( const [ input, expectedOutput ] of testCases)
+            assert.deepStrictEqual(testDocWithNested.cursorToBoundary(input), expectedOutput)
+
+        })
 
 
       })

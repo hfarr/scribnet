@@ -513,9 +513,33 @@ class Doc extends Section {
     return this._boundariesLength
   }
 
+
   get totalCursorPositions() {
-    return this.length + this.contexts.length
+    // const contextCompute = section => {
+    //   if (section instanceof AtomicSection) return 0
+    //   if (section.subPieces.every(sec => sec instanceof AtomicSection)) return 1
+    //   return section.subPieces
+    //     // .filter(sec => sec instanceof Context)
+    //     .map(contextCompute)
+    //     .reduce((c, p) => c + p, 0)
+    // }
+    // const xtra = contextCompute(this)
+    // return this.length + xtra
+    const contextCompute = section => {
+      if (section instanceof AtomicSection) return section.length
+      if (section.subPieces.every(sec => sec instanceof AtomicSection)) return 1 + section.length
+      return section.subPieces
+        // .filter(sec => sec instanceof Context)
+        .map(contextCompute)
+        .reduce((c, p) => c + p, 0) + section.subPieces.filter(sec => sec instanceof AtomicSection).length
+    }
+    return contextCompute(this)
   }
+
+  // this works only if the contexts do not nest other contexts
+  // get totalCursorPositions() {
+  //   return this.length + this.contexts.length
+  // }
 
 }
 /* 
