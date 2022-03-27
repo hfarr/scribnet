@@ -239,9 +239,11 @@ export class Editor {
 
   write(text) {
     this.pushNewDoc(this.currentDocument.write(text), `Write: ${text}`)
+    this.controller.insertAction(text)
   }
   delete() {
     this.pushNewDoc(this.currentDocument.delete(), 'Delete')
+    this.controller.deleteAction()
   }
   backspace() {
     if (this.currentDocument.isCollapsed) this.currentDocument.select(this.currentDocument.cursorOffset - 1)
@@ -261,6 +263,7 @@ export class Editor {
   select(anchor, focus) {
     this.currentDocument.select(anchor, focus)
     this.selectInDOM()  
+    this.controller.selectAction()
   }
   
 
@@ -314,6 +317,8 @@ export class Editor {
       this.currentDocument.select(domAnchorBoundary, domFocusBoundary)
 
     }
+
+    this.controller.selectAction()
   }
 
   at(index = undefined) {

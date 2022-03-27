@@ -9,10 +9,10 @@
  */
 class StateTableDefaults {
 
-  static initialState = Symbol('init')
+  static initialState = 'init'
   constructor() {
     this.transitions = {
-      [initialState]: {}
+      [StateTableDefaults.initialState]: {}
     }
 
     // action defaults has an effective meaning in the following scenario.
@@ -30,13 +30,16 @@ class StateTableDefaults {
 
     if (state in this.transitions) {
       if (action in this.transitions[state]) {
+        console.debug(`Transitioning from ${state} via action '${action}' to state ${this.transitions[state][action]}`)
         return this.transitions[state][action]
       } else if (action in this.actionDefaultTransitions) {
+        console.debug(`Transitioning from ${state} via action '${action}' to state ${this.actionDefaultTransitions[action]} (default transition for action)`)
         return this.actionDefaultTransitions[action]
       }
     }
 
-    return initialState
+    console.debug(`Transitioning from ${state} via action '${action}' to state ${StateTableDefaults.initialState} (default transition)`)
+    return StateTableDefaults.initialState
   }
 
   setTransition(state, action, to) {
@@ -53,18 +56,21 @@ class StateMachine {
   constructor() {
 
     this.stateTable = new StateTableDefaults()
-    this.currentState = this.stateTable.initialState
-    this.onTransition = {}
+    this.currentState = StateTableDefaults.initialState
+    this.onTransitionFuncs = {}
 
   }
   // --- transition states
   transition(action) {
     this.currentState = this.stateTable.transition(this.currentState, action)
-    if (this.currentState in this.onTransition) {
-      this.onTransition[this.currentState](this)
+    if (this.currentState in this.onTransitionFuncs) {
+      this.onTransitionFuncs[this.currentState](this)
     }
   }
 
+  transitionToInit() {
+    this.currentState = StateTableDefaults.initialState
+  }
   //---- modify table
 
   setTransitionFromInit(action, toState) {
@@ -76,7 +82,19 @@ class StateMachine {
   }
 
   onTransition(toState, sideEffect) {
-    this.onTransition[toState] = sideEffect
+    this.onTransitionFuncs[toState] = sideEffect
+  }
+}
+
+class QueryDoc {
+
+  static isSelectionAtStartOfBlock(editDocument) {
+
+    const lb = editDocument._startBoundary
+    const [ _, indexInBoundary ] = editDocument.document._locateBoundary(lb)
+
+    return indexInBoundary === 0
+
   }
 }
 
@@ -88,14 +106,18 @@ export default class Controller {
 
   selectAction() {
 
+    // check selected ^
+    if (QueryDoc.isSelectionAtStartOfBlock(this.editDocument)) {
+      this.sm.transition('select ^')
+    }
   }
 
-  insertAction(insertedString, lef) {
+  insertAction(insertedString) {
     this.sm.transition(`insert ${insertedString}`)
   }
 
   deleteAction(leftBound, rightBound) {
-    
+    this.sm.transition('delete')
   }
 
 }
