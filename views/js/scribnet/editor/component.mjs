@@ -187,7 +187,7 @@ class EditorComponent extends HTMLElement {
         if (keyState[statekey]) {
           keyState[statekey] = false // in our interface we'd probably implement the 'check&set' in one operation
           if (statekey in actionsKeyUp) actionsKeyUp[statekey]()
-          console.debug('key up', statekey)
+          // console.debug('key up', statekey)
         }
       }
     }
@@ -198,7 +198,7 @@ class EditorComponent extends HTMLElement {
         if (!keyState[statekey]) {
           keyState[statekey] = true // in our interface we'd probably implement the 'check&set' in one operation
           if (statekey in actionsKeyDown) actionsKeyDown[statekey]()
-          console.debug('key down',statekey)
+          // console.debug('key down',statekey)
         } else {
           if (statekey in actionsKeyHeldDown) actionsKeyHeldDown[statekey]()
         }
@@ -213,9 +213,9 @@ class EditorComponent extends HTMLElement {
     const mouseDown = mouseEvt => mouseEvent(mouseEvt)
     const mouseUp = mouseEvt => { mouseState.mouseReleased = true; mouseEvent(mouseEvt) }
     const mouseEvent = mouseEvt => {
-      console.log("mouse", mouseEvt)
+      // console.log("mouse", mouseEvt)
       this.editor.userUpdateSelection()
-      console.log(this.editor.currentDocument.selection())
+      // console.log(this.editor.currentDocument.selection())
     }
 
     this.editor.evtSelChg = async (e) => {
@@ -225,7 +225,7 @@ class EditorComponent extends HTMLElement {
         // on my part if it happens more than once for the "same" input.
         this.editor.userUpdateSelection()
         mouseState.mouseReleased = false
-        console.log("post-up", this.editor.currentDocument.selection())
+        // console.log("post-up", this.editor.currentDocument.selection())
       }
     }
 
