@@ -120,11 +120,34 @@ describe('Context', function() {
         Context.createContext('li', Segment.from('D')),
       )
 
+      const testContextAlt = testContext.copy()
+      testContextAlt.subPieces[2] = Context.createContext('ul',
+        Context.createContext('li', Segment.from(...'.A')),
+        Context.createContext('li', Segment.from(...'.B')),
+        Context.createContext('li', Segment.from(...'.C')),
+        Context.createContext('li', Segment.from(...'.D')),
+      )
+
       it('has the expected atoms', function () {
 
         const expected = 'ABCcAcBcCcDD'
         assert.strictEqual(testContext.atoms.join(''), expected)
         assert.strictEqual(testContext.length, expected.length)
+      })
+
+      it('computes the correct boundary locations', function () {
+        const bl1 = testContext._locateBoundary(0)
+        const topLevel = [ [0,0], [0,1], [1,0], [1,1], [2,0], [2,1], [2,2], [2,3], [2,4], [2,5], [2,6], [2,7], [2,8], [2,9], [2,10], [2,11], [2,12], [2,13], [3,0], [3,1], ]
+        for (let i = 0; i < testContext.boundariesLength; i++ ) {
+          assert.deepStrictEqual(testContext._locateBoundary(i), topLevel[i])
+        }
+        const nextLevel = [ 
+          [0,0], [0,1], // the letter 'C'
+          [1,0], [1,1], [1,2], [2,0], [2,1], [2,2], [3,0], [3,1], [3,2], [4, 0], [4, 1], [4, 2] // cA ... cD
+        ]
+        for (let i = 0; i < testContext.subPieces[2].boundariesLength; i++ ) {
+          assert.deepStrictEqual(testContext.subPieces[2]._locateBoundary(i), nextLevel[i])
+        }
       })
 
     })
