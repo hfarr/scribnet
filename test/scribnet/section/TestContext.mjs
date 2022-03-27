@@ -107,6 +107,28 @@ describe('Context', function() {
       })
     })
 
+    describe('Nested Context', function () {
+      const testContext = Context.createContext('ul',
+        Context.createContext('li', Segment.from('A')),
+        Context.createContext('li', Segment.from('B')),
+        Context.createContext('ul', Segment.from('C'),
+          Context.createContext('li', Segment.from('cA')),
+          Context.createContext('li', Segment.from('cB')),
+          Context.createContext('li', Segment.from('cC')),
+          Context.createContext('li', Segment.from('cD')),
+        ),
+        Context.createContext('li', Segment.from('D')),
+      )
+
+      it('has the expected atoms', function () {
+
+        const expected = 'ABCcAcBcCcDD'
+        assert.strictEqual(testContext.atoms.join(''), expected)
+        assert.strictEqual(testContext.length, expected.length)
+      })
+
+    })
+
   })
 
   describe('Gap', function () {
