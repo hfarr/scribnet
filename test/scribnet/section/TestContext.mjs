@@ -482,6 +482,18 @@ describe('Context', function() {
         testNestedContext
       )
 
+      describe('Context.from with nested children', function () {
+
+        it('uniformly converts children to Context if some are Context some are Segment', function () {
+          assert(testNestedContext.subPieces.every(sec => sec instanceof Context))
+          assert(testNestedContext.subPieces[0].subPieces.every(sec => sec instanceof Segment))
+          assert(testNestedContext.subPieces[1].subPieces.every(sec => sec instanceof Segment))
+          assert(testNestedContext.subPieces[2].subPieces.every(sec => sec instanceof Context))
+          assert(testNestedContext.subPieces[3].subPieces.every(sec => sec instanceof Segment))
+        })
+
+      })
+
       describe('cursorToBoundary', function () {
 
         it('reports the correct number of cursor positions', function () {
@@ -492,8 +504,14 @@ describe('Context', function() {
 
         it('determines correct boundary from cursor', function () {
           const testCases = [
-            [ 0, 0 ],
-            [ 5, 5 ], [ 6, 7 ], [16, 17 ], [ 17, 19 ],
+            // [ 0, 0 ],
+            // [ 5, 5 ], [ 6, 7 ], [16, 17 ], [ 17, 19 ],
+            // [24, 26], [25, 27],
+            // [24, 26], [25, 27],
+            // [26, 28], [27, 29],
+            // [28, 30], [30, 32],
+            [37, 39], [39, 41],
+            [40, 42], [41, 43],
             // [ testDocWithNested.totalCursorPositions - 1, testDocWithNested.boundariesLength - 1 ],
           ]
           /*
@@ -505,8 +523,8 @@ describe('Context', function() {
           C           26..27    28..29  
           cA          28..30    30..32
           cB          31..33    33..35  
-          cC          34..36    37..38  
-          cD          37..39    40..41 
+          cC          34..36    36..38  
+          cD          37..39    39..41 
           D           40..41    42..43 
           */
           for ( const [ input, expectedOutput ] of testCases)

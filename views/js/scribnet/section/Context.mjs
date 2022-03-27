@@ -300,7 +300,7 @@ class Context extends Section {
         return boundary + sec.cursorToBoundary(offset)
 
       boundary += sec.boundariesLength
-      offset -= (sec instanceof Segment) ? sec.length : sec.length + 1
+      offset -= (sec instanceof Segment) ? sec.length : sec.totalCursorPositions
     }
 
     return 0
