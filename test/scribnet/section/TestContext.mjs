@@ -497,16 +497,17 @@ describe('Context', function() {
             // [ testDocWithNested.totalCursorPositions - 1, testDocWithNested.boundariesLength - 1 ],
           ]
           /*
-          AaaaaBbbbb  0..10   0..11
-          CccccDdddd  11..21  12..23
-          A   22..23  24..25  
-          B
-          C
-          cA
-          cB
-          cC
-          cD
-          D
+                      Cursors   Boundaries
+          AaaaaBbbbb  0..10     0..11
+          CccccDdddd  11..21    12..23
+          A           22..23    24..25  
+          B           24..25    26..27  
+          C           26..27    28..29  
+          cA          28..30    30..32
+          cB          31..33    33..35  
+          cC          34..36    37..38  
+          cD          37..39    40..41 
+          D           40..41    42..43 
           */
           for ( const [ input, expectedOutput ] of testCases)
             assert.deepStrictEqual(testDocWithNested.cursorToBoundary(input), expectedOutput)
