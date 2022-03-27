@@ -7,6 +7,25 @@ const { Doc, Context, Segment, Gap } = await import(`${PATH}/js/scribnet/section
 
 describe('Context', function() {
 
+  const testNestedContext = Context.createContext('ul',
+    Context.createContext('li', Segment.from('A')),
+    Context.createContext('li', Segment.from('B')),
+    Context.createContext('ul', Segment.from('C'),
+      Context.createContext('li', Segment.from(...'cA')),
+      Context.createContext('li', Segment.from(...'cB')),
+      Context.createContext('li', Segment.from(...'cC')),
+      Context.createContext('li', Segment.from(...'cD')),
+    ),
+    Context.createContext('li', Segment.from('D')),
+  )
+
+  const testNestedContextAlt = testNestedContext.copy()
+  testNestedContextAlt.subPieces[2] = Context.createContext('ul',
+    Context.createContext('li', Segment.from(...'.A')),
+    Context.createContext('li', Segment.from(...'.B')),
+    Context.createContext('li', Segment.from(...'.C')),
+    Context.createContext('li', Segment.from(...'.D')),
+  )
 
 
   describe('Segment', function () {
@@ -108,45 +127,26 @@ describe('Context', function() {
     })
 
     describe('Nested Context', function () {
-      const testContext = Context.createContext('ul',
-        Context.createContext('li', Segment.from('A')),
-        Context.createContext('li', Segment.from('B')),
-        Context.createContext('ul', Segment.from('C'),
-          Context.createContext('li', Segment.from(...'cA')),
-          Context.createContext('li', Segment.from(...'cB')),
-          Context.createContext('li', Segment.from(...'cC')),
-          Context.createContext('li', Segment.from(...'cD')),
-        ),
-        Context.createContext('li', Segment.from('D')),
-      )
-
-      const testContextAlt = testContext.copy()
-      testContextAlt.subPieces[2] = Context.createContext('ul',
-        Context.createContext('li', Segment.from(...'.A')),
-        Context.createContext('li', Segment.from(...'.B')),
-        Context.createContext('li', Segment.from(...'.C')),
-        Context.createContext('li', Segment.from(...'.D')),
-      )
 
       it('has the expected atoms', function () {
 
         const expected = 'ABCcAcBcCcDD'
-        assert.strictEqual(testContext.atoms.join(''), expected)
-        assert.strictEqual(testContext.length, expected.length)
+        assert.strictEqual(testNestedContext.atoms.join(''), expected)
+        assert.strictEqual(testNestedContext.length, expected.length)
       })
 
       it('computes the correct boundary locations', function () {
-        const bl1 = testContext._locateBoundary(0)
+        const bl1 = testNestedContext._locateBoundary(0)
         const topLevel = [ [0,0], [0,1], [1,0], [1,1], [2,0], [2,1], [2,2], [2,3], [2,4], [2,5], [2,6], [2,7], [2,8], [2,9], [2,10], [2,11], [2,12], [2,13], [3,0], [3,1], ]
-        for (let i = 0; i < testContext.boundariesLength; i++ ) {
-          assert.deepStrictEqual(testContext._locateBoundary(i), topLevel[i])
+        for (let i = 0; i < testNestedContext.boundariesLength; i++ ) {
+          assert.deepStrictEqual(testNestedContext._locateBoundary(i), topLevel[i])
         }
         const nextLevel = [ 
           [0,0], [0,1], // the letter 'C'
           [1,0], [1,1], [1,2], [2,0], [2,1], [2,2], [3,0], [3,1], [3,2], [4, 0], [4, 1], [4, 2] // cA ... cD
         ]
-        for (let i = 0; i < testContext.subPieces[2].boundariesLength; i++ ) {
-          assert.deepStrictEqual(testContext.subPieces[2]._locateBoundary(i), nextLevel[i])
+        for (let i = 0; i < testNestedContext.subPieces[2].boundariesLength; i++ ) {
+          assert.deepStrictEqual(testNestedContext.subPieces[2]._locateBoundary(i), nextLevel[i])
         }
       })
 
@@ -460,6 +460,16 @@ describe('Context', function() {
         assert(!original.selectionEntirelyHasTag('tag1', 22, 27), 'expect selection containing second segment with tag1 and other segments to test negative')
         assert(!original.selectionEntirelyHasTag('tag1', 23, 27), 'expect selection overlapping second segment with tag1 and other segments to test negative')
       })
+    })
+
+    describe('Doc with Nested Context', function () {
+
+      describe('cursorToBoundary', function () {
+
+
+
+      })
+
     })
 
     it('is a place for me to test', function() {
