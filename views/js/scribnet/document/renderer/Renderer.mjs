@@ -154,20 +154,14 @@ class HTMLRenderer extends Renderer {
     // if (context.empty()) result += "<br>"
     if (context.length === 0 && !['ul','ol','li'].includes(blockTag)) result += "<br>"
 
-    for (const subsection of context.subPieces) {
-      switch(subsection.constructor.name) {
-        case Context.name:
-          result += this.renderContext(subsection)
-          break;
-        case Segment.name:
-          result += this.renderSegment(subsection)
-          break
-      }
+    if (context.subPieces.every(sec => sec instanceof Segment)) {
+      for (const subsection of context.subPieces) result += this.renderSegment(subsection)
+    } else {
+      for (const subsection of context.subPieces) result += this.renderContext(subsection)
     }
-    // for (const segment of context.segments)
-    //   result += this.renderSegment(segment)
-    
-    // return wrapOne(blockTag, result)
+
+    if (blockTag === '') return result
+
     return wrapOneAttributes(blockTag, attributes, result)
 
   }
