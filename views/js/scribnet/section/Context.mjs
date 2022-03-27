@@ -66,7 +66,7 @@
 import Section from "./Section.mjs"
 import { AtomicSection } from "./Section.mjs"
 
-const BLOCKS = ['p', 'h1', 'h2', 'h3', 'pre']
+const BLOCKS = ['p', 'h1', 'h2', 'h3', 'pre', 'ul', 'ol', 'li']
 
 const filterInline = tag => !BLOCKS.includes(tag)
 const isBlock = tag => BLOCKS.includes(tag.toLowerCase())

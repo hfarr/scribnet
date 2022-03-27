@@ -92,6 +92,10 @@ h2 {
 h3 {
   font-size: var(--s1);
 }
+li {
+  /* TODO maybe... make Configurable */
+  margin-left: 1em;
+}
 
 
 /* Component layout styling */
