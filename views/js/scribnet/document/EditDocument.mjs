@@ -368,11 +368,17 @@ class _EditDocument {
 
 
   get _startBoundary() {
-    return this.document.cursorToBoundary(this.startOffset)
+    return this.document.cursorToBoundaryFavorRight(this.startOffset)
   }
   get _endBoundary() {
-    return this.document.cursorToBoundary(this.endOffset)
+    return this.document.cursorToBoundaryFavorLeft(this.endOffset)
   }
+  // get _startBoundary() {
+  //   return this.document.cursorToBoundary(this.startOffset)
+  // }
+  // get _endBoundary() {
+  //   return this.document.cursorToBoundary(this.endOffset)
+  // }
 
   get totalCursorPositions() {
     return this.document.totalCursorPositions

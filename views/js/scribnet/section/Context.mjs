@@ -649,32 +649,46 @@ contextClasses.forEach(registerCurry(countSegChildren))
 contextClasses.forEach(registerCurry(overCount))
 
 function cursorToBoundaryFavorLeft(cursorPosition) {
+  if (this instanceof Segment) return cursorPosition
   let position = cursorPosition
   let boundary = 0
 
-  for (const sec of this.sections) {
+  for (const sec of this.subPieces) {
     if (position < sec.totalCursorPositions) {
       return boundary + sec.cursorToBoundaryFavorLeft(position)
     }
     boundary += sec.boundariesLength
-    offset -= sec.totalCursorPositions
+    position -= sec.totalCursorPositions
   }
   return boundary + position
 }
 function cursorToBoundaryFavorRight(cursorPosition) {
+  if (this instanceof Segment) return cursorPosition
   let position = cursorPosition
   let boundary = 0
+  let boundaryLeft = 0
 
-  for (const sec of this.sections) {
+  for (const sec of this.subPieces) {
     if (position < sec.totalCursorPositions) {
-      return boundary + sec.cursorToBoundaryFavorLeft(position)
+      boundaryLeft = boundary + sec.cursorToBoundaryFavorRight(position)
+      break;
     }
     boundary += sec.boundariesLength
-    offset -= sec.totalCursorPositions
+    position -= sec.totalCursorPositions
   }
-  return boundary + position
+
+  if (boundaryLeft === 0) boundaryLeft = boundary + position
+
+  if (this.subPieces.every(sec => sec instanceof Segment)) {
+    const boundariesKernel = (b1, b2) => this.atomSlice(b1,b2).length === 0
+    while (boundaryLeft + 1 < this.boundariesLength && boundariesKernel(boundaryLeft, boundaryLeft + 1))
+      boundaryLeft += 1
+  }
+  return boundaryLeft
 }
 
+contextClasses.forEach(registerCurry(cursorToBoundaryFavorLeft))
+contextClasses.forEach(registerCurry(cursorToBoundaryFavorRight))
 
 
 class Table {
