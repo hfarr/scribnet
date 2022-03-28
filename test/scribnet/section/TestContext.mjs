@@ -426,7 +426,7 @@ describe('Context', function() {
         Context.createContext('p', Segment.createSegment([], 'Gg')),
         Context.createContext('p'),
         Context.createContext('p', Segment.createSegment([], 'ggg')),
-        Context.createContext('p', Segment.createSegment([], 'Hhh'), Segment.createSegment([], 'hh'), Segment.createSegment([], 'Ii'), Segment.createSegment([], 'iii'), ),
+        Context.createContext('p', Segment.createSegment([], 'Hhh'), Segment.createSegment([], 'hh'), Segment.createSegment([], 'Ii'), Segment.createSegment([], 'iii') ),
       )
       const testDocAlpha3 = Doc.from(
         Context.from(Segment.from(...'Aaa'), Segment.from(...'Bbb')),
@@ -485,7 +485,69 @@ describe('Context', function() {
         assert.strictEqual(testDocAlpha3.length, 12)                 // 12 atom indices (strings)
 
       })
+
+      describe('cursorToBoundary*', function () {
+
+        it('correctly favors left or right', function () {
+          /**
+           testDocAlpha2 boundaries
+           0 1 2 3 4 5 6 7 8 9 10 11 12
+           |E|e|e| |e|e| |F|f|f| f| f|
+           13 14 15
+           | G| g|
+           16
+           |
+           17 18 19 20
+           | g| g| g|
+           21 22 23 24 25 26 27 28 29 30 31 32 33 34
+           | H| h| h|  | h| h|  | I| i|  | i| i| i|
+           
+
+           testDocAlpha2 cursorPositions
+           0 1 2 3 4 5 6 7 8  9  10
+           |E|e|e|e|e|F|f|f| f| f|
+           11 12 13
+           | G| g|
+           14
+           |
+           15 16 17 18
+           | g| g| g|
+           19 20 21 22 23 24 25 26 27 28 29
+           | H| h| h| h| h| I| i| i| i| i|
+
+          c   left  right
+          0   0     0
+          3   3     4
+          5   6     7
+          10  12    12
+          11  13    13
+          14  16    16
+          22  24    25
+          24  27    28
+          34  29    29
+           */
+
+          const testCases = [
+            [ 0, 0, 0 ],
+            [ 3, 3, 4 ],
+            [ 5, 6, 7 ],
+            [ 10, 12, 12 ],
+            [ 11, 13, 13 ],
+            [ 14, 16, 16 ],
+            [ 22, 24, 25 ],
+            [ 24, 27, 28 ],
+            [ testDocAlpha2.totalCursorPositions - 1, testDocAlpha2.boundariesLength - 1, testDocAlpha2.boundariesLength - 1 ]
+          ]
+
+          for ( const [ cursor, boundaryLeft, boundaryRight ] of testCases ) {
+            assert.strictEqual(testDocAlpha2.cursorToBoundaryFavorLeft(cursor), boundaryLeft, `Expected cursor ${cursor} to map to ${boundaryLeft} (favoring left)`)
+            assert.strictEqual(testDocAlpha2.cursorToBoundaryFavorRight(cursor), boundaryRight, `Expected cursor ${cursor} to map to ${boundaryRight} (favoring right)`)
+          }
+        })
+
+      })
     })
+
 
     describe('overCount', function () {
       it('computes correct difference between boundariesLength & cursorPosition', function () {

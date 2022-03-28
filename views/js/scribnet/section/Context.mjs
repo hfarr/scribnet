@@ -658,7 +658,7 @@ function cursorToBoundaryFavorLeft(cursorPosition) {
       return boundary + sec.cursorToBoundaryFavorLeft(position)
     }
     boundary += sec.boundariesLength
-    position -= sec.totalCursorPositions
+    position -= (sec instanceof Segment) ? sec.length : sec.totalCursorPositions
   }
   return boundary + position
 }
@@ -674,7 +674,7 @@ function cursorToBoundaryFavorRight(cursorPosition) {
       break;
     }
     boundary += sec.boundariesLength
-    position -= sec.totalCursorPositions
+    position -= (sec instanceof Segment) ? sec.length : sec.totalCursorPositions
   }
 
   if (boundaryLeft === 0) boundaryLeft = boundary + position
