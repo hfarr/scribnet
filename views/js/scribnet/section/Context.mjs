@@ -153,6 +153,7 @@ class Segment extends AtomicSection {
   }
 
   get totalCursorPositions() {
+    // boundariesLength minus an overcount of 0
     return this.boundariesLength
   }
 
@@ -279,14 +280,15 @@ class Context extends Section {
   }
 
   get totalCursorPositions() {
-    if (this._numCursorPos === undefined) {
-      if (this.subPieces.every(sec => sec instanceof AtomicSection)) {
-        this._numCursorPos = 1 + this.length
-      } else {
-        this._numCursorPos = this.subPieces.reduce((prev, sec) => prev + sec.totalCursorPositions, 0)
-      }
-    }
-    return this._numCursorPos
+    return this.boundariesLength - this.overCount()
+    // if (this._numCursorPos === undefined) {
+    //   if (this.subPieces.every(sec => sec instanceof AtomicSection)) {
+    //     this._numCursorPos = 1 + this.length
+    //   } else {
+    //     this._numCursorPos = this.subPieces.reduce((prev, sec) => prev + sec.totalCursorPositions, 0)
+    //   }
+    // }
+    // return this._numCursorPos
     
   }
 
@@ -566,10 +568,11 @@ class Doc extends Section {
 
 
   get totalCursorPositions() {
-    if (this._numCursorPos === undefined) {
-      this._numCursorPos = this.subPieces.reduce( (prev, sec) => prev + sec.totalCursorPositions, 0 )
-    }
-    return this._numCursorPos
+    return this.boundariesLength - this.overCount()
+    // if (this._numCursorPos === undefined) {
+    //   this._numCursorPos = this.subPieces.reduce( (prev, sec) => prev + sec.totalCursorPositions, 0 )
+    // }
+    // return this._numCursorPos
   }
 
 }
