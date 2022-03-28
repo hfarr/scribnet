@@ -545,19 +545,12 @@ class Doc extends Section {
   }
 
   selectionHasTag(tag, start, end) {
-    const [ left, middle, right ] = this.triSplit(start, end)
-
-    const result = middle.contexts.map(ctx => ctx.segments).flat()
-
-    return result.some(seg => seg.hasTag(tag))
+    const any = this.predicateSlice( sec => sec instanceof Segment && sec.hasTag(tag), start, end )
+    return any.length > 0
   }
   selectionEntirelyHasTag(tag, start, end) {
-    const [ left, middle, right ] = this.triSplit(start, end)
-
-    // cut empty because some of the Segment are produced as empty and un-tagged
-    const result = middle.cutEmpty().contexts.map(ctx => ctx.segments).flat()
-
-    return result.every(seg => seg.hasTag(tag))
+    const allMinOne = this.predicateSlice( sec => sec instanceof Segment, start, end )
+    return allMinOne.length > 0 && allMinOne.every(sec => sec.hasTag(tag))
   }
 
   toString() {
