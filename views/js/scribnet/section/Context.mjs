@@ -605,6 +605,20 @@ class Doc extends Section {
  */
 
 
+// Data tools
+// visitor pattern maybe? well we can use this "registration" pattern to inject behavior
+function registerStatic(constructor, func) {
+  constructor[func.name] = func.bind(constructor)
+}
+function register(constructor, func) {
+  constructor.prototype[func.name] = func
+}
+
+function registerStaticCurry(func) { return function(constructor) { registerStatic(constructor, func ) } }
+function registerCurry(func) { return function(constructor) { register(constructor, func ) } }
+
+const contextClasses = [ Doc, Context, Segment ]
+
 // Parse tools
 const childType = {
   [Doc.name]: Context,
@@ -617,11 +631,54 @@ function parse(serialObj) {
     result.subPieces = [ ...result.subPieces.map(childType[this.name].parse) ]
   return result
 }
-function registerParse(constructor) { constructor.parse = parse.bind(constructor) }
+// function registerParse(constructor) { constructor.parse = parse.bind(constructor) }
+// function registerParse(constructor) { register(constructor, parse) }
+const registerParse = registerStaticCurry(parse)
+contextClasses.forEach(registerParse)
 
-registerParse(Doc)
-registerParse(Context)
-registerParse(Segment)
+// Gradnularity Mapping
+
+function countSegChildren() {
+  // if (this instanceof Segment) return 0
+  if (this.subPieces.length === 0) return 0
+  return this.predicateSlice( sec => sec instanceof Segment, 0).length
+}
+function overCount() {
+  if (this instanceof Segment) return 0
+  if (this.subPieces.every(sec => sec instanceof Segment)) return this.subPieces.length > 0 ? this.subPieces.length - 1 : 0
+  return this.subPieces.reduce((prev, sec) => prev + sec.overCount(), 0)
+}
+
+contextClasses.forEach(registerCurry(countSegChildren))
+contextClasses.forEach(registerCurry(overCount))
+
+function cursorToBoundaryFavorLeft(cursorPosition) {
+  let position = cursorPosition
+  let boundary = 0
+
+  for (const sec of this.sections) {
+    if (position < sec.totalCursorPositions) {
+      return boundary + sec.cursorToBoundaryFavorLeft(position)
+    }
+    boundary += sec.boundariesLength
+    offset -= sec.totalCursorPositions
+  }
+  return boundary + position
+}
+function cursorToBoundaryFavorRight(cursorPosition) {
+  let position = cursorPosition
+  let boundary = 0
+
+  for (const sec of this.sections) {
+    if (position < sec.totalCursorPositions) {
+      return boundary + sec.cursorToBoundaryFavorLeft(position)
+    }
+    boundary += sec.boundariesLength
+    offset -= sec.totalCursorPositions
+  }
+  return boundary + position
+}
+
 
 
 class Table {

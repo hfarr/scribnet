@@ -487,6 +487,22 @@ describe('Context', function() {
       })
     })
 
+    describe('overCount', function () {
+      it('computes correct difference between boundariesLength & cursorPosition', function () {
+
+        assert.strictEqual(testDoc.overCount(), testDoc.boundariesLength - 22) // test doc cursor positions == 22
+        assert.strictEqual(testDocAlpha.overCount(), testDocAlpha.boundariesLength - 66) // test doc cursor positions == 22
+
+      })
+    })
+
+    describe('countSegChildren', function () {
+      it('counts all seg children correctly', function () {
+        assert.strictEqual(testDoc.countSegChildren(), 4)
+        assert.strictEqual(testDocAlpha.countSegChildren(), 5)
+      })
+    })
+
     describe('selectonHasTag', function() {
       it('detects existence of given tag in at least one Segment', function () {
 
