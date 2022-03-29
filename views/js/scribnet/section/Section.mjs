@@ -282,8 +282,18 @@ class Section {
   //
   // also wow I'm getting my names mixed up.
 
+  /**
+   * Locates which subPiece contains the boundary in this Segment, and
+   * the offset of the boundary within that Section 
+   * 
+   * Note if this section has no subPieces then this function will error.
+   * There is only one "boundary" but not attached to any subPiece.
+   * This makes it a little tricky to use recursively.
+   * 
+   * @param {Int} boundaryIndex Index of boundary to locate
+   * @returns An ordered pair of the section index and boundary index within that section
+   */
   _locateBoundary(boundaryIndex) {
-    // if (this.subPieces.length === 0) return [ undefined, undefined ] // TODO probably want something like this. TODO we need test cases for _locateBoundary when there are no subSections. Can't just test happy paths.
     let sectionIndex = 0;
     while (boundaryIndex >= this.subPieces[sectionIndex].boundariesLength) {
       boundaryIndex -= this.subPieces[sectionIndex].boundariesLength
@@ -293,6 +303,8 @@ class Section {
   }
 
   _locateBoundaryFullyQualified(boundaryIndex, sectionIndices=[]) {
+
+    if (this.subPieces.length === 0) return [ sectionIndices, boundaryIndex ]
 
     const [ sectionIndex, boundaryIndexInSection ] = this._locateBoundary(boundaryIndex)
 
