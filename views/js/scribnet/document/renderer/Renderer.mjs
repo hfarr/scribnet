@@ -1,8 +1,6 @@
 'use strict';
 
-import { Context, Segment } from "../../section/Context.mjs";
 
-// import EditDocument from "./Document.mjs";
 function escapskies(codePoint) {
   switch (codePoint) {
     case '<': return '&lt;'
@@ -79,106 +77,6 @@ const wrapOneAttributes = (tag, attributes, value) => {
 }
 const wrapMany = (tags, content) => tags.length === 0 ? content : wrapOne(tags[0], wrapMany(tags.slice(1), content))
 
-// TODO-accept editDoc in constructor? :S would an HTML renderer "own" that or would it be more about the specific place 
-//  where rendering occurs (in a document?) hermngh
-class HTMLRenderer extends Renderer {
-
-  constructor() {
-    super()
-    this.indentationUnits = 'rem'
-    this.indentationUnitsPerTab = 2
-  }
-
-  get wrapperStyling() {  // hmmmmmmmmmmmmmmmmmmmm
-    return "white-space: pre-wrap;" // yeah. I think. In a shadow-dom world we'd just Not and leave it to the component, but I havent component'd renders yet.
-  }
-
-  _toHTML(editDoc) {
-    // Not the most elegant 'prettyprinter'
-    if (editDoc === undefined) return ""
-    let result = ""
-    let currentBlock = undefined
-    let inlineContext = ""
-    const blocks = ["h1", "h2", "h3", "p"].map(s=>s.toUpperCase())
-
-    // Extract out a tool for going from listLike->treeLike? that is, from a linear input, lift it to a tree
-    // in the way we have tools for collapsing a tree down to a list
-    const isBlock = segment => blocks.some(blockTag => segment.tags.includes(blockTag))
-    const newBlock = () => currentBlock === undefined
-
-    // I guess we won't use replaceAll since I would need the compiler to target es2021? Would prefer to keep it compatible-ish
-    // const renderBlock = () => `<${currentBlock.toLowerCase()}>${inlineContext.replace(/\n/g, '<br>')}</${currentBlock.toLowerCase()}>`
-
-    const cutLastNewLine = str => str.replace(/\n$/,'')
-    const wrapOne = tag => (_, value) => `<${tag.toLowerCase()}>${value}</${tag.toLowerCase()}>`
-    const renderBlock = () => wrapOne(currentBlock)`${inlineContext.replace(/\n/g, '<br>')}`
-    const wrap = (tags, content) => tags.length === 0 ? content : wrapOne(tags[0])`${wrap(tags.slice(1), content)}`
-
-    const closeBlock = () => {
-      if (currentBlock !== undefined) {
-        result += renderBlock()
-        currentBlock = undefined
-        inlineContext = ""
-      }
-    }
-
-    for (const segment of editDoc.text.segments) {
-      if (newBlock()) currentBlock = segment.tags.find(t => blocks.includes(t))
-
-      const inlineTags = segment.tags.filter(t => !blocks.includes(t))
-      inlineContext += wrap(inlineTags, escapeString(cutLastNewLine(segment.characters.join(''))))
-
-      if (segment.characters.at(-1) === "\n") closeBlock()
-    }
-    return result
-  }
-
-  renderSegment(inlineSegment) {
-    
-    return wrapMany(inlineSegment.tags, inlineSegment.toString())
-
-  }
-
-  renderContext(context) {
-    let result = ""
-    const blockTag = context.block
-    let attributes = {}
-
-    if (context.indentation > 0) {
-      attributes = {
-        ...attributes,
-        style: `margin-left: ${context.indentation * this.indentationUnitsPerTab}${this.indentationUnits};`
-      }
-    }
-
-    // if (context.empty()) result += "<br>"
-    if (context.length === 0 && !['ul','ol','li'].includes(blockTag)) result += "<br>"
-
-    if (context.subPieces.every(sec => sec instanceof Segment)) {
-      for (const subsection of context.subPieces) result += this.renderSegment(subsection)
-    } else {
-      for (const subsection of context.subPieces) result += this.renderContext(subsection)
-    }
-
-    if (blockTag === '') return result
-
-    return wrapOneAttributes(blockTag, attributes, result)
-
-  }
-
-  renderDoc(document) {
-    let result = ""
-    for (const context of document.contexts)
-      result += this.renderContext(context)
-    
-    return result
-
-  }
-
-  toHTML(document) {  // Working on the document model now
-    return this.renderDoc(document)
-  }
-}
 
 // big custom component potential y'know
 class EditRenderer extends Renderer {
@@ -220,7 +118,7 @@ class EditRenderer extends Renderer {
   }
 }
 
-export { EditRenderer, HTMLRenderer }
+export { EditRenderer }
 
 // for testing
 export { Renderer, escapeString, escapskies, wrapOne, wrapOneAttributes, wrapMany }
