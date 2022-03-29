@@ -195,8 +195,40 @@ describe('Context', function() {
       assert(testMixed.subPieces[3] instanceof MixedContext)
     })
 
-    it('', function () {
+    describe('contextBreakAt', function () {
+      it('creates a new Context at the deepest level of nesting when a context break occurs', function () {
 
+        // contextBreak on Contexts returns a list. In this case it will be a singleton list.
+        const result = testMixed.contextBreakAt(10)[0]
+
+        // want to be this way eventually. /eventually/. Kinda requires some peticular control logic that's to be implemented.
+        // TODO we need that query/context DSL
+        const desired = Context.createContext('ul',
+          Context.createContext('li', Segment.from(...'A')),
+          Context.createContext('li', Segment.from(...'B')),
+          Context.createContext('li', Segment.from(...'C'), Context.createContext('ul',
+            Context.createContext('li', Segment.from(...'cA')),
+            Context.createContext('li', Segment.from(...'c')),  // split occurs on cB
+            Context.createContext('li', Segment.from(...'B')),
+            Context.createContext('li', Segment.from(...'cC')),
+            Context.createContext('li', Segment.from(...'cD')),
+          )),
+          Context.createContext('li', Segment.from(...'D')),
+        )
+        const expected = Context.createContext('ul',
+          Context.createContext('li', Segment.from(...'A')),
+          Context.createContext('li', Segment.from(...'B')),
+          Context.createContext('li', Segment.from(...'C'), Context.createContext('ul',
+            Context.createContext('li', Segment.from(...'cA')),
+            Context.createContext('li', Segment.from(...'c'), Segment.from(...'B')),  // split occurs on cB
+            Context.createContext('li', Segment.from(...'cC')),
+            Context.createContext('li', Segment.from(...'cD')),
+          )),
+          Context.createContext('li', Segment.from(...'D')),
+        )
+
+        assert(result.structureEq(expected), "expected result to structurally equal expected")
+      })
     })
 
   })
