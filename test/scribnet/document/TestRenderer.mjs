@@ -158,7 +158,7 @@ describe('Renderer', function () {
       it('renders correct html', function () {
         // const expected = '<ul><li>A</li><li>B</li><ul><li>C<li>cA</li><li>cB</li><li>cC</li><li>cD</li></li></ul><li>D</li></ul>'
         const actual = htmlRenderer.toHTML(testNestedDoc)
-        const expected = '<ul><li>A</li><li>B</li><li>C<ul><li>cA</li><li>cB</li><li>cC</li><li>cD</li></ul></li><li>D</li></ul>'
+        const expected = '<ul><li><p>A</p></li><li><p>B</p></li><li><p>C</p><ul><li><p>cA</p></li><li><p>cB</p></li><li><p>cC</p></li><li><p>cD</p></li></ul></li><li><p>D</p></li></ul>'
         assert.strictEqual(actual, expected)
       })
     })
