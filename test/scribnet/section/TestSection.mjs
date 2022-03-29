@@ -501,6 +501,31 @@ describe(`${MODULE} module`, function () {
       })
     })
 
+    describe('structureEq', function () {
+      
+      // const testSectionMirror = 
+      const testSectionMirror = Section.from(
+        Section.from(AtomicSection.from(...'AaA'), AtomicSection.from(...'BbB'), AtomicSection.from(), AtomicSection.from(...'CcC')),
+        AtomicSection.from(...'DdD'),
+        AtomicSection.from(...'EeE'),
+        Section.from(AtomicSection.from()),
+        AtomicSection.from(...'FfF'),
+        Section.from(AtomicSection.from(...'GgG'), AtomicSection.from(...'HhH')),
+        Section.from(AtomicSection.from(...'IiI')),
+        AtomicSection.from(...'JjJ')
+      )
+      
+      it('is structurally equivalent to itself', function () {
+        assert(testSection.structureEq(testSection))
+      })
+
+      it('is structurally equivalent to a copy', function () {
+        assert(testSection.structureEq(testSection.copy()))
+      })
+      it('is structurally equivalent to a distinctly constructed duplicate', function () {
+        assert(testSection.structureEq(testSectionMirror))
+      })
+    })
 
   })
 })

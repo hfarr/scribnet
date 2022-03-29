@@ -590,6 +590,22 @@ class Section {
     return false;
   }
 
+  structureEq(other) {
+    if (other instanceof Section) {
+
+      if (this.subPieces.length !== other.subPieces.length) return false
+
+      for (let i = 0; i < this.subPieces.length; i++) {
+        const secThis = this.subPieces[i]
+        const secOther = other.subPieces[i]
+
+        if (!secThis.structureEq(secOther)) return false
+      }
+      return true;
+    }
+    return false;
+  }
+
   _showBoundaries() {
     if (this.empty()) return ''
     return this.subPieces.map( sp => sp._showBoundaries() ).join('|')
@@ -743,6 +759,10 @@ class AtomicSection extends Section {
 
   _locateBoundaryFullyQualified(boundaryIndex, sectionIndices=[]) {
     return [ sectionIndices, boundaryIndex ]
+  }
+
+  structureEq(other) {
+    return this.eq(other)
   }
 
   _showBoundaries() {
