@@ -280,20 +280,12 @@ export const domFunctions = { loadDocument, loadHTML, renderHTML, charOffset, cu
 
 // =============================================
 
-
-/**
- * Expensive reads, cheap(?) writes
- */
 class _EditDocument {
 
   constructor() {
 
-    // const empty = Segment.from("")
-    // const ctx = Context.from(empty)
-    // this.document = Doc.from(ctx)
     this.document = new Doc()
 
-    // Segment index, index in segment
     this.focus = 0
     this.anchor = 0
 
@@ -373,12 +365,6 @@ class _EditDocument {
   get _endBoundary() {
     return this.document.cursorToBoundaryFavorLeft(this.endOffset)
   }
-  // get _startBoundary() {
-  //   return this.document.cursorToBoundary(this.startOffset)
-  // }
-  // get _endBoundary() {
-  //   return this.document.cursorToBoundary(this.endOffset)
-  // }
 
   get totalCursorPositions() {
     return this.document.totalCursorPositions
@@ -444,15 +430,6 @@ class _EditDocument {
     this.anchor = anchorIndex
     this.focus = focusIndex
   }
-  // selectBoundary(anchorBoundary=0, focusBoundary=0) {
-
-  //   if (anchorBoundary < 0) anchorBoundary = 0
-  //   if (focusBoundary < 0) focusBoundary = this.length - 1
-
-  //   if (focusBoundary === undefined) focusBoundary = anchorBoundary
-  //   this.anchorBoundary = anchorBoundary
-  //   this.focusBoundary = focusBoundary
-  // }
 
   at(characterIndex = undefined) {
     if (characterIndex === undefined) characterIndex = this.focusOffset
