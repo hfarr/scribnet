@@ -249,7 +249,9 @@ class Context extends Section {
 
   contextBreakAt(location) {
 
-    return this.split(location)
+    const [ left, right ] = this.split(location)
+
+    return [ left, right.updateBlock('p') ]
   }
 
   updateBlock(blockTag) {
