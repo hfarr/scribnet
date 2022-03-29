@@ -156,12 +156,6 @@ describe(`${MODULE} module`, function () {
         assert.deepStrictEqual(testSection._locateBoundary(14), [3, 5] )
       })
 
-      it('works for empty Section', function () {
-
-        const testCase = Section.from()
-        assert.deepStrictEqual(testCase._locateBoundary(0), [ 0, 0 ])
-
-      })
 
       describe('_locateBoundaryFullyQualified', function () {
 
