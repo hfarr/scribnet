@@ -320,6 +320,10 @@ class Context extends Section {
 
 }
 
+// TODO Consider to add another Context subclass that is a "Context containing
+// only Segment children". There are a number of situations where we are testing
+// if all subPieces are Segment or not and that has a code smell to it.
+
 class NakedContext extends Context {
   updateBlock(blockTag) {
     const result = Context.createContext(blockTag, ...this.subPieces)
