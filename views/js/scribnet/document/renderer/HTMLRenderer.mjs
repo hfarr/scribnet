@@ -5,6 +5,10 @@ import { Context, Segment } from "../../section/Context.mjs";
 
 
 
+// function genInfinite0() {
+//   yield 0
+// }
+
 
 // TODO-accept editDoc in constructor? :S would an HTML renderer "own" that or would it be more about the specific place 
 //  where rendering occurs (in a document?) hermngh
@@ -23,8 +27,22 @@ class HTMLRenderer extends Renderer {
   // "export" document type. No knowledge of rootElement, I think I can stay satisfied with that.
   static pathToCursorInDOM( document, cursorPosition ) {
     const [ path, offset ] = document._locateBoundaryFullyQualified(cursorPosition)
+
+    // for a Segment at the end we must account for each possible tag. They become part of hte path in HTML even if it's not part of the path w.r.t to our doc model.
+    const section = document.sectionAt(path)
+    let domPath = path
+    if (section instanceof Segment) {
+      // we cut the Segment from the path. It doesn't implicitly have any Tags, so it is not an element child of any Node, it would be a Text Node. Only Tags on 
+      // a segment represent part of the Path that we need to hand to the DOM traverser.
+      // this function is an interface from the "document" notion of a path to a "DOM" notion of a path, where in each step is an Element.
+      // Contexts all have one Tag. Segments have an arbitrary amount, but they always produce at least one value on the path since the first step is to use
+      // the Section notion of a path. That slice cuts out that part of the puzzle.
+      domPath = [ ...path.slice(0,-1), ...Array(section.tags.length).fill(0) ]
+    }
+
     // no adjustmnets to offset for HTML
-    return [ path, offset ]
+    // jk there are adjustments...
+    return [ domPath, offset ]
   }
 
   get wrapperStyling() {  // hmmmmmmmmmmmmmmmmmmmm

@@ -579,6 +579,16 @@ class Section {
     return this.atoms.at(offset)
   }
 
+  sectionAt(path) {
+
+    if (path.length === 0) return this
+
+    const [ secIndex, ...rest ] = path
+
+    return this.subPieces[secIndex].sectionAt(rest)
+
+  }
+
   eq(other) {
     if (other instanceof Section) {
       for (let i = 0; i < this.length; i++) {
