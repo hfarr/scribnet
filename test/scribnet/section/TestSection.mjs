@@ -140,7 +140,7 @@ describe(`${MODULE} module`, function () {
       }
     })
 
-    describe('_locateBoundary', function() {
+    describe('_locateBoundary*', function() {
       const testSection = Section.from(AtomicSection.from(...'AAAAA'), Section.from(), Section.from(AtomicSection.from(), AtomicSection.from()), AtomicSection.from(...'BBBBB'))
 
       it('yields expected boundary locations', function () {
@@ -155,7 +155,28 @@ describe(`${MODULE} module`, function () {
         assert.deepStrictEqual(testSection._locateBoundary(10), [3, 1] )
         assert.deepStrictEqual(testSection._locateBoundary(14), [3, 5] )
       })
+
+      it('works for empty Section', function () {
+
+        const testCase = Section.from()
+        assert.deepStrictEqual(testCase._locateBoundary(0), [ 0, 0 ])
+
+      })
+
+      describe('_locateBoundaryFullyQualified', function () {
+
+        it('yields expected fully qualifed boundary location', function () {
+          // fully qualified meaning it gives the indices of every segment along the way, and the offset into the last of these
+
+          assert.deepStrictEqual(testSection._locateBoundaryFullyQualified(0), [ [ 0 ], 0 ])
+          assert.deepStrictEqual(testSection._locateBoundaryFullyQualified(5), [ [ 0 ], 5 ])
+          assert.deepStrictEqual(testSection._locateBoundaryFullyQualified(6), [ [ 1 ], 0 ])
+
+        })
+
+      })
     })
+
 
     describe('boundariesLength', function() {
       it('considers topologically overlapping boundaries the same', function() {
