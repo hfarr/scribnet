@@ -247,6 +247,11 @@ class Context extends Section {
   // ---------------------------
   //  Context Specific functions
 
+  contextBreakAt(location) {
+
+    return this.split(location)
+  }
+
   updateBlock(blockTag) {
     const result = this.copy()
     result.block = blockTag
@@ -345,6 +350,14 @@ class MixedContext extends Context {
 
   static from(...sections) {
     return Section.from.bind(MixedContext)(...sections.map(sec => sec instanceof Segment ? Context.from(sec) : sec))
+  }
+
+  contextBreakAt(location) {
+    const [ sectionIndex, offset ] = this._locateBoundary(location)
+
+    const newContexts = this.subPieces[sectionIndex].contextBreakAt(offset)
+
+    return [ this.splice(sectionIndex, 1, ...newContexts) ]
   }
 }
 
@@ -532,7 +545,12 @@ class Doc extends Section {
   }
 
   contextBreakAt(location) {
-    return this.splitInterior(location)
+    const [ secIndex, boundaryOffset ] = this._locateBoundary(location)
+    
+    const newContexts = this.contexts[secIndex].contextBreakAt(boundaryOffset)
+    return this.splice(secIndex, 1, ...newContexts)
+    
+    // return this.splitInterior(location)
   }
 
   mergeTwoGaps() {
