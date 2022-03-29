@@ -138,7 +138,19 @@ function cursorOffsetToDOM(rootElement, document, editDocOffset) {
       curElement = curElement.children[curIndex]
     }
 
-    return [ curElement, offset ]
+    // curElement should now be pointing at Block element corresponding to the last Context before diving into Segments
+    // segments may have an arbitrary amount of nesting tags, all of which can be munched through as children 0 index.
+    // so we do that. Crunch through remaining Children until it's just a text node (no more children)
+    while (curElement.firstElementChild) {
+      curElement = curElement.firstElementChild
+    }
+
+    // hmmm... what if the text node is empty string? by the time we render a Document 
+    // I don't think we';l have any non-empty Segment. I suppose I don't rule it out
+    // explicitly, though.
+    const textNode = curElement.childNodes[0]
+
+    return [ textNode, offset ]
   }
 }
 
