@@ -142,6 +142,12 @@ function cursorOffsetToDOM(rootElement, document, editDocOffset) {
     // segments may have an arbitrary amount of nesting tags, all of which can be munched through as children 0 index.
     // so we do that. Crunch through remaining Children until it's just a text node (no more children)
     while (curElement.firstElementChild) {
+      // TODO try to avoid testing tags like this for <br>, not every DOM will share a structure like this.
+      //    Feels like... something the renderer should cover. Or information it should pass up. Or perhaps
+      //    we don't try to ignore the "last child of the path", and instead have pathFinder give a precise
+      //    description of where to go. Otherwise hte lgoic here will be get more complicated I fear.
+      // TODO test this behavior specifically. In fact we need browser tests generally :S
+      if (curElement.firstElementChild.tagName.toLowerCase() === 'br') break;
       curElement = curElement.firstElementChild
     }
 
