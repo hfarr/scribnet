@@ -229,6 +229,27 @@ describe('Context', function() {
 
         assert(result.structureEq(expected), "expected result to structurally equal expected")
       })
+      it('creates a new Context at the deepest level of nesting when a context break occurs at the end of the nested context', function () {
+
+        // contextBreak on Contexts returns a list. In this case it will be a singleton list.
+        // location 11
+        const result = testMixed.contextBreakAt(11)[0]
+
+        const expected = Context.createContext('ul',
+          Context.createContext('li', Segment.from(...'A')),
+          Context.createContext('li', Segment.from(...'B')),
+          Context.createContext('li', Segment.from(...'C'), Context.createContext('ul',
+            Context.createContext('li', Segment.from(...'cA')),
+            Context.createContext('li', Segment.from(...'cB'), Segment.from()),  // split occurs on cB
+            Context.createContext('li', Segment.from(...'cC')),
+            Context.createContext('li', Segment.from(...'cD')),
+          )),
+          Context.createContext('li', Segment.from(...'D')),
+        )
+
+        assert(result.structureEq(expected), "expected result to structurally equal expected")
+      })
+
     })
 
   })
