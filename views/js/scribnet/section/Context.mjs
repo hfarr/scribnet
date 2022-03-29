@@ -516,6 +516,24 @@ class Doc extends Section {
 
   }
 
+  /**
+   * Computes the cursor positions by summing the length (in
+   * atoms) plus the number of contexts. 
+   *
+   * Roughly, a cursor can exist 
+   * - between each atom (this.length - 1 positions)
+   * - at an extra position between each context 
+   *   (this.contexts - 1 positions) 
+   * - at the beginning and end (2 positions)
+   * yielding the sum formula.
+   * 
+   * @returns Total number of "cursor positions" in this Doc
+   */
+  totalCursorPositions() {
+    // Total
+    return this.length + this.contexts.length
+  }
+
   selection(cursorStart, cursorEnd) {
     // TODO should we add new lines for Context? Otherwise all selections are this "flat" result. Probably should. . . . later.
     const lb = this.cursorToBoundary(cursorStart)
