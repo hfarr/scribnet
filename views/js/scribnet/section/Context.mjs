@@ -66,7 +66,22 @@
 import Section from "./Section.mjs"
 import { AtomicSection } from "./Section.mjs"
 
-const BLOCKS = ['p', 'h1', 'h2', 'h3', 'pre', 'ul', 'ol', 'li']
+// in my post fix comments below Im talking about "blocks holding contexts". I mean to say that for these
+// block elements some of them are only appropriate for certain Contexts. this way I can safely assume
+// certain facts about that Context such as what kind of children it has, and I can contextually handle
+// different scenarios.
+const BLOCKS = ['p', 'div', 'h1', 'h2', 'h3', 'pre', 'ul', 'ol', 'li'] // any block at all
+const MIXED_BLOCKS = ['div','li'] // blocks that hold only Contexts in practice, but theoretically 'mix' blocks and Segments
+const CONTEXT_BLOCKS = [] // blocks that hold contexts
+
+// I don't particularly /want/ 'div's, I don't expect to render them. They're here to be a default for MixedContext.
+// TODO consider pulling a situation where '.from' returns a list. If that list is a singleton then all is the same,
+//  if not then we still must handle it. Will allow for situations like these where if we get Context.from(...) then
+//  the args are a mix of Context and Segments, we don't necessarily want to prescriptively nest them in a 
+// MixedContext because it will pop a <div> around that assortment. 
+// I'll do that for now. I might find that behavior preferable down the line. But I might also prefer the option to
+// choose if and when we want to have multiple results or not. Fast and loose.
+
 
 const filterInline = tag => !BLOCKS.includes(tag)
 const isBlock = tag => BLOCKS.includes(tag.toLowerCase())
@@ -170,22 +185,26 @@ class Segment extends AtomicSection {
 }
 
 class Context extends Section {
+
   constructor() {
     super()
-    this.block = 'p'
+    this.block = this.constructor.defaultBlockTag
 
     this.indentationAmount = 0
   }
 
+  static defaultBlockTag = 'p'
+
   static from(...sections) {
-    if (sections.some(sec => sec instanceof Context))
-      sections = sections.map(sec => sec instanceof Context ? sec : NakedContext.from(sec))
+    if (sections.some(sec => sec instanceof Context)) return MixedContext.from(...sections)
+      // sections = sections.map(sec => sec instanceof Context ? sec : Context.from(sec))
 
     return super.from(...sections)
   }
 
   static createContext(blockTag, ...segments) {
-    const result = this.from(...segments)
+    const constructor = MIXED_BLOCKS.includes(blockTag.toLowerCase()) ? MixedContext : Context
+    const result = constructor.from(...segments)
     return result.updateBlock(blockTag) // not strictly necessary, we could modify .block here. Trying to stick to a pattern though of preferring "mutative" methods
   }
 
@@ -318,6 +337,15 @@ class Context extends Section {
     return this.characters.join('') + "\n"
   }
 
+}
+
+class MixedContext extends Context {
+
+  static defaultBlockTag = 'div'
+
+  static from(...sections) {
+    return Section.from.bind(MixedContext)(...sections.map(sec => sec instanceof Segment ? Context.from(sec) : sec))
+  }
 }
 
 // TODO Consider to add another Context subclass that is a "Context containing
@@ -764,7 +792,7 @@ class Table {
 
 const table = new Table()
 
-export { Doc, Context, Segment, Gap }
+export { Doc, Context, MixedContext, Segment, Gap }
 
 
 

@@ -3,7 +3,7 @@ import assert from 'assert';
 
 const PATH = "/home/henry/dev/scribnet/views"
 const MODULE = "Context"
-const { Doc, Context, Segment, Gap } = await import(`${PATH}/js/scribnet/section/${MODULE}.mjs`)
+const { Doc, Context, MixedContext, Segment, Gap } = await import(`${PATH}/js/scribnet/section/${MODULE}.mjs`)
 
 describe('Context', function() {
 
@@ -626,14 +626,20 @@ describe('Context', function() {
         testNestedContext
       )
 
-      describe('Context.from with nested children', function () {
+      describe('Nested Context', function () {
 
-        it('uniformly converts children to Context if some are Context some are Segment', function () {
+        it('uniformly converts children to Context', function () {
           assert(testNestedContext.subPieces.every(sec => sec instanceof Context))
-          assert(testNestedContext.subPieces[0].subPieces.every(sec => sec instanceof Segment))
-          assert(testNestedContext.subPieces[1].subPieces.every(sec => sec instanceof Segment))
+          assert(testNestedContext.subPieces[0].subPieces.every(sec => sec instanceof Context))
+          assert(testNestedContext.subPieces[1].subPieces.every(sec => sec instanceof Context))
           assert(testNestedContext.subPieces[2].subPieces.every(sec => sec instanceof Context))
-          assert(testNestedContext.subPieces[3].subPieces.every(sec => sec instanceof Segment))
+          assert(testNestedContext.subPieces[3].subPieces.every(sec => sec instanceof Context))
+        })
+
+        it('Automatically converts from Context to MixedContext', function () {
+
+          assert(testNestedContext instanceof MixedContext)
+
         })
 
       })
