@@ -164,11 +164,17 @@ describe(`${MODULE} module`, function () {
 
           const testSection2 = Section.from(Section.from(AtomicSection.from(...'AAA'), Section.from(AtomicSection.from(...'BBB'))))
           const testSection3 = AtomicSection.from(...'AAA')
+          const testSection4 = Section.from()
+
+          // there are two base cases:
+          //  AtomicSection
+          //  Section has no subPieces
+          // in both the result is to pass back the input, essentially.
 
           const test_testSectionCases = [
             [ 0, [ [0], 0 ] ],
             [5, [ [ 0 ], 5 ]],
-            [6, [ [ 1 ], 0 ]],
+            [6, [ [ 1 ], 0 ]],  // Section with no subPieces base case
             [7, [ [ 2, 0 ], 0 ]],
             [8, [ [ 2, 1 ], 0 ]],
             [9, [ [ 3 ], 0 ]],
@@ -188,7 +194,8 @@ describe(`${MODULE} module`, function () {
 
           for (const testCase of test_testSectionCases) test(testSection, testCase)
           for (const testCase of test_testSection2Cases) test(testSection2, testCase)
-          for (const testCase of test_testSection3Cases) test(testSection3, testCase)
+          for (const testCase of test_testSection3Cases) test(testSection3, testCase) // AtomicSection base case
+          test(testSection4, [ 0, [ [ ], 0 ] ]) // Section with no subPieces base case
 
         })
 
