@@ -162,9 +162,33 @@ describe(`${MODULE} module`, function () {
         it('yields expected fully qualifed boundary location', function () {
           // fully qualified meaning it gives the indices of every segment along the way, and the offset into the last of these
 
-          assert.deepStrictEqual(testSection._locateBoundaryFullyQualified(0), [ [ 0 ], 0 ])
-          assert.deepStrictEqual(testSection._locateBoundaryFullyQualified(5), [ [ 0 ], 5 ])
-          assert.deepStrictEqual(testSection._locateBoundaryFullyQualified(6), [ [ 1 ], 0 ])
+          const testSection2 = Section.from(Section.from(AtomicSection.from(...'AAA'), Section.from(AtomicSection.from(...'BBB'))))
+          const testSection3 = AtomicSection.from(...'AAA')
+
+          const test_testSectionCases = [
+            [ 0, [ [0], 0 ] ],
+            [5, [ [ 0 ], 5 ]],
+            [6, [ [ 1 ], 0 ]],
+            [7, [ [ 2, 0 ], 0 ]],
+            [8, [ [ 2, 1 ], 0 ]],
+            [9, [ [ 3 ], 0 ]],
+            [14, [ [ 3 ], 5 ]],
+          ]
+          const test_testSection2Cases = [
+            [ 0, [ [ 0, 0 ], 0 ] ],
+            [ 3, [ [ 0, 0 ], 3 ] ],
+            [ 4, [ [ 0, 1, 0 ], 0 ] ],
+            [ 6, [ [ 0, 1, 0 ], 2 ] ],
+          ]
+          const test_testSection3Cases = [
+            [ 0, [ [ ], 0 ] ],
+            [ 3, [ [ ], 3 ] ],
+          ]
+          const test = (CuT, [ input, expectedOutput ]) => assert.deepStrictEqual(CuT._locateBoundaryFullyQualified(input), expectedOutput)
+
+          for (const testCase of test_testSectionCases) test(testSection, testCase)
+          for (const testCase of test_testSection2Cases) test(testSection2, testCase)
+          for (const testCase of test_testSection3Cases) test(testSection3, testCase)
 
         })
 
