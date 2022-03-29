@@ -292,6 +292,14 @@ class Section {
     return [ sectionIndex, boundaryIndex ]
   }
 
+  _locateBoundaryFullyQualified(boundaryIndex, sectionIndices=[]) {
+
+    const [ sectionIndex, boundaryIndexInSection ] = this._locateBoundary(boundaryIndex)
+
+    return this.subPieces[sectionIndex]._locateBoundaryFullyQualified(boundaryIndexInSection, [ ...sectionIndices, sectionIndex ])
+
+  }
+
   /**
    * Determine the index of the sub-piece that holds the atom at the 
    * given index
@@ -719,6 +727,10 @@ class AtomicSection extends Section {
 
   boundaryToAtomBoundary(boundaryLocation) {
     return boundaryLocation
+  }
+
+  _locateBoundaryFullyQualified(boundaryIndex, sectionIndices) {
+    return [ sectionIndices, boundaryIndex ]
   }
 
   _showBoundaries() {
