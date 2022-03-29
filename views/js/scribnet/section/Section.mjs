@@ -741,7 +741,7 @@ class AtomicSection extends Section {
     return boundaryLocation
   }
 
-  _locateBoundaryFullyQualified(boundaryIndex, sectionIndices) {
+  _locateBoundaryFullyQualified(boundaryIndex, sectionIndices=[]) {
     return [ sectionIndices, boundaryIndex ]
   }
 
