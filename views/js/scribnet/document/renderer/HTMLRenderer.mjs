@@ -24,7 +24,7 @@ class HTMLRenderer extends Renderer {
   static pathToCursorInDOM( document, cursorPosition ) {
     const [ path, offset ] = document._locateBoundaryFullyQualified(cursorPosition)
     // no adjustmnets to offset for HTML
-    return path, offset
+    return [ path, offset ]
   }
 
   get wrapperStyling() {  // hmmmmmmmmmmmmmmmmmmmm

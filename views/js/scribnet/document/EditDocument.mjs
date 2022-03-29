@@ -121,20 +121,21 @@ function cursorOffset(rootElement, node, nodeOffset) {
 
 }
 
-function cursorOffsetToDOM(rootElement, editDocOffset) {
+function cursorOffsetToDOM(rootElement, document, editDocOffset) {
 
   // return boundaryOffsetToDOM(rootElement, editDocOffset)
 
   // pathFinder: A function that determines a path to a cursor given a Doc and a cursorPosition
   //  (dependency injection)
   return pathFinder => { 
-    let [ path, offset ] = pathFinder(this.document, editDocOffset)
+    let [ path, offset ] = pathFinder(document, editDocOffset)
     let curElement = rootElement
     let curIndex
     
-    while (path.length > 0) {
+    // while (path.length > 0) {  // we use > 1 and not > 0 since the last node in the path is a Text Node, and we want the last Element Node which should immediately precede it. so we cut it short with 1 left over.
+    while (path.length > 1) {
       ([ curIndex, ...path ] = path)
-      curElement = curElement.children[curElement]
+      curElement = curElement.children[curIndex]
     }
 
     return [ curElement, offset ]
@@ -371,8 +372,8 @@ class _EditDocument {
   get offsetsInDOMComputers() {
     const that = this
     return { 
-      anchorOffsetComputer(root, pathFinder) { return cursorOffsetToDOM(root, that.anchorOffset) }, 
-      focusOffsetComputer(root, pathFinder) { return cursorOffsetToDOM(root, that.focusOffset) } 
+      anchorOffsetComputer(root, pathFinder) { return cursorOffsetToDOM(root, that.document, that.anchorOffset)(pathFinder) }, 
+      focusOffsetComputer(root, pathFinder) { return cursorOffsetToDOM(root, that.document, that.focusOffset)(pathFinder) } 
     }
   }
 

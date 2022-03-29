@@ -317,7 +317,10 @@ export class Editor {
     // window.getSelection().setBaseAndExtent(anchorNode, anchorOffset, focusNode, focusOffset)
 
     const { anchorOffsetComputer, focusOffsetComputer } = this.currentDocument.offsetsInDOMComputers
-    window.getSelection().setBaseAndExtent(...anchorOffsetComputer(this.component, renderer), ...focusOffsetComputer(this.component, renderer))
+    const pathFinder = renderer.constructor.pathToCursorInDOM
+    const [ anchorNode, anchorOffset ] = anchorOffsetComputer(this.component, pathFinder)
+    const [ focusNode, focusOffset ] = focusOffsetComputer(this.component, pathFinder)
+    window.getSelection().setBaseAndExtent(anchorNode, anchorOffset, focusNode, focusOffset)
   }
 
 
