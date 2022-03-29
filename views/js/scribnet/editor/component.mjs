@@ -252,7 +252,7 @@ class EditorComponent extends HTMLElement {
       // vvv closer to what I want me thinks
       // this.editor.currentDocument.render(this._renderer)
       this._renderer.render(this.editor.currentDocument.document)
-      this.editor.selectInDOM()
+      this.editor.selectInDOM(this._renderer) // hff not a huge fan of the interface to selecting
     }
   }
 

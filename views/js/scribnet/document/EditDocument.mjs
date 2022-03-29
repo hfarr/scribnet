@@ -123,7 +123,22 @@ function cursorOffset(rootElement, node, nodeOffset) {
 
 function cursorOffsetToDOM(rootElement, editDocOffset) {
 
-  return boundaryOffsetToDOM(rootElement, editDocOffset)
+  // return boundaryOffsetToDOM(rootElement, editDocOffset)
+
+  // pathFinder: A function that determines a path to a cursor given a Doc and a cursorPosition
+  //  (dependency injection)
+  return pathFinder => { 
+    let [ path, offset ] = pathFinder(this.document, editDocOffset)
+    let curElement = rootElement
+    let curIndex
+    
+    while (path.length > 0) {
+      ([ curIndex, ...path ] = path)
+      curElement = curElement.children[curElement]
+    }
+
+    return [ curElement, offset ]
+  }
 }
 
 
@@ -355,7 +370,10 @@ class _EditDocument {
 
   get offsetsInDOMComputers() {
     const that = this
-    return { anchorOffsetComputer(root) { return cursorOffsetToDOM(root, that.anchorOffset) }, focusOffsetComputer(root) { return cursorOffsetToDOM(root, that.focusOffset) } }
+    return { 
+      anchorOffsetComputer(root, pathFinder) { return cursorOffsetToDOM(root, that.anchorOffset) }, 
+      focusOffsetComputer(root, pathFinder) { return cursorOffsetToDOM(root, that.focusOffset) } 
+    }
   }
 
 

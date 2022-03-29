@@ -325,6 +325,24 @@ class Context extends Section {
 // if all subPieces are Segment or not and that has a code smell to it.
 
 class NakedContext extends Context {
+
+  static QUALIFIED_LEAP = 3 // arbitrary number. TODO- the "path" produced by locateBoundaryFullyQUalified is simple,
+  // To simple for NakedContext. see, a naked context doesn't "count" so in effect it's children "expand" to fill it's
+  // space in the level that it occupies. But those children /are not counted/ in the subpieces of the parent of the
+  // naked context. so for now i'm introducing this kludgy "control" step which will need to be processed by whoever
+  // consumes the path. It introduces a noxious interdependency. I'd like to keep it straight forwarded, and I Don't
+  // presently have the energy to invest in a better data structure (say, produce an "instruction set" like byte code
+  // with agreed upon interfaces).
+  // this instruction will be to replace the slot in the path with the next index value (0 if none) plus the boundary
+  // index produced here. It's also an instruction to add in any other NakedContext subPiece lengths encountered
+  // earlier.
+  // or. I can make an executive decision. we'll process mixed siblings by wrapping Segments not in NakedContext but in
+  // default Context. a <p>. I can't presently justify complicated machinery to handle this niche case, not for the 
+  // promised reward. The upside (allowing mixed blocks/inline in the OUTPUT, just not in the behind-the-scenes) doesn't
+  // feel worth it to me.
+  // that might change in the future. For now... putting this dog to rest. I'll leave the class here as a monument to
+  // hubris or something.
+
   updateBlock(blockTag) {
     const result = Context.createContext(blockTag, ...this.subPieces)
     result.indentationAmount = this.indentationAmount
@@ -336,6 +354,18 @@ class NakedContext extends Context {
       return result.updateBlock(options.blockTag)
     }
     return result
+  }
+  _locateBoundaryFullyQualified(boundaryIndex, sectionIndices=[]) {
+    // nearly identical to _locateBoundaryFullyQualified in typical Section. The difference is we
+    // do not consider a NakedContext "part" of the path, so we leave off appending the "index".
+    // it's children are considered sort of "direct" children to 
+
+    if (this.subPieces.length === 0) return [ sectionIndices, boundaryIndex ]
+
+    const [ sectionIndex, boundaryIndexInSection ] = this._locateBoundary(boundaryIndex)
+
+    return this.subPieces[sectionIndex]._locateBoundaryFullyQualified(boundaryIndexInSection, sectionIndices)
+
   }
   set block(tag) {}
   get block() { return '' }

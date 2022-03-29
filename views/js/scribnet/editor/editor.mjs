@@ -311,13 +311,13 @@ export class Editor {
    * internal EditDocument and maps it to the DOM, where it is rendered
    * 
    */
-  selectInDOM() {
+  selectInDOM(renderer) {
     // const [ anchorNode, anchorOffset ] = offsetToDOM(this.component, this.currentDocument.anchorOffset)
     // const [ focusNode, focusOffset ] = offsetToDOM(this.component, this.currentDocument.focusOffset)
     // window.getSelection().setBaseAndExtent(anchorNode, anchorOffset, focusNode, focusOffset)
 
     const { anchorOffsetComputer, focusOffsetComputer } = this.currentDocument.offsetsInDOMComputers
-    window.getSelection().setBaseAndExtent(...anchorOffsetComputer(this.component), ...focusOffsetComputer(this.component))
+    window.getSelection().setBaseAndExtent(...anchorOffsetComputer(this.component, renderer), ...focusOffsetComputer(this.component, renderer))
   }
 
 

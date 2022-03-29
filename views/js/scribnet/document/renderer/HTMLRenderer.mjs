@@ -16,6 +16,17 @@ class HTMLRenderer extends Renderer {
     this.indentationUnitsPerTab = 2
   }
 
+  // TODO having a tough time imagining a good place to cover the intersection of DOM API, knowing which kind of document
+  // the cursor will output to (HTML vs MD vs EditRenderer...), and the Context classes. A lot of different places
+  // come together to solve this problem.
+  // okay- Path to Cursor will wrap FQBL (fully qualified boundary location). Then it will adjust offset based on the
+  // "export" document type. No knowledge of rootElement, I think I can stay satisfied with that.
+  static pathToCursorInDOM( document, cursorPosition ) {
+    const [ path, offset ] = document._locateBoundaryFullyQualified(cursorPosition)
+    // no adjustmnets to offset for HTML
+    return path, offset
+  }
+
   get wrapperStyling() {  // hmmmmmmmmmmmmmmmmmmmm
     return "white-space: pre-wrap;" // yeah. I think. In a shadow-dom world we'd just Not and leave it to the component, but I havent component'd renders yet.
   }
