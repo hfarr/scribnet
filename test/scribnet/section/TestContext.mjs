@@ -166,6 +166,41 @@ describe('Context', function() {
 
   })
 
+  describe('MixedContext', function () {
+
+    const testMixed = Context.createContext('ul',
+      Context.createContext('li', Segment.from(...'A')),
+      Context.createContext('li', Segment.from(...'B')),
+      Context.createContext('li', Segment.from(...'C'), Context.createContext('ul',
+        Context.createContext('li', Segment.from(...'cA')),
+        Context.createContext('li', Segment.from(...'cB')),
+        Context.createContext('li', Segment.from(...'cC')),
+        Context.createContext('li', Segment.from(...'cD')),
+      )),
+      Context.createContext('li', Segment.from(...'D')),
+    )
+
+    it('automatically converts Context to MixedContext', function () {
+      assert(testMixed instanceof MixedContext) // ul
+      assert(testMixed.subPieces[0] instanceof MixedContext)  // ul > li
+      assert(testMixed.subPieces[1] instanceof MixedContext)
+      assert(testMixed.subPieces[2] instanceof MixedContext)
+      // TODO should, say, 'li' always convert to MixedContext?
+      assert(testMixed.subPieces[2].subPieces[0] instanceof Context)        // ul > li > p
+      assert(testMixed.subPieces[2].subPieces[1] instanceof MixedContext)   // ul > li > ul
+      assert(testMixed.subPieces[2].subPieces[1].subPieces[0] instanceof MixedContext)   // ul > li > ul > li
+      assert(testMixed.subPieces[2].subPieces[1].subPieces[1] instanceof MixedContext)   // ul > li > ul > li
+      assert(testMixed.subPieces[2].subPieces[1].subPieces[2] instanceof MixedContext)   // ul > li > ul > li
+      assert(testMixed.subPieces[2].subPieces[1].subPieces[3] instanceof MixedContext)   // ul > li > ul > li
+      assert(testMixed.subPieces[3] instanceof MixedContext)
+    })
+
+    it('', function () {
+
+    })
+
+  })
+
   describe('Gap', function () {
 
     const testSegments1 = [
