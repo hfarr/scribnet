@@ -25,8 +25,8 @@ class HTMLRenderer extends Renderer {
   // come together to solve this problem.
   // okay- Path to Cursor will wrap FQBL (fully qualified boundary location). Then it will adjust offset based on the
   // "export" document type. No knowledge of rootElement, I think I can stay satisfied with that.
-  static pathToCursorInDOM( document, cursorPosition ) {
-    const [ path, offset ] = document._locateBoundaryFullyQualified(cursorPosition)
+  static pathToCursorInDOM( document, boundaryPosition ) {
+    const [ path, offset ] = document._locateBoundaryFullyQualified(boundaryPosition)
 
     // for a Segment at the end we must account for each possible tag. They become part of hte path in HTML even if it's not part of the path w.r.t to our doc model.
     const section = document.sectionAt(path)
@@ -38,14 +38,19 @@ class HTMLRenderer extends Renderer {
       // Contexts all have one Tag. Segments have an arbitrary amount, but they always produce at least one value on the path since the first step is to use
       // the Section notion of a path. That slice cuts out that part of the puzzle.
       const normalizePath = (doc, path) => {
+        // TODO might also need to update offset. it would be added the length of previous segments.
         const parentContext = doc.sectionAt(path.slice(0, -1))
         const segmentIndex = path.at(-1)
         let nodeIndex = segmentIndex
 
         let adjoinPrevious = false;
-        for ( const segment of parentContext.segments) {
+        for ( let i = 0; i <= nodeIndex; i++ ) {
+          const segment = parentContext.segments[i]
           if (segment.tags.length === 0) {
-            if (adjoinPrevious) nodeIndex--
+            if (adjoinPrevious) {
+              nodeIndex--
+              i--
+            }
             adjoinPrevious = true
           } else {
             adjoinPrevious = false
