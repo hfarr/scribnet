@@ -43,27 +43,27 @@ class HTMLRenderer extends Renderer {
         // TODO might also need to update offset. it would be added the length of previous segments.
         const parentContext = doc.sectionAt(path.slice(0, -1))
         const segmentIndex = path.at(-1)
-        let nodeIndex = segmentIndex
+        let segOffset = 0
         let nodeOffset = offset
 
         let adjoinPrevious = false;
         let prevSegment = undefined;
-        for ( let i = 0; i <= nodeIndex; i++ ) {
+        for ( let i = 0; i <= segmentIndex; i++ ) {
           const segment = parentContext.segments[i]
           if (segment.tags.length === 0) {
             if (adjoinPrevious) {
-              nodeIndex--
-              i--
+              segOffset++
               nodeOffset += prevSegment.length
             }
             prevSegment = segment
             adjoinPrevious = true
           } else {
             adjoinPrevious = false
+            nodeOffset = offset // a reset, otherwise it accumulates way too much
           }
         }
 
-        return [ [ ...path.slice(0, -1), nodeIndex ], nodeOffset ]
+        return [ [ ...path.slice(0, -1), segmentIndex - segOffset ], nodeOffset ]
 
       }
 
