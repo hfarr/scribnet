@@ -197,6 +197,7 @@ describe('Renderer', function () {
             Segment.from(...'ab'), Segment.from(...'cd')
           )
         )
+        const basic2 = basic.writeBoundary('e', 5)
         const testCases = [
           { input: [ basic, 0 ], expected: [ [ 0, 0 ], 0 ] },
           { input: [ basic, 1 ], expected: [ [ 0, 0 ], 1 ] },
@@ -204,6 +205,13 @@ describe('Renderer', function () {
           { input: [ basic, 3 ], expected: [ [ 0, 0 ], 2 ] }, // boundaries mapped to DOM become /flat/
           { input: [ basic, 4 ], expected: [ [ 0, 0 ], 3 ] },
           { input: [ basic, 5 ], expected: [ [ 0, 0 ], 4 ] },
+          { input: [ basic2, 0 ], expected: [ [ 0, 0 ], 0 ] },
+          { input: [ basic2, 1 ], expected: [ [ 0, 0 ], 1 ] },
+          { input: [ basic2, 2 ], expected: [ [ 0, 0 ], 2 ] },
+          { input: [ basic2, 3 ], expected: [ [ 0, 0 ], 2 ] }, // boundaries mapped to DOM become /flat/
+          { input: [ basic2, 4 ], expected: [ [ 0, 0 ], 3 ] },
+          { input: [ basic2, 5 ], expected: [ [ 0, 0 ], 4 ] },
+          { input: [ basic2, 6 ], expected: [ [ 0, 0 ], 5 ] },
         ]
         testAll(funcUnderTest, testCases)
 
