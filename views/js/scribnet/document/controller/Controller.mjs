@@ -100,6 +100,17 @@ class StateMachine {
     this.setTransition(fromState, action, fromState)
   }
 
+  setTransitoryEffect(state, func) {
+    // TODO unsure whether I'd prefer to bundle this behavior in onTransition or not.
+    // There could be times when onTransition is not Transitory though? so probably not then
+    this.onTransition(state, sm => {
+      func()
+      sm.transition('transitory')
+    })
+  }
+
+  // =============
+
   onTransition(toState, sideEffect) {
     this.onTransitionFuncs[toState] = sideEffect
   }
@@ -107,6 +118,10 @@ class StateMachine {
 }
 
 class QueryDoc {
+  // a collection of functions that, frankly, might be better off in the Context Class suite. Or, at least,
+  // only hooking into the APIs of the Context Class suite, rather than digging in to internals (we should
+  // not know about _locateBoundaryFullyQualifed for example)
+  // A class for programming sinners, then
 
   static isSelectionAtStartOfBlock(editDocument) {
 
@@ -148,11 +163,8 @@ export default class Controller {
     this.sm.transition('delete')
   }
 
-  setTransitoryEffect(state, func) {
-    this.sm.onTransition(state, sm => {
-      func()
-      sm.transition('transitory')
-    })
+  transitionAction(state, func) {
+    this.sm.setTransitoryEffect(state, func)
   }
 
 }
