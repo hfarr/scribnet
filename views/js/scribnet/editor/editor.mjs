@@ -317,11 +317,6 @@ export class Editor {
     return currentNode
   }
 
-  // resolveNode(pathToNodeParent) {
-  //   const nodeParent = this.resolveElement(pathToNodeParent)
-  //   return nodeParent.childNodes[0]
-  // }
-
   /**
    * Inverse (well..) of 'updateSelection'. Takes the currently selected text in the
    * internal EditDocument and maps it to the DOM, where it is rendered

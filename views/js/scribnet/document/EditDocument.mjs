@@ -121,45 +121,6 @@ function cursorOffset(rootElement, node, nodeOffset) {
 
 }
 
-function cursorOffsetToDOM(rootElement, document, editDocOffset) {
-
-  // return boundaryOffsetToDOM(rootElement, editDocOffset)
-
-  // pathFinder: A function that determines a path to a cursor given a Doc and a cursorPosition
-  //  (dependency injection)
-  return pathFinder => { 
-    let [ path, offset ] = pathFinder(document, editDocOffset)
-    let curElement = rootElement
-    let curIndex
-    
-    // while (path.length > 0) {  // we use > 1 and not > 0 since the last node in the path is a Text Node, and we want the last Element Node which should immediately precede it. so we cut it short with 1 left over.
-    while (path.length > 0) {
-      ([ curIndex, ...path ] = path)
-      curElement = curElement.children[curIndex]
-    }
-
-    // curElement should now be pointing at Block element corresponding to the last Context before diving into Segments
-    // segments may have an arbitrary amount of nesting tags, all of which can be munched through as children 0 index.
-    // so we do that. Crunch through remaining Children until it's just a text node (no more children)
-    // while (curElement.firstElementChild) {
-    //   // TODO try to avoid testing tags like this for <br>, not every DOM will share a structure like this.
-    //   //    Feels like... something the renderer should cover. Or information it should pass up. Or perhaps
-    //   //    we don't try to ignore the "last child of the path", and instead have pathFinder give a precise
-    //   //    description of where to go. Otherwise hte lgoic here will be get more complicated I fear.
-    //   // TODO test this behavior specifically. In fact we need browser tests generally :S
-    //   if (curElement.firstElementChild.tagName.toLowerCase() === 'br') break;
-    //   curElement = curElement.firstElementChild
-    // }
-
-    // hmmm... what if the text node is empty string? by the time we render a Document 
-    // I don't think we';l have any non-empty Segment. I suppose I don't rule it out
-    // explicitly, though.
-    const textNode = curElement.childNodes[0]
-
-    return [ textNode, offset ]
-  }
-}
-
 
 // Would be scoped to another module likely
 function renderHTML(doc) {
@@ -385,17 +346,6 @@ class _EditDocument {
   }
   get isCollapsed() {
     return this.focusOffset === this.anchorOffset
-  }
-
-  /**
-   * @deprecated
-   */
-  get offsetsInDOMComputers() {
-    const that = this
-    return { 
-      anchorOffsetComputer(root, pathFinder) { return cursorOffsetToDOM(root, that.document, that.anchorOffset)(pathFinder) }, 
-      focusOffsetComputer(root, pathFinder) { return cursorOffsetToDOM(root, that.document, that.focusOffset)(pathFinder) } 
-    }
   }
 
 
