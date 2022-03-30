@@ -28,7 +28,7 @@ class StateTableDefaults {
 
   transition(state, action) {
 
-    if (state in this.transitions) {
+    if (this.has(state)) {
       if (action in this.transitions[state]) {
         console.debug(`Transitioning from ${state} via action '${action}' to state ${this.transitions[state][action]}`)
         return this.transitions[state][action]
@@ -43,11 +43,15 @@ class StateTableDefaults {
   }
 
   setTransition(state, action, to) {
-    if (state in this.transitions) {
+    if (this.has(state)) {
       this.transitions[state][action] = to
     } else {
       this.transitions[state] = { [action]: to }
     }
+  }
+
+  has(state) {
+    return state in this.transitions
   }
 }
 
@@ -71,7 +75,12 @@ class StateMachine {
   transitionToInit() {
     this.currentState = StateTableDefaults.initialState
   }
-  //---- modify table
+  transitionToState(state) {
+    if (this.stateTable.has(state)) this.currentState = state
+    // else don't do anything
+  }
+  // ==============
+  // - Table API --
 
   setDefaultActionTransition(action, toState) {
     this.stateTable.actionDefaultTransitions[action] = toState
@@ -79,6 +88,9 @@ class StateMachine {
 
   setTransitionFromInit(action, toState) {
     this.stateTable.setTransition(StateTableDefaults.initialState, action, toState)
+  }
+  setTransitionToInit(fromState, action) {
+    this.stateTable.setTransition(fromState, action, StateTableDefaults.initialState)
   }
 
   setTransition(fromState, action, toState) {
@@ -91,6 +103,7 @@ class StateMachine {
   onTransition(toState, sideEffect) {
     this.onTransitionFuncs[toState] = sideEffect
   }
+
 }
 
 class QueryDoc {
@@ -98,7 +111,8 @@ class QueryDoc {
   static isSelectionAtStartOfBlock(editDocument) {
 
     const lb = editDocument._startBoundary
-    const [ _, indexInBoundary ] = editDocument.document._locateBoundary(lb)
+    // const [ _, indexInBoundary ] = editDocument.document._locateBoundary(lb)
+    const [ _, indexInBoundary ] = editDocument.document._locateBoundaryFullyQualified(lb)
 
     return indexInBoundary === 0
 
@@ -132,6 +146,13 @@ export default class Controller {
       return
     }
     this.sm.transition('delete')
+  }
+
+  setTransitoryEffect(state, func) {
+    this.sm.onTransition(state, sm => {
+      func()
+      sm.transition('transitory')
+    })
   }
 
 }
