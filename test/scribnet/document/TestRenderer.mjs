@@ -100,6 +100,21 @@ describe('Renderer', function () {
     const stripTags = s => s.replace(/<\/?\w+>/g,'')
     const htmlRenderer = new HTMLRenderer()
     const source = "<h1>Title! what in the <em>heck</em> are all these demo pages for?</h1><p>This document exists to easily construct objects for unit testing!</p><p>Featuring a couple of cool paragraphs, <strong>inline elements,</strong> <strong><em>nested</em> line elements,</strong> and so much more!</p><p>Well, not &quot;so much&quot; more. Just enough to tell me if there are problems! Like maybe some utf-16 😀 pretty glad vscode supports unicode code points...</p><h2>We&#39;ve got headers too</h2><p>I think this is alright for a <em>standard</em> document experience. Don&#39;t you?</p>"
+    const testNestedContext = Context.createContext('ul',
+      Context.createContext('li', Segment.from('A')),
+      Context.createContext('li', Segment.from('B')),
+      Context.createContext('li', 
+        Segment.from('C'), 
+        Context.createContext('ul',
+          Context.createContext('li', Segment.from(...'cA')),
+          Context.createContext('li', Segment.from(...'cB')),
+          Context.createContext('li', Segment.from(...'cC')),
+          Context.createContext('li', Segment.from(...'cD'))
+        ),
+      ),
+      Context.createContext('li', Segment.from('D')),
+    )
+    const testNestedDoc = Doc.from(testNestedContext)
 
     it('has the right text', function() {
       const rendered = htmlRenderer.toHTML(testDoc)
@@ -139,21 +154,6 @@ describe('Renderer', function () {
     describe('Render Nested', function () {
       const idk ='<ul><li></li><li><ul><li><ul><li></li></ul></li><li></li></ul></li><li></li></ul>'
 
-      const testNestedContext = Context.createContext('ul',
-        Context.createContext('li', Segment.from('A')),
-        Context.createContext('li', Segment.from('B')),
-        Context.createContext('li', 
-          Segment.from('C'), 
-          Context.createContext('ul',
-            Context.createContext('li', Segment.from(...'cA')),
-            Context.createContext('li', Segment.from(...'cB')),
-            Context.createContext('li', Segment.from(...'cC')),
-            Context.createContext('li', Segment.from(...'cD'))
-          ),
-        ),
-        Context.createContext('li', Segment.from('D')),
-      )
-      const testNestedDoc = Doc.from(testNestedContext)
 
       it('renders correct html', function () {
         // const expected = '<ul><li>A</li><li>B</li><ul><li>C<li>cA</li><li>cB</li><li>cC</li><li>cD</li></li></ul><li>D</li></ul>'
@@ -163,5 +163,33 @@ describe('Renderer', function () {
       })
     })
     
+    describe('pathToCursorInDOM', function () {
+      
+      function test(func, { input, expected }) {
+        assert.deepStrictEqual(func(...input), expected, `Expect input of [ ${input.join(", ")} ] to yield ${expected}`)
+      }
+      function testAll(func, testCases) {
+        // for (const { input, expected } of testCases ) {
+        for (const testCase of testCases )
+          test(func, testCase)
+      }
+      
+      it('finds correct "DOM path" & offset with inline tags', function () {
+
+        const boldNested = testNestedDoc.toggleTags(['strong'], 10, 13)
+
+        // +1 maps because togglingTags here will add additional boundaries, and we want the boundaries that 'squeeze' the toggle section
+        const lb = 10 + 1, rb = 13 + 1
+
+        const testCases = [
+          { input: [ boldNested, lb ], expected: [ [0, 2, 1, 1, 0, 1, 0 ], 0] }, // ul li ul li p strong #text
+          { input: [ boldNested, rb ], expected: [ [0, 2, 1, 2, 0, 0, 0 ], 1] }, // ul li ul li p strong #text
+        ]
+
+        testAll(HTMLRenderer.pathToCursorInDOM, testCases)
+
+      })
+
+    })
   })
 })
