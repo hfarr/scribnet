@@ -47,14 +47,16 @@ class HTMLRenderer extends Renderer {
         let nodeOffset = offset
 
         let adjoinPrevious = false;
+        let prevSegment = undefined;
         for ( let i = 0; i <= nodeIndex; i++ ) {
           const segment = parentContext.segments[i]
           if (segment.tags.length === 0) {
             if (adjoinPrevious) {
               nodeIndex--
               i--
-              nodeOffset += segment.length
+              nodeOffset += prevSegment.length
             }
+            prevSegment = segment
             adjoinPrevious = true
           } else {
             adjoinPrevious = false
