@@ -165,6 +165,8 @@ describe('Renderer', function () {
     
     describe('pathToCursorInDOM', function () {
       
+      const funcUnderTest = HTMLRenderer.pathToCursorInDOM
+
       function test(func, { input, expected }) {
         assert.deepStrictEqual(func(...input), expected, `Expect input of [ ${input.join(", ")} ] to yield ${expected}`)
       }
@@ -187,6 +189,38 @@ describe('Renderer', function () {
         ]
 
         testAll(HTMLRenderer.pathToCursorInDOM, testCases)
+
+      })
+      it('finds correct "DOM path" when involving adjacent tagless segments', function () {
+        const basic = Doc.from(
+          Context.from(
+            Segment.from(...'ab'), Segment.from(...'cd')
+          )
+        )
+        const testCases = [
+          { input: [ basic, 0 ], expected: [ [ 0, 0 ], 0 ] },
+          { input: [ basic, 1 ], expected: [ [ 0, 0 ], 1 ] },
+          { input: [ basic, 2 ], expected: [ [ 0, 0 ], 2 ] },
+          { input: [ basic, 3 ], expected: [ [ 0, 0 ], 2 ] }, // boundaries mapped to DOM become /flat/
+          { input: [ basic, 4 ], expected: [ [ 0, 0 ], 3 ] },
+          { input: [ basic, 5 ], expected: [ [ 0, 0 ], 4 ] },
+        ]
+        testAll(funcUnderTest, testCases)
+
+      })
+
+      it('finds correct "DOM path" when involving adjacent tagless segments, in a nested case', function () {
+        const toggleTwice = testNestedDoc.toggleTags(['t'], 10, 13).toggleTags(['t'], 10, 13).cutEmpty()
+        const lb = 10 + 1, rb = 13 + 1
+
+        const testCases = [
+          { input: [ toggleTwice, 10 ], expected: [ [0, 2, 1, 1, 0, 0 ], 1] }, // ul li ul li p #text
+          { input: [ toggleTwice, lb ], expected: [ [0, 2, 1, 1, 0, 0 ], 1] }, // ul li ul li p #text
+          { input: [ toggleTwice, 13 ], expected: [ [0, 2, 1, 2, 0, 0 ], 1] }, // ul li ul li p #text
+          { input: [ toggleTwice, rb ], expected: [ [0, 2, 1, 2, 0, 0 ], 1] }, // ul li ul li p #text
+        ]
+
+        // testAll(funcUnderTest, testCases)
 
       })
 
