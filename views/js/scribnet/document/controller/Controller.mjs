@@ -1,8 +1,6 @@
 
-// we'll keep it simple, using just an object for now
-// class State {
+import { Segment } from '../../section/Context.mjs'
 
-// }
 
 /**
  * State table that has a default transition to 'init'
@@ -126,11 +124,22 @@ class QueryDoc {
   static isSelectionAtStartOfBlock(editDocument) {
 
     const lb = editDocument._startBoundary
-    // const [ _, indexInBoundary ] = editDocument.document._locateBoundary(lb)
-    const [ _, indexInBoundary ] = editDocument.document._locateBoundaryFullyQualified(lb)
+    const [ sections, indices, indexInBoundary ] = editDocument.document._pathToLocation(lb)
+    // TODO query API for Sections for refined control over searching for blocks. If Contexts weren't nested, and only contained Segments, 
+    //  then knowing the structure of that arrangement of Sections is okay, but now knowing the internal structure of Segments introduces
+    //  too much complexity to track outside of the Context classes. We could use some more querying capabilities, to answer queries such
+    //  as "fetch the last Context in the chain containing the Cursor". It's two parts, the implementation, and the presentation of the
+    //  query itself. I.e how would we express that question? a query DSL? I am already planning one of a sort for State Machines.
+    //  For now we are tolerating this complexity only in QueryDoc which is necessarily tightly coupled to the Context Classes
+    
+    const lastIsSection = sections.at(-1) instanceof Segment
+    const sectionNotFirst = indices.at(-1) !== 0
+    if (lastIsSection && sectionNotFirst) {
+      // if this is the case, then indexInBoundary is at the start of the Segment but not the start of the Context
+      return false  
+    }
 
     return indexInBoundary === 0
-
   }
 
   /**
