@@ -132,6 +132,54 @@ class QueryDoc {
     return indexInBoundary === 0
 
   }
+
+  /**
+   * Parse a path to 
+   * 
+   * @param {String} pathString 
+   */
+  static _ParsePath(pathString) {
+
+    const blockTags = pathString.split('>').map(str => str.trim()).slice(0, -1)
+
+    return blockTags
+
+  }
+
+  /**
+   * Check whether the pathString matches the EditDocument.
+   * A path string matches if the path to the current position
+   * of the cursor (if collapsed selection) in the editDocument 
+   * follows the pattern outlined in the path.
+   * The return is the list of matching Contexts (which is empty
+   * if the path doesn't match)
+   * 
+   * @param {String} pathString Path DSL String
+   * @param {EditDocument} editDocument Document to match against
+   * @param {Int} location 
+   */
+  static matchPath(pathString, editDocument, location=editDocument._focusBoundary) {
+    // right I gotta parse. for now, a lazy parsing.
+
+    const blockTags = this._ParsePath(pathString)
+    const doc = editDocument.document
+    const path = doc._locateBoundaryFullyQualified(location)
+
+    // naive matching
+
+    for (let i = 0; i < path.length; i++) {
+      // const context = path[i]
+      const context = doc.sectionAt(path.slice(0, i + 1))
+      const contexts = []
+      for (let j = 0; i + j < path.length && j < blockTags.length; j++) {
+        if (path[i + j] === blockTags[j]) {
+          // contexts.push[]
+        } else {
+          break;
+        }
+      }
+    }
+  }
 }
 
 export default class Controller {
@@ -163,8 +211,12 @@ export default class Controller {
     this.sm.transition('delete')
   }
 
-  transitionAction(state, func) {
+  // ========
+
+  setTransitoryAction(state, func) {
     this.sm.setTransitoryEffect(state, func)
   }
 
 }
+
+export { QueryDoc }

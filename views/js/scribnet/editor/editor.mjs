@@ -280,7 +280,7 @@ export class Editor {
 
   initStates() {
     // transitoryEffect always moves to 'init' state after. May not want that, or maybe can supply a "final" state as an argument.
-    this.controller.setTransitoryEffect('^* |', () => {
+    this.controller.setTransitoryAction('^* |', () => {
       console.debug('start, star, space!')
       this.currentDocument.select(this.currentDocument.startOffset - 2, this.currentDocument.startOffset)
       this.pushNewDoc(this.currentDocument.delete().setBlockTag('ul'))
@@ -290,7 +290,7 @@ export class Editor {
 
     })
 
-    this.controller.setTransitoryEffect('(?)|', () => {
+    this.controller.setTransitoryAction('(?)|', () => {
       console.debug('question mark!')
       this.currentDocument.select(this.currentDocument.startOffset - 3, this.currentDocument.startOffset)
       this.pushNewDoc(this.currentDocument.delete().write('❓'))
