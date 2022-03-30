@@ -198,6 +198,7 @@ describe('Renderer', function () {
           )
         )
         const basic2 = basic.writeBoundary('e', 5)
+        const basic3 = basic.writeBoundary('efghi', 5).toggleTags(['t'], 6, 8)
         const testCases = [
           { input: [ basic, 0 ], expected: [ [ 0, 0 ], 0 ] },
           { input: [ basic, 1 ], expected: [ [ 0, 0 ], 1 ] },
@@ -212,7 +213,9 @@ describe('Renderer', function () {
           { input: [ basic2, 4 ], expected: [ [ 0, 0 ], 3 ] },
           { input: [ basic2, 5 ], expected: [ [ 0, 0 ], 4 ] },
           { input: [ basic2, 6 ], expected: [ [ 0, 0 ], 5 ] },
+          { input: [ basic3, 12 ], expected: [ [ 0, 2 ], 2 ] },
         ]
+        // test(funcUnderTest, testCases.at(-1))
         testAll(funcUnderTest, testCases)
 
       })
