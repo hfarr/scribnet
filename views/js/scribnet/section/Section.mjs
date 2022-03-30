@@ -302,13 +302,25 @@ class Section {
     return [ sectionIndex, boundaryIndex ]
   }
 
-  _locateBoundaryFullyQualified(boundaryIndex, sectionIndices=[]) {
+  _locateBoundaryFullyQualified(boundaryIndex) {
 
-    if (this.subPieces.length === 0) return [ sectionIndices, boundaryIndex ]
+    const [ sections, indices, offset ] = this._pathToLocation(boundaryIndex)
+    return [ indices, offset ]
+    // if (this.subPieces.length === 0) return [ sectionIndices, boundaryIndex ]
+
+    // const [ sectionIndex, boundaryIndexInSection ] = this._locateBoundary(boundaryIndex)
+
+    // return this.subPieces[sectionIndex]._locateBoundaryFullyQualified(boundaryIndexInSection, [ ...sectionIndices, sectionIndex ])
+
+  }
+
+  _pathToLocation(boundaryIndex, sections=[], indices=[]) {
+    if (this.subPieces.length === 0) return [ sections, indices, boundaryIndex ]
 
     const [ sectionIndex, boundaryIndexInSection ] = this._locateBoundary(boundaryIndex)
+    const section = this.subPieces[sectionIndex]
 
-    return this.subPieces[sectionIndex]._locateBoundaryFullyQualified(boundaryIndexInSection, [ ...sectionIndices, sectionIndex ])
+    return section._pathToLocation(boundaryIndexInSection, [ ...sections, section ], [ ...indices, sectionIndex ])
 
   }
 
@@ -767,8 +779,8 @@ class AtomicSection extends Section {
     return boundaryLocation
   }
 
-  _locateBoundaryFullyQualified(boundaryIndex, sectionIndices=[]) {
-    return [ sectionIndices, boundaryIndex ]
+  _pathToLocation(boundaryIndex, sections=[], indices=[]) {
+    return [ sections, indices, boundaryIndex ]
   }
 
   structureEq(other) {
