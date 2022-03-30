@@ -37,7 +37,29 @@ class HTMLRenderer extends Renderer {
       // this function is an interface from the "document" notion of a path to a "DOM" notion of a path, where in each step is an Element.
       // Contexts all have one Tag. Segments have an arbitrary amount, but they always produce at least one value on the path since the first step is to use
       // the Section notion of a path. That slice cuts out that part of the puzzle.
-      domPath = [ ...path.slice(0,-1), ...Array(section.tags.length).fill(0) ]
+      const normalizePath = (doc, path) => {
+        const parentContext = doc.sectionAt(path.slice(0, -1))
+        const segmentIndex = path.at(-1)
+        let nodeIndex = segmentIndex
+
+        let adjoinPrevious = false;
+        for ( const segment of parentContext.segments) {
+          if (segment.tags.length === 0) {
+            if (adjoinPrevious) nodeIndex--
+            adjoinPrevious = true
+          } else {
+            adjoinPrevious = false
+          }
+        }
+
+        return [ ...path.slice(0, -1), nodeIndex ]
+
+      }
+
+      const normalized = normalizePath(document, path)
+      const segmentTagsPath = [ ...Array(section.tags.length).fill(0) ]
+
+      domPath = [ ...normalized, ...segmentTagsPath ]
     }
 
     // no adjustmnets to offset for HTML

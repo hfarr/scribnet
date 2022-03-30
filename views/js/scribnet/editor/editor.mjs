@@ -305,6 +305,22 @@ export class Editor {
   //=========================
 
 
+  resolveNode(pathToNode) {
+    let currentNode = this.component
+    let path = pathToNode.slice()
+    let index
+    while (path.length > 0) {
+      [ index, ...path ] = path
+      // currentElement = currentElement.children[index]
+      currentNode = currentNode.childNodes[index]
+    }
+    return currentNode
+  }
+
+  // resolveNode(pathToNodeParent) {
+  //   const nodeParent = this.resolveElement(pathToNodeParent)
+  //   return nodeParent.childNodes[0]
+  // }
 
   /**
    * Inverse (well..) of 'updateSelection'. Takes the currently selected text in the
@@ -312,14 +328,12 @@ export class Editor {
    * 
    */
   selectInDOM(renderer) {
-    // const [ anchorNode, anchorOffset ] = offsetToDOM(this.component, this.currentDocument.anchorOffset)
-    // const [ focusNode, focusOffset ] = offsetToDOM(this.component, this.currentDocument.focusOffset)
-    // window.getSelection().setBaseAndExtent(anchorNode, anchorOffset, focusNode, focusOffset)
 
-    const { anchorOffsetComputer, focusOffsetComputer } = this.currentDocument.offsetsInDOMComputers
     const pathFinder = renderer.constructor.pathToCursorInDOM
-    const [ anchorNode, anchorOffset ] = anchorOffsetComputer(this.component, pathFinder)
-    const [ focusNode, focusOffset ] = focusOffsetComputer(this.component, pathFinder)
+    const [ anchorPath, anchorOffset ] = this.currentDocument.pathToAnchorBoundary(pathFinder)
+    const [ focusPath, focusOffset ] = this.currentDocument.pathToFocusBoundary(pathFinder)
+    const anchorNode = this.resolveNode(anchorPath)
+    const focusNode = this.resolveNode(focusPath)
     window.getSelection().setBaseAndExtent(anchorNode, anchorOffset, focusNode, focusOffset)
   }
 

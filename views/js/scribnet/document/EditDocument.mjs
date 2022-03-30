@@ -387,6 +387,9 @@ class _EditDocument {
     return this.focusOffset === this.anchorOffset
   }
 
+  /**
+   * @deprecated
+   */
   get offsetsInDOMComputers() {
     const that = this
     return { 
@@ -402,6 +405,29 @@ class _EditDocument {
   get _endBoundary() {
     return this.document.cursorToBoundaryFavorLeft(this.endOffset)
   }
+
+  get _anchorBoundary() {
+    if (this.anchorOffset < this.focusOffset) {
+      return this.document.cursorToBoundaryFavorRight(this.anchorOffset)
+    } else {
+      return this.document.cursorToBoundaryFavorLeft(this.anchorOffset)
+    }
+  }
+  get _focusBoundary() {
+    if (this.focusOffset < this.anchorOffset) {
+      return this.document.cursorToBoundaryFavorRight(this.focusOffset)
+    } else {
+      return this.document.cursorToBoundaryFavorLeft(this.focusOffset)
+    }
+  }
+
+  pathToAnchorBoundary(pathFinder) {
+    return pathFinder(this.document, this._anchorBoundary)
+  }
+  pathToFocusBoundary(pathFinder) {
+    return pathFinder(this.document, this._focusBoundary)
+  }
+
 
   get totalCursorPositions() {
     return this.document.totalCursorPositions
