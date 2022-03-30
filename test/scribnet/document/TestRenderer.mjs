@@ -218,17 +218,21 @@ describe('Renderer', function () {
       })
 
       it('finds correct "DOM path" when involving adjacent tagless segments, in a nested case', function () {
-        const toggleTwice = testNestedDoc.toggleTags(['t'], 10, 13).toggleTags(['t'], 10, 13).cutEmpty()
+        const toggleTwice = testNestedDoc
+          .toggleTags(['t'], 10, 13)
+          .toggleTags(['t'], 11, 14) //  note the +1 to each arg here in the second pass. toggling introduces boundaries, so an undo isn't a direct reverse. we could use cursorToBoundary funcs to do that too but likely not worth the effort for this test.
         const lb = 10 + 1, rb = 13 + 1
 
         const testCases = [
-          { input: [ toggleTwice, 10 ], expected: [ [0, 2, 1, 1, 0, 0 ], 1] }, // ul li ul li p #text
-          { input: [ toggleTwice, lb ], expected: [ [0, 2, 1, 1, 0, 0 ], 1] }, // ul li ul li p #text
-          { input: [ toggleTwice, 13 ], expected: [ [0, 2, 1, 2, 0, 0 ], 1] }, // ul li ul li p #text
-          { input: [ toggleTwice, rb ], expected: [ [0, 2, 1, 2, 0, 0 ], 1] }, // ul li ul li p #text
+          // note that we expect lb - 1, lb to be in the same kernel (map to the same output). that is because the path that pathToCursorInDOM gives the offset of the path based on cursors, and multiple boundaries can map to the same cursor. These ones do.
+          //  same with rb, rb + 1
+          { input: [ toggleTwice, lb - 1 ], expected: [ [0, 2, 1, 1, 0, 0 ], 1] }, // ul li ul li p #text
+          { input: [ toggleTwice, lb ],     expected: [ [0, 2, 1, 1, 0, 0 ], 1] }, // ul li ul li p #text
+          { input: [ toggleTwice, rb ],     expected: [ [0, 2, 1, 2, 0, 0 ], 1] }, // ul li ul li p #text
+          { input: [ toggleTwice, rb + 1 ], expected: [ [0, 2, 1, 2, 0, 0 ], 1] }, // ul li ul li p #text
         ]
 
-        // testAll(funcUnderTest, testCases)
+        testAll(funcUnderTest, testCases)
 
       })
 
