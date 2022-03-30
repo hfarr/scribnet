@@ -30,18 +30,21 @@ class HTMLRenderer extends Renderer {
 
     // for a Segment at the end we must account for each possible tag. They become part of hte path in HTML even if it's not part of the path w.r.t to our doc model.
     const section = document.sectionAt(path)
-    let domPath = path
+    let domPathToNode = path
+    let domNodeOffset = offset
+
     if (section instanceof Segment) {
       // we cut the Segment from the path. It doesn't implicitly have any Tags, so it is not an element child of any Node, it would be a Text Node. Only Tags on 
       // a segment represent part of the Path that we need to hand to the DOM traverser.
       // this function is an interface from the "document" notion of a path to a "DOM" notion of a path, where in each step is an Element.
       // Contexts all have one Tag. Segments have an arbitrary amount, but they always produce at least one value on the path since the first step is to use
       // the Section notion of a path. That slice cuts out that part of the puzzle.
-      const normalizePath = (doc, path) => {
+      const normalizePath = (doc, [ path, offset ]) => {
         // TODO might also need to update offset. it would be added the length of previous segments.
         const parentContext = doc.sectionAt(path.slice(0, -1))
         const segmentIndex = path.at(-1)
         let nodeIndex = segmentIndex
+        let nodeOffset = offset
 
         let adjoinPrevious = false;
         for ( let i = 0; i <= nodeIndex; i++ ) {
@@ -50,6 +53,7 @@ class HTMLRenderer extends Renderer {
             if (adjoinPrevious) {
               nodeIndex--
               i--
+              nodeOffset += segment.length
             }
             adjoinPrevious = true
           } else {
@@ -57,19 +61,20 @@ class HTMLRenderer extends Renderer {
           }
         }
 
-        return [ ...path.slice(0, -1), nodeIndex ]
+        return [ [ ...path.slice(0, -1), nodeIndex ], nodeOffset ]
 
       }
 
-      const normalized = normalizePath(document, path)
+      const [ normalizedPath, normaliedOffset ] = normalizePath(document, [ path, offset ])
       const segmentTagsPath = [ ...Array(section.tags.length).fill(0) ]
 
-      domPath = [ ...normalized, ...segmentTagsPath ]
+      domPathToNode = [ ...normalizedPath, ...segmentTagsPath ]
+      domNodeOffset = normaliedOffset
     }
 
     // no adjustmnets to offset for HTML
     // jk there are adjustments...
-    return [ domPath, offset ]
+    return [ domPathToNode, domNodeOffset ]
   }
 
   get wrapperStyling() {  // hmmmmmmmmmmmmmmmmmmmm
