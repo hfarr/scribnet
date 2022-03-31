@@ -277,7 +277,10 @@ const devOnly = express.Router()
 mainRouter.use('/api', devOnly)
 devOnly.post('/db-reload', async (req, res) => {
   res.status(200).send('OK')
-  await fs.copyFile(`${DATA_FOLDER}/dbfile.bkp`, `${DATA_FOLDER}/dbfile`)
+  const archive = `${DATA_FOLDER}/archive`
+  await fs.readdir(archive)
+    .then(dir => fs.copyFile(`${DATA_FOLDER}/dbfile`, `${archive}/dbfile_${dir.length}`))
+    .then( _ => fs.copyFile(`${DATA_FOLDER}/dbfile.bkp`, `${DATA_FOLDER}/dbfile`))
 })
 
 
