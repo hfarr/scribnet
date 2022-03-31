@@ -228,4 +228,4 @@ export default class Controller {
 
 }
 
-export { QueryDoc }
+export { QueryDoc, StateMachine, StateTableDefaults }
