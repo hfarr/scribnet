@@ -3,7 +3,7 @@ import assert from 'assert';
 const PATH = "/home/henry/dev/scribnet/views"
 
 const { default: EditDocument, expose: {} } = await import(`${PATH}/js/scribnet/document/EditDocument.mjs`)
-const { Segment, Context, Doc } = await import(`${PATH}/js/scribnet/section/Context.mjs`)
+const { Segment, Context, Doc } = await import(`${PATH}/js/scribnet/section/index.mjs`)
 
 describe('EditDocument', function() {
   const editDoc = EditDocument.fromBlockContexts(

@@ -3,7 +3,7 @@
 import { treeTraverse, traversePruneTokens, treeFoldr, offsetToDOM, boundaryOffsetToDOM } from './DOM.mjs'
 import { TokenVisitor } from './Token.mjs'
 // import { Segment, ListSegment } from './Segment.mjs'
-import { Doc, Context, Segment } from '../section/Context.mjs'
+import { Doc, Context, Segment } from '../section/index.mjs'
 
 
 // ========= HTML View/Controller ==========================

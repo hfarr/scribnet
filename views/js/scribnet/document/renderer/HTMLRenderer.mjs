@@ -1,7 +1,7 @@
 
 import { Renderer, escapeString, wrapOne, wrapMany, wrapOneAttributes } from "./Renderer.mjs";
 
-import { Context, Segment } from "../../section/Context.mjs";
+import { Context, Segment } from "../../section/index.mjs";
 
 
 

@@ -2,10 +2,9 @@
 import assert from 'assert';
 
 const PATH = "/home/henry/dev/scribnet/views"
-const MODULE = "Section"
-const { default: Section, AtomicSection } = await import(`${PATH}/js/scribnet/section/${MODULE}.mjs`)
+const { Section, AtomicSection } = await import(`${PATH}/js/scribnet/section/index.mjs`)
 
-describe(`${MODULE} module`, function () {
+describe(`Section`, function () {
 
   const wrapAtomic = atomList => AtomicSection.from(...atomList)
 

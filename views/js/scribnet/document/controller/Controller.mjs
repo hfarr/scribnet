@@ -1,5 +1,5 @@
 
-import { Segment } from '../../section/Context.mjs'
+import { Segment } from '../../section/index.mjs'
 
 
 /**

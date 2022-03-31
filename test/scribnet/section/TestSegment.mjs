@@ -3,8 +3,7 @@
 import assert from 'assert';
 
 const PATH = "/home/henry/dev/scribnet/views"
-const MODULE = "Context"
-const { Doc, Context, MixedContext, Segment, Gap } = await import(`${PATH}/js/scribnet/section/${MODULE}.mjs`)
+const { Doc, Context, MixedContext, Segment, Gap } = await import(`${PATH}/js/scribnet/section/index.mjs`)
 
 
 describe('Segment', function () {
