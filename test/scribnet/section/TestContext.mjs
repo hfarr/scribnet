@@ -262,6 +262,43 @@ describe('MixedContext', function () {
 
     })
   })
+
+  // describe('deleteBoundary', function () {
+  //   const component = MixedContext.createContext('ul', 
+  //     Context.createContext('li', Context.createContext('h1', Segment.from(...'A'))),
+  //     Context.createContext('li', Context.createContext('h1', Segment.from(...'B')),
+  //       Context.createContext('ul',
+  //         Context.createContext('li', Context.createContext('h2', Segment.from('bA'))),
+  //         Context.createContext('li', Context.createContext('h2', Segment.from('bB')))
+  //     )),
+  //     Context.createContext('li', Context.createContext('h2', Segment.from(...'C'))),
+  //   )
+
+  //   const splits = [
+  //     component.contextSplit(5)[0]  // between 'b' and 'A'
+  //   ]
+
+  //   const parser = string => {
+
+  //     toks = 
+
+  //   }
+
+  //   it('merges nested contexts correctly', function () {
+
+  //     const testCases = [
+  //       { input: { callee: component.contextSplit(5)[0], args: [ 5, 6 ] }, expected: component },
+  //       { input: { callee: component, args: [ 5, 6 ] }, expected: parser(`ul < li <h1<'A' >> li <h1 'BbA' ul <li< h2 'bB' >>> li <h1'C'>`) },
+  //     ]
+
+  //     const componentUnderTest = splits[0]
+  //     const expected = component
+  //     const actual = componentUnderTest.deleteBoundary(5, 6)
+
+  //     assert(actual.structureEq(expected))
+
+    // })
+  // })
 })
 
 describe('Gap', function () {
