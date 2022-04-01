@@ -1,5 +1,6 @@
 'use strict'
 import assert from 'assert';
+import { testAll } from '../../helpers.mjs';
 
 const PATH = "/home/henry/dev/scribnet/views"
 const { Doc, Context, MixedContext, Segment, Gap } = await import(`${PATH}/js/scribnet/section/index.mjs`)
@@ -204,6 +205,63 @@ describe('MixedContext', function () {
 
   })
 
+  describe('contextSplit', function () {
+    const component = MixedContext.createContext('ul', 
+      MixedContext.createContext('li', 
+        Context.createContext('h1', Segment.from(...'aaa')),
+        Context.createContext('h2', Segment.from(...'bbb')),
+        Context.createContext('h3', Segment.from(...'ccc')),
+      )
+    )
+
+    it('creates a new MixedContext at the deepest nested, above the Context', function (){
+      const expected = MixedContext.createContext('ul', 
+        MixedContext.createContext('li', 
+          Context.createContext('h1', Segment.from(...'aaa')),
+          Context.createContext('h2', Segment.from(...'b')),
+        ),
+        MixedContext.createContext('li', 
+          Context.createContext('p', Segment.from(...'bb')),
+          Context.createContext('h3', Segment.from(...'ccc')),
+        )
+      )
+
+      const actual = component.contextSplit(5)[0]
+
+      assert(actual.structureEq(expected))
+    })
+    it('creates a new MixedContext at each splitable location', function () {
+      const testCases = []
+      for (let i = 0; i < component.boundariesLength; i++) {
+        testCases.push(i)
+      }
+
+      // pre assertion
+      assert.strictEqual(component.subPieces.length, 1)
+
+      const testOne = idx => {
+        const result = component.contextSplit(idx)[0]
+        assert.strictEqual(result.subPieces.length, 2)
+      }
+
+      testAll(testOne, testCases)
+
+    })
+    it('does not split the top MixedContext given that the top MixedContext doesnt have a non-MixedContext sub section', function () {
+      const testCases = []
+      for (let i = 0; i < component.boundariesLength; i++) {
+        testCases.push(i)
+      }
+
+      const testOne = idx => {
+        const result = component.contextSplit(idx)
+        assert.strictEqual(result.length, 1)
+      }
+
+      testAll(testOne, testCases)
+
+    })
+  })
 })
 
 describe('Gap', function () {

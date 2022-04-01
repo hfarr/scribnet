@@ -101,6 +101,17 @@ class Doc extends Section {
 
   }
 
+  contextSplit(boundary) {
+
+    // TODO this exemplifies the "update(location)" pattern. we can capture it,
+    // embellishing to include what func to use, how to know when to stop, etc.
+
+    const [ index, offset ] = this._locateBoundary(boundary)
+    const newSections = this.subPieces[index].contextSplit(offset)
+
+    return this.splice(index, 1, ...newSections)
+  }
+
   contextBreakAt(location) {
     const [ secIndex, boundaryOffset ] = this._locateBoundary(location)
     

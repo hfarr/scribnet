@@ -166,6 +166,17 @@ class Context extends Section {
   // ---------------------------
   //  Context Specific functions
 
+  contextSplit(location) {
+
+    // const [ index, offset ] = this._locateBoundary(location)
+    // const newSections = this.subPieces[index].contextSplit(offset)
+
+    // return this.splice(index, 1, ...newSections)
+
+    return this.contextBreakAt(location)
+
+  }
+
   contextBreakAt(location) {
 
     const [ left, right ] = this.split(location)
@@ -271,6 +282,33 @@ class MixedContext extends Context {
 
   static from(...sections) {
     return Section.from.bind(MixedContext)(...sections.map(sec => sec instanceof Segment ? Context.from(sec) : sec))
+  }
+
+  contextSplit(boundary) {
+
+    const [ index, offset ] = this._locateBoundary(boundary)
+    const nextContext = this.subPieces[index]
+
+    if (nextContext instanceof MixedContext)
+      return [ this.splice(index, 1, ...nextContext.contextSplit(offset)) ]
+
+    // instance is a Context that is not mixed
+
+    //        |         split 
+    // LI
+    // H1 P P P P P
+    // =>
+    // LI         LI
+    // H1 P P lP  rP P P
+
+    const [ ctxLeft, ctxRight ] = nextContext.contextSplit(offset)
+    const left = this.slice(0, index).addSubSections(ctxLeft)
+    const right = this.slice(index + 1).splice(0,0,ctxRight)
+    // const left = this.slice(0, index).addSubSections(ctxLeft)
+    // const right = this.slice(index + 1).addSubSections(ctxRight)
+
+    return [ left, right ]
+
   }
 
   contextBreakAt(location) {

@@ -139,6 +139,10 @@ class Section {
     return newSection
   }
 
+  slice(start, end) {
+    return this.copyFrom(...this.subPieces.slice(start, end))
+  }
+
   addSubSections(...sections) {
     return this.insertSubSections(this.subPieces.length, ...sections)
   }
