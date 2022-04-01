@@ -528,7 +528,8 @@ class _EditDocument {
     // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     // ! A context break for a new dawn! !
     // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-    result.document = result.document.contextBreakAt(this._startBoundary)
+    // result.document = result.document.contextBreakAt(this._startBoundary)
+    result.document = result.document.contextSplit(this._startBoundary)
     result.select(result.endOffset + 1)
 
     // Set new Context to a paragraph.
