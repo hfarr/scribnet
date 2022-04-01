@@ -318,6 +318,11 @@ class Section {
 
   }
 
+  _sectionPathToBoundary(boundaryIndex) {
+    const [ sections, indices, offset ] = this._pathToLocation(boundaryIndex)
+    return sections
+  }
+
   _pathToLocation(boundaryIndex, sections=[], indices=[]) {
     if (this.subPieces.length === 0) return [ sections, indices, boundaryIndex ]
 
@@ -561,6 +566,33 @@ class Section {
 
     return [ ...mid.subPieces.map(section => section.predicateSlice(pred, 0)) ].flat()
 
+  }
+
+  find(predicate) {
+
+  }
+
+  findOnIndicesPath(predicate, path) {
+
+  }
+
+  /**
+   * 
+   * @param {Function} predicate Function that accepts a Section as input and returns true or false
+   * @param {*} boundary Location whose path to search along
+   * @returns The first Section along the path to the boundary that satisfies the predicate
+   */
+  findOnPathToBoundary(predicate, boundary) {
+    // Useful function for querying. But what can we do with the information?
+    // Forexample, say we wanted to look for a Section to modify. THat's great
+    // but the client would then need to know how to specifically update that 
+    // section, we need almost a way to "thread" such an action through the 
+    // tree
+    const sections = this._sectionPathToBoundary(boundary)
+    for (const section of sections) {
+      if (predicate(section)) return section
+    }
+    return undefined
   }
 
   kindSlice(kind, startBoundary, endBoundary) {
