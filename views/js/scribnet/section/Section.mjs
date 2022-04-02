@@ -1,5 +1,6 @@
 'use strict'
 
+const identity = x => x
 
 /**
  * ~TODO~
@@ -78,7 +79,9 @@ class Section {
   }
 
   /**
-   * Merge is the inverse of "split"
+   * Merge is the inverse of "split". 
+   * Merging does not commute, A.merge(B) is not necessarily the same as B.merge(A)
+   * If A.split(x) = [B,C] however, then B.merge(C) should structureEq C.merge(C) should structureEq A. (TODO test this?)
    * 
    * @param other Section to merge
    * @returns 
@@ -86,12 +89,50 @@ class Section {
   merge(other) {
     // TODO enable a "depth" limit to merge, so that it only merges /up to/ a point? likewise for
     //  split, only start splitting /after/ a point?
+    // nah- control with the mix API
 
     if (other === undefined) return this
-    if (other instanceof AtomicSection) return this.addSubSections(other) // Not sure how 'natural' this is. It is a bit awkward merging Atomic and nonAtomic Sections
+    if (other instanceof AtomicSection) return this.mergeAtomic(other) // Not sure how 'natural' this is. It is a bit awkward merging Atomic and nonAtomic Sections
 
     if (this.subPieces.length === 0) return this.copyFrom(...other.subPieces)
     if (other.subPieces.length === 0) return this
+
+    // mergeBehavior hook? one that runs afte the above validations?
+    // Note that with these validations we are implying that merging is not commutative. That's probably okay.
+
+    return this.mergeBehavior(other)
+  }
+
+  /**
+   * Describes behavior for merging a (Non Atomic) Section with an AtomicSection
+   * 
+   * In the default case, we plumb the AtomicSection down until it hits a Section
+   * that can add it to its children, or merge to a segment. Generally it goes
+   * all the way down to the "rightmost" atomicsection where it is merged.
+   * 
+   * @param {AtomicSection} other 
+   * @returns 
+   */
+  mergeAtomic(other) {
+
+    // expects 'other' to be Atomic
+    if (this.subPieces.length === 0) return this.addSubSections(other)
+
+    const thisRightmost = this.subPieces.at(-1)
+    const mixed = thisRightmost.mix(other)
+    return this.copyFrom( ...this.subPieces.slice(0, -1), ...mixed)
+  }
+
+  /**
+   * Describes how to merge two sections.
+   * PreCondition: Both "this" and "other" have subPieces length > 0
+   * Condition: returns a Section
+   * 
+   * Override in subclasses to get different merge behavior
+   * 
+   * @param {Section} other Section to merge
+   */
+  mergeBehavior(other) {
 
     const middleLeft = this.subPieces.at(-1)
     const middleRight = other.subPieces.at(0)
@@ -101,6 +142,7 @@ class Section {
     return this.copyFrom( ...this.subPieces.slice(0, -1), ...mixed, ...other.subPieces.slice(1) )
   }
 
+  // Hook to set mixing behavior
   mixesWith(other) {
     return true
   }
@@ -120,12 +162,29 @@ class Section {
    * @param other Section to mix
    * @returns 
    */
-  mix(other) {
-    if (other === undefined) return [ this ]
-    if (other instanceof AtomicSection) return [ this.addSubSections(other) ] // Not sure how 'natural' this is. It is a bit awkward merging Atomic and nonAtomic Sections
+  mix(other, collapse=(x)=>undefined ) {
 
-    if ( !this.mixesWith(other)) return [ this, other ]
-    return [ this.merge(other) ]
+
+    if ( other === undefined || this.mixesWith(other) ) {
+
+      // auncle because if this is not undefined, then it refers to the sibling "this" ancestor
+      const auncle = collapse()
+
+      if (auncle !== undefined) return [ this.merge(other), auncle ]
+      return [ this.merge(other) ]
+    }
+
+    const otherLeftMost = other.sectionAt(0)
+    let plugback = (nextLeft) => {
+      if (nextLeft === undefined) 
+        return collapse(other.splice(0,1))
+      return collapse(other.splice(0,1,nextLeft))
+    }
+
+    return [ this.mix(otherLeftMost, plugback) ]
+    
+
+    // return [ this.mix(other.sectionAt(0)), other, ...extra ]
 
   }
 
@@ -362,18 +421,43 @@ class Section {
 
   }
 
+  // least intrusive boundary join? or perhaps. using the mix api?
   deleteBoundary(startBoundary, endBoundary = undefined) {
+    // Delete boundary is a complex tree operation.
+    // We need to identify the "minimally impacted subtree".
+    // The minimally impacted subtree is defined as the subSection node, buried within, that is
+    // the earliest common ancestor to the impacted Segments.
+    // We know we are that node if we determine that the subsection of the left branch is different
+    // than the subsection of the right branch.
     if (this.boundariesLength === 1) return this
     if (endBoundary === undefined) endBoundary = this.boundariesLength - 1
 
     const [ leftSectionIndex, leftOffset ] = this._locateBoundary(startBoundary)
     const [ rightSectionIndex, rightOffset ] = this._locateBoundary(endBoundary)
-    const patchedSections = this.subPieces[leftSectionIndex].deleteBoundary(leftOffset).mix(this.subPieces[rightSectionIndex].deleteBoundary(0, rightOffset))
 
-    return this.splice(leftSectionIndex, 1 + (rightSectionIndex - leftSectionIndex), ...patchedSections ).cutEmpty()
-    // const patchedSection = this.subPieces[leftSectionIndex].deleteBoundary(leftOffset).merge(this.subPieces[rightSectionIndex].deleteBoundary(0, rightOffset))
+    const isEarliestCommonAncestor = leftSectionIndex !== rightSectionIndex
 
-    // return this.splice(leftSectionIndex, 1 + (rightSectionIndex - leftSectionIndex), patchedSection ).cutEmpty()
+
+    if (isEarliestCommonAncestor) {
+
+      const newLeftSection = this.subPieces[leftSectionIndex].deleteBoundary(leftOffset)
+      const newRightSection = this.subPieces[rightSectionIndex].deleteBoundary(0, rightOffset)
+      const patchedSections = newLeftSection.mix(newRightSection)
+
+      return this.splice(leftSectionIndex, 1 + (rightSectionIndex - leftSectionIndex), ...patchedSections ).cutEmpty()
+
+    } else {
+      // This section is a common ancestor, but not the earliest common anscestor
+      const newSection = this.subPieces[leftSectionIndex].deleteBoundary(leftOffset, rightOffset)
+
+      // no mixing required. Removing boundaries cannot create /more/ sections, we don't have to handle a case
+      // where mixing produces either 1 or 2 results. The matter is that if both boundaries are contained
+      // within a single child then we expect to receive a single child back, any merging is internal to it, a
+      // black box to us, the parent.
+
+      return this.splice( leftSectionIndex, 1, newSection ).cutEmpty()
+
+    }
 
   }
 
@@ -783,20 +867,24 @@ class AtomicSection extends Section {
     return this
   }
 
-  mix(other) {
-    if (this.mixesWith(other))
-      return [ this.merge(other) ]
-
-    return [ this, other ]
-  }
   merge(other) {
 
     if (other === undefined) return this
-    if (other instanceof AtomicSection)
-      return this.join(other)
+    if (other instanceof AtomicSection) return this.mergeAtomic(other)
+      // return this.join(other)
     
     // Like the merge in Section, merging AtomicSection to a (non-Atomic) Section begs trouble. This copies what Section does but the other way around.
-    return other.copyFrom(this, ...other.subPieces)
+    return this.mergeBehavior(other)
+  }
+
+  // atomic
+  mergeAtomic(other) {
+    return this.join(other)
+  }
+  // non-atomic
+  mergeBehavior(other) {
+    const otherLeftmost = other.subPieces[0]
+    return other.copyFrom(...this.mix(otherLeftmost), ...other.subPieces.slice(1))
   }
 
   // ============
