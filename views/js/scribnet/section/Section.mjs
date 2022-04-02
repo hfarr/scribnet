@@ -1,7 +1,5 @@
 'use strict'
 
-const identity = x => x
-
 /**
  * ~TODO~
  * I beleive there is a wider reckoning for "boundaries" as they relate to Section
@@ -162,16 +160,30 @@ class Section {
    * @param other Section to mix
    * @returns 
    */
-  mix(other, collapse=(x)=>undefined ) {
+  mix(other) {
+
+    if (this.mixesWith(other))
+      return [ this.merge(other) ]
+
+    return [ this, other ]
+
+  }
+
+  complexMix(other, collapse=(x)=>undefined ) {
 
 
-    if ( other === undefined || this.mixesWith(other) ) {
+    const shouldMerge = other === undefined || this.mixesWith(other)
+
+    if (shouldMerge) {
+
 
       // auncle because if this is not undefined, then it refers to the sibling "this" ancestor
       const auncle = collapse()
 
       if (auncle !== undefined) return [ this.merge(other), auncle ]
       return [ this.merge(other) ]
+    } else if (other instanceof AtomicSection) {
+      return [ this, other ]
     }
 
     const otherLeftMost = other.sectionAt(0)
@@ -179,7 +191,7 @@ class Section {
       if (nextLeft === undefined) 
         return collapse(other.splice(0,1))
       return collapse(other.splice(0,1,nextLeft))
-    }
+    } 
 
     return [ this.mix(otherLeftMost, plugback) ]
     
@@ -738,7 +750,7 @@ class Section {
   sectionAt(path) {
 
     // supports single integer argument as well
-    if (path instanceof Array) {
+    if (! (path instanceof Array) ) {
       const idx = path
       return this.subPieces[idx]
     }
