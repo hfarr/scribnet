@@ -154,9 +154,9 @@ const docParser = new DocParser(sample)
 const doc = docParser.parse()
 const docPrinter = new DocPrinter(doc)
 
-console.debug('testing')
-console.debug(doc.toString())
-console.debug(docPrinter.print())
+// console.debug('testing')
+// console.debug(doc.toString())
+// console.debug(docPrinter.print())
 
 
 export { DocParser, DocPrinter }
