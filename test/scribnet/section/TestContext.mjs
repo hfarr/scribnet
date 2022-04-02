@@ -322,6 +322,48 @@ describe('MixedContext', function () {
             li < h1 < 'C' > >
           >
         `).subPieces[0] },
+/*
+        og      3,4
+        |'A'||'B'||'bA'||'bB'||'C'|
+                  |----||----|     
+                  |-h2-||-h2-|     
+        |---||---||-li-||-li-||---|
+        |h1-||h1-||----ul----||h1-|
+        |li-||-------li------||li-|
+        |------------ul-----------|
+
+                 ||        <-  deleteBoundary(3,4)
+
+        actual                                             |expected
+        |'A'||'B'||'bA'||'bB'||'C'|                        |'A'||'BbA'||'bB'||'C'|
+                  |----||----|                                         |----|     
+                  |-h2-||-h2-|                                         |-h2-|     
+        |---||---||-li-||-li-||---|                        |---||-----||-li-||---|
+        |h1-||-------h1------||h1-|                        |h1-||-h1--||-ul-||h1-|
+        |li-||-------li------||li-|                        |li-||-----li----||li-|
+        |------------ul-----------|                        |---------ul----------|
+
+        prettyprint of Actual
+        'ul <
+          li <
+            h1 < 'A' >
+          >
+          li <
+            h1 <
+        'B'       li <
+                h2 < 'bA' >
+              >
+              li <
+                h2 < 'bB' >
+              >
+            >
+          >
+          li <
+            h1 < 'C' >
+          >
+        >
+        '
+*/        
       ]
 
       const testOne = ({input: { callee, args }, expected}, testCaseNum) => { 
