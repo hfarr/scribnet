@@ -1,5 +1,6 @@
 'use strict'
 import assert from 'assert';
+import { testAll, DocParser, DocPrinter } from '../../helpers.mjs';
 
 const PATH = "/home/henry/dev/scribnet/views"
 const { Section, AtomicSection } = await import(`${PATH}/js/scribnet/section/index.mjs`)
@@ -301,6 +302,31 @@ describe(`Section`, function () {
           assert.deepStrictEqual(testSection2.deleteBoundary(lb, rb).atoms, testSection2.atoms)
         }
 
+      })
+
+      it('has one fewer boundary given a section with non-empty subPieces when adjacent internal bonudaries are deleted', function () {
+        // internal boundaries are defined to be adjacent if their indices differ by exactly 1 and
+        // and AtomSlice using them as bounds slicing them produces a 0 length array of Atoms
+        const testCases = [
+          // { bounds: [ 3, 4 ] , section: testSection }
+        ]
+
+        // first and last boundaries that can be the right boundary of an adjacent pair
+        const testSectionNonEmpty = testSection.cutEmpty()
+        for (let i = 1; i < testSectionNonEmpty.boundariesLength; i++) {
+          if (testSectionNonEmpty.areBoundariesAdjacent( i - 1, i ))
+            testCases.push( { bounds: [ i - 1, i ], section: testSectionNonEmpty } )
+        }
+
+        const testOne = ( { bounds: [lb, rb], section}, testCaseNum ) => {
+          const failMsg = `Test case ${testCaseNum}: Expect result section to have one fewer boundaries than original. Bounds lb ${lb}, rb ${rb}`
+          assert.strictEqual(section.deleteBoundary(lb, rb).boundariesLength, section.boundariesLength - 1, failMsg)
+        }
+
+        testOne(testCases[2], 3)
+
+        testAll(testOne, testCases)
+        
       })
     })
 

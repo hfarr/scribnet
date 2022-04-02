@@ -623,17 +623,47 @@ class Section {
     return this.atoms.slice(lb, rb)
   }
 
+  /**
+   * Returns true if the given pair of boundaries are adjacent
+   * 
+   * Adjacency is defined as the boundaries differ by exactly 1
+   * and an atom slice with them as bounds yields an empty Array
+   * of atoms
+   * @param {Integer} boundary1 
+   * @param {Integer} boundary2 
+   * @returns 
+   */
+  areBoundariesAdjacent(boundary1, boundary2) {
+
+    const left = boundary1 < boundary2 ? boundary1 : boundary2
+    const right = boundary1 < boundary2 ? boundary2 : boundary1
+
+    const diff = right - left
+
+    if (diff === 1) {
+      return this.atomSlice(left, right).length === 0
+    }
+
+    return false
+  }
+
   at(offset) {
     return this.atoms.at(offset)
   }
 
   sectionAt(path) {
 
+    // supports single integer argument as well
+    if (path instanceof Array) {
+      const idx = path
+      return this.subPieces[idx]
+    }
+
     if (path.length === 0) return this
 
     const [ secIndex, ...rest ] = path
 
-    return this.subPieces[secIndex].sectionAt(rest)
+    return this.subPieces[secIndex]?.sectionAt(rest)
 
   }
 
