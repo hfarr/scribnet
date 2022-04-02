@@ -268,24 +268,60 @@ describe('MixedContext', function () {
       Context.createContext('li', Context.createContext('h1', Segment.from(...'A'))),
       Context.createContext('li', Context.createContext('h1', Segment.from(...'B')),
         Context.createContext('ul',
-          Context.createContext('li', Context.createContext('h2', Segment.from('bA'))),
-          Context.createContext('li', Context.createContext('h2', Segment.from('bB')))
+          Context.createContext('li', Context.createContext('h2', Segment.from(...'bA'))),
+          Context.createContext('li', Context.createContext('h2', Segment.from(...'bB')))
       )),
-      Context.createContext('li', Context.createContext('h2', Segment.from(...'C'))),
+      Context.createContext('li', Context.createContext('h1', Segment.from(...'C'))),
     )
+
+    const parseDoc = string => (new DocParser(string)).parse()
+    const parseContext = string => (new DocParser(string)).context()
+    const printDoc = doc => (new DocPrinter(doc)).print()
+
+    const component2 = parseContext(`
+    ul < 
+      li < h1< 'A' > > 
+      li < 
+        h1 < 'B' > 
+        ul < 
+          li < 
+            h2 < 'bA' > 
+          >
+          li < 
+            h2 < 'bB' > 
+          >
+        >
+      > 
+      li <
+        h1 <'C'>
+      >
+    >`)
+
+    assert(component.eq(component2))
+    assert(component.structureEq(component2))
 
     const splits = [
       component.contextSplit(5)[0]  // between 'b' and 'A'
     ]
 
-    const parseDoc = string => (new DocParser(string)).parse()
-    const printDoc = doc => (new DocPrinter(doc)).print()
 
     it('merges nested contexts correctly', function () {
 
       const testCases = [
         { input: { callee: component.contextSplit(5)[0], args: [ 5, 6 ] }, expected: component },
-        { input: { callee: component, args: [ 4, 5 ] }, expected: parseDoc(`ul < li <h1<'A' >> li <h1 < 'BbA' > ul <li< h2 < 'bB' > >>> li <h1 <'C'>>>`).subPieces[0] },
+        { input: { callee: component, args: [ 3, 4 ] }, expected: parseDoc(`
+          ul <
+            li < h1 < 'A' > > 
+            li < h1 < 'BbA' > 
+              ul <
+                li<
+                  h2 < 'bB' > 
+                >
+              >
+            > 
+            li < h1 < 'C' > >
+          >
+        `).subPieces[0] },
       ]
 
       const testOne = ({input: { callee, args }, expected}, testCaseNum) => { 
