@@ -1,6 +1,6 @@
 'use strict'
 import assert from 'assert';
-import { testAll } from '../../helpers.mjs';
+import { testAll, DocParser } from '../../helpers.mjs';
 
 const PATH = "/home/henry/dev/scribnet/views"
 const { Doc, Context, MixedContext, Segment, Gap } = await import(`${PATH}/js/scribnet/section/index.mjs`)
@@ -263,42 +263,44 @@ describe('MixedContext', function () {
     })
   })
 
-  // describe('deleteBoundary', function () {
-  //   const component = MixedContext.createContext('ul', 
-  //     Context.createContext('li', Context.createContext('h1', Segment.from(...'A'))),
-  //     Context.createContext('li', Context.createContext('h1', Segment.from(...'B')),
-  //       Context.createContext('ul',
-  //         Context.createContext('li', Context.createContext('h2', Segment.from('bA'))),
-  //         Context.createContext('li', Context.createContext('h2', Segment.from('bB')))
-  //     )),
-  //     Context.createContext('li', Context.createContext('h2', Segment.from(...'C'))),
-  //   )
+  describe('deleteBoundary', function () {
+    const component = MixedContext.createContext('ul', 
+      Context.createContext('li', Context.createContext('h1', Segment.from(...'A'))),
+      Context.createContext('li', Context.createContext('h1', Segment.from(...'B')),
+        Context.createContext('ul',
+          Context.createContext('li', Context.createContext('h2', Segment.from('bA'))),
+          Context.createContext('li', Context.createContext('h2', Segment.from('bB')))
+      )),
+      Context.createContext('li', Context.createContext('h2', Segment.from(...'C'))),
+    )
 
-  //   const splits = [
-  //     component.contextSplit(5)[0]  // between 'b' and 'A'
-  //   ]
+    const splits = [
+      component.contextSplit(5)[0]  // between 'b' and 'A'
+    ]
 
-  //   const parser = string => {
+    const parseDoc = string => (new DocParser(string)).parse()
 
-  //     toks = 
+    it('merges nested contexts correctly', function () {
 
-  //   }
+      const testCases = [
+        { input: { callee: component.contextSplit(5)[0], args: [ 5, 6 ] }, expected: component },
+        { input: { callee: component, args: [ 4, 5 ] }, expected: parseDoc(`ul < li <h1<'A' >> li <h1 < 'BbA' > ul <li< h2 < 'bB' > >>> li <h1 <'C'>>>`).subPieces[0] },
+      ]
 
-  //   it('merges nested contexts correctly', function () {
+      const testOne = ({input: { callee, args }, expected}, testCaseNum) => { 
+        const actual = callee.deleteBoundary(...args)
+        assert(actual.structureEq(expected), `Test case ${testCaseNum}: Expected to be structurally equivalent`)
+      }
+      testAll(testOne, testCases)
 
-  //     const testCases = [
-  //       { input: { callee: component.contextSplit(5)[0], args: [ 5, 6 ] }, expected: component },
-  //       { input: { callee: component, args: [ 5, 6 ] }, expected: parser(`ul < li <h1<'A' >> li <h1 'BbA' ul <li< h2 'bB' >>> li <h1'C'>`) },
-  //     ]
+      // const componentUnderTest = splits[0]
+      // const expected = component
+      // const actual = componentUnderTest.deleteBoundary(5, 6)
 
-  //     const componentUnderTest = splits[0]
-  //     const expected = component
-  //     const actual = componentUnderTest.deleteBoundary(5, 6)
+      // assert(actual.structureEq(expected))
 
-  //     assert(actual.structureEq(expected))
-
-    // })
-  // })
+    })
+  })
 })
 
 describe('Gap', function () {

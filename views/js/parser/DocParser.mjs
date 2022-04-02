@@ -66,3 +66,5 @@ const doc = docParser.parse()
 
 console.debug('testing')
 console.debug(doc.toString())
+
+export default DocParser

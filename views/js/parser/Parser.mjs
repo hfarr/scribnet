@@ -52,7 +52,7 @@ const tokenize = (string, tokenREs) => {
   }
 
   // end of input token
-  tokens.push(new Token('EOI', ''))
+  tokens.push(new Token('EOI', '', string.length))
 
   return tokens
 }
@@ -85,7 +85,7 @@ class Parser {
 
   consume(type, message) {
     if (this.check(type)) return this.advance()
-    this.error(peek(), message)
+    this.error(this.peek(), message)
   }
   advance() {
     if (!this.isAtEnd())
