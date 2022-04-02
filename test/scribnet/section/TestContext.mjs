@@ -1,6 +1,6 @@
 'use strict'
 import assert from 'assert';
-import { testAll, DocParser } from '../../helpers.mjs';
+import { testAll, DocParser, DocPrinter } from '../../helpers.mjs';
 
 const PATH = "/home/henry/dev/scribnet/views"
 const { Doc, Context, MixedContext, Segment, Gap } = await import(`${PATH}/js/scribnet/section/index.mjs`)
@@ -279,6 +279,7 @@ describe('MixedContext', function () {
     ]
 
     const parseDoc = string => (new DocParser(string)).parse()
+    const printDoc = doc => (new DocPrinter(doc)).print()
 
     it('merges nested contexts correctly', function () {
 
@@ -289,7 +290,9 @@ describe('MixedContext', function () {
 
       const testOne = ({input: { callee, args }, expected}, testCaseNum) => { 
         const actual = callee.deleteBoundary(...args)
-        assert(actual.structureEq(expected), `Test case ${testCaseNum}: Expected to be structurally equivalent`)
+
+        assert.strictEqual(printDoc(actual), printDoc(expected), `Test case ${testCaseNum}: Expected to be structurally equivalent.`)
+        // assert(actual.structureEq(expected), `Test case ${testCaseNum}: Expected to be structurally equivalent.`)
       }
       testAll(testOne, testCases)
 

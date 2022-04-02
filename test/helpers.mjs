@@ -2,7 +2,7 @@
 
 import assert from 'assert'
 
-import DocParser from '../views/js/parser/DocParser.mjs'
+import { DocParser, DocPrinter } from '../views/js/parser/DocParser.mjs'
 
 // assertion primitives
 export function testEq({ actual, expected }, testCaseNum) {
@@ -32,4 +32,4 @@ export function testEqualAll(testCases) {
 }
 
 
-export { DocParser }
+export { DocParser, DocPrinter }
