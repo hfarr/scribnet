@@ -1,8 +1,16 @@
 'use strict'
 import assert from 'assert';
 
+import { testAll, DocParser, DocPrinter } from '../../helpers.mjs';
+
 const PATH = "/home/henry/dev/scribnet/views"
 const { Doc, Context, MixedContext, Segment, Gap } = await import(`${PATH}/js/scribnet/section/index.mjs`)
+
+
+const parseDoc = string => (new DocParser(string)).parse()
+// const parseContext = string => (new DocParser(string)).context()
+const printDoc = doc => (new DocPrinter(doc)).print()
+
 
 describe('Doc', function () {
 
@@ -534,6 +542,62 @@ describe('Doc', function () {
         assert(Context.from(...seggos).eq(expectedEq))
 
       })
+    })
+
+  })
+
+  describe('Parse Doc', function () {
+    // A test for testing helpers that help tests?!?!?
+
+    it('made an empty doc', function () {
+      // I'll never get tired of parsing
+      const comp1 = parseDoc(`Doc <>`)
+      const comp2 = parseDoc(``)
+      assert(comp1.length === 0)
+      assert(comp2.length === 0)
+    })
+
+    it('supports comments', function() {
+      assert(parseDoc(`# non parsed, non error`))
+      const testCases = [
+        { input: `# non parsed, non error`, expected: `Doc <>` },
+        { input: `Doc < # non parsed, non error
+                  H1 < 'Hello' > >`, expected: `Doc < h1 < 'Hello' > >` },
+      ]
+
+      const testOne = ({ input, expected }) => {
+        assert.strictEqual(printDoc(parseDoc(input)), printDoc(parseDoc(expected)))
+      }
+
+      testAll(testOne, testCases)
+
+    })
+
+  })
+
+  describe('List elements', function () {
+    // A big collection of tests for lists, specifically.
+    
+    const component = parseDoc(`
+    h1 < 'A List' >
+    ul <
+      li < h1 < 'A' > >
+      li < h1 < 'B' > 
+        ul <
+          li < h2 < 'bA' > >
+          li < h2 < 'bB' > >
+        >
+      >
+      li < h1 < 'C' > >
+    >`)
+
+    it('merges nested list item with previous (non-ul/non-ol) element', function () {
+      // previous element as in what visually comes before the list item in the rendering. Or, the one that arrives
+      // immediately prior in an in-order traversal.
+
+      const testCases = [
+        { input: { boundaries: [], doc: component }}
+      ]
     })
 
   })

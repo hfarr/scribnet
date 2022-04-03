@@ -9,10 +9,15 @@ const RANGLE = 'RAngle'
 const LANGLE = 'LAngle'
 const SEG_TEXT = 'SegText'
 const EOI = 'EOI'
+const COMMENT = 'Comment'
 
 class DocParser extends Parser {
 
-  static tokenREs = [ /(?<Tag>\w+)/, /(?<LAngle><)/, /(?<RAngle>>)/, /'(?<SegText>.*?)'/, /\s*/ ] 
+  static tokenREs = [ /(?<Tag>\w+)/, /(?<LAngle><)/, /(?<RAngle>>)/, /'(?<SegText>.*?)'/, /\s+/, /(?<Comment>#.*)(\n|$)/ ] 
+
+  otherInit() {
+    this.tokens = this.tokens.filter(tok => tok.type !== COMMENT)
+  }
 
   parse() {
 
@@ -24,7 +29,7 @@ class DocParser extends Parser {
     
     const firstTok = this.peek()
     let hasOptionalTag = false
-    if (firstTok.type === TAG && firstTok.lexeme === 'Doc') {
+    if (firstTok?.type === TAG && firstTok?.lexeme === 'Doc') {
       this.advance()
       this.consume(LANGLE, "Expect '<' after 'Doc'")
       hasOptionalTag = true
@@ -36,7 +41,7 @@ class DocParser extends Parser {
       contexts.push(this.context())
     }
     if (hasOptionalTag) {
-      this.consume('RAngle')
+      this.consume('RAngle', "Expect '>' at end of Doc tag")
     }
     if (!this.isAtEnd()) {
       this.error(this.peek(), "Expect end of input")

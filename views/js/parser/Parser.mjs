@@ -34,7 +34,7 @@ const tokenize = (string, tokenREs) => {
 
     for (const re of tokenREs) {
       const { 0: match, index, groups } = re.exec(string.slice(idx)) ?? {}
-      if (index === 0) {
+      if (index === 0 && match.length > 0) {
 
         if (groups !== undefined) {
           const type = Object.getOwnPropertyNames(groups)[0]
@@ -66,6 +66,11 @@ class Parser {
     this.originalString = string
     this.current = 0
     this.tokens = tokenize(string, this.constructor.tokenREs)
+    this.otherInit()
+  }
+
+  otherInit() {
+
   }
 
   parse() {
