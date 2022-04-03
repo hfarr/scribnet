@@ -579,25 +579,43 @@ describe('Doc', function () {
     // A big collection of tests for lists, specifically.
     
     const component = parseDoc(`
-    h1 < 'A List' >
+    h1 < 'A List' >           # boundaries 0-6
     ul <
-      li < h1 < 'A' > >
-      li < h1 < 'B' > 
+      li < h1 < 'A' > >       # 7-8
+      li < h1 < 'B' >         # 9-10
         ul <
-          li < h2 < 'bA' > >
-          li < h2 < 'bB' > >
+          li < h2 < 'bA' > >  # 11-13
+          li < h2 < 'bB' > >  # 14-16
         >
       >
-      li < h1 < 'C' > >
+      li < h1 < 'C' > >       # 17-18
     >`)
 
     it('merges nested list item with previous (non-ul/non-ol) element', function () {
       // previous element as in what visually comes before the list item in the rendering. Or, the one that arrives
       // immediately prior in an in-order traversal.
 
+      const initial = `h1 < 'A List' >ul <li < h1 < 'A' > >li < h1 < 'B' >ul <li < h2 < 'bA' > >li < h2 < 'bB' > >>>li < h1 < 'C' > >>`
+          // expected: `h1 < 'A List' >ul <li < h1 < 'A' > >li < h1 < 'B' >ul <li < h2 < 'bA' > >li < h2 < 'bB' > >>>li < h1 < 'C' > >>`},
       const testCases = [
-        { input: { boundaries: [], doc: component }}
+        { input: { boundaries: [ 6, 7 ], doc: component }, 
+          expected: `h1 < 'A ListA' >ul <li < h1 < 'B' >ul <li < h2 < 'bA' > >li < h2 < 'bB' > >>>li < h1 < 'C' > >>`},
+        { input: { boundaries: [ 8, 9 ], doc: component }, 
+          expected: `h1 < 'A List' >ul <li < h1 < 'AB' > >li < ul <li < h2 < 'bA' > >li < h2 < 'bB' > >>>li < h1 < 'C' > >>`},
+        { input: { boundaries: [ 10, 11 ], doc: component }, 
+          expected: `h1 < 'A List' >ul <li < h1 < 'A' > >li < h1 < 'BbA' >ul <li < h2 < 'bB' > >>>li < h1 < 'C' > >>`},
+        { input: { boundaries: [ 13, 14 ], doc: component }, 
+          expected: `h1 < 'A List' >ul <li < h1 < 'A' > >li < h1 < 'B' >ul <li < h2 < 'bAbB' > >>>li < h1 < 'C' > >>`},
+        { input: { boundaries: [ 16, 17 ], doc: component }, 
+          expected: `h1 < 'A List' >ul <li < h1 < 'A' > >li < h1 < 'B' >ul <li < h2 < 'bA' > >li < h2 < 'bBC' > >>>>`},
       ]
+
+      const testOne = ({ input: { boundaries: [ lb, rb ], doc }, expected}) => {
+        const actual = printDoc(doc.deleteBoundary(lb, rb))
+        const expectedStr = printDoc(parseDoc(expected))
+        assert.strictEqual(actual, expectedStr)
+      }
+      testAll(testOne, testCases)
     })
 
   })
