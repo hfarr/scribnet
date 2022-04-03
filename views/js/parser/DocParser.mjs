@@ -4,6 +4,11 @@ import Doc from "../scribnet/section/Doc.mjs";
 import Context from "../scribnet/section/Context.mjs";
 import Segment from "../scribnet/section/Segment.mjs";
 
+const TAG = 'Tag'
+const RANGLE = 'RAngle'
+const LANGLE = 'LAngle'
+const SEG_TEXT = 'SegText'
+const EOI = 'EOI'
 
 class DocParser extends Parser {
 
@@ -17,10 +22,24 @@ class DocParser extends Parser {
 
   doc() {
     
+    const firstTok = this.peek()
+    let hasOptionalTag = false
+    if (firstTok.type === TAG && firstTok.lexeme === 'Doc') {
+      this.advance()
+      this.consume(LANGLE, "Expect '<' after 'Doc'")
+      hasOptionalTag = true
+    }
+    
     const contexts = []
     
-    while (!this.isAtEnd()) {
+    while (!this.isAtEnd() && !this.check(RANGLE)) {
       contexts.push(this.context())
+    }
+    if (hasOptionalTag) {
+      this.consume('RAngle')
+    }
+    if (!this.isAtEnd()) {
+      this.error(this.peek(), "Expect end of input")
     }
     return Doc.from(...contexts)
   }
