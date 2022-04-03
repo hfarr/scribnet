@@ -101,6 +101,10 @@ class Doc extends Section {
 
   }
 
+  newLine(boundary) {
+    return this.contextSplit(boundary)
+  }
+
   contextSplit(boundary) {
 
     // TODO this exemplifies the "update(location)" pattern. we can capture it,

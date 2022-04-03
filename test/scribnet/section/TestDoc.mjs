@@ -596,6 +596,11 @@ describe('Doc', function () {
       const expectedStr = printDoc(parseDoc(expected))
       assert.strictEqual(actual, expectedStr, `Test case ${testCaseNum}`)
     }
+    const testEnterNewLine = ({ input: { boundary, doc }, expected}, testCaseNum) => {
+      const actual = printDoc(doc.newLine(boundary))
+      const expectedStr = printDoc(parseDoc(expected))
+      assert.strictEqual(actual, expectedStr, `Test case ${testCaseNum}`)
+    }
 
     it('merges nested list item with previous (non-ul/non-ol) element', function () {
       // previous element as in what visually comes before the list item in the rendering. Or, the one that arrives
@@ -645,6 +650,28 @@ describe('Doc', function () {
 
       testAll(testDeleteBoundary, testCases)
 
+    })
+
+    it('keeps nested lists grouped together when new line entered', function () {
+      const test = parseDoc(`
+      ul<
+        li<h1<'A'>
+          ul<
+            li<h2<'B'>>
+            li<h2<'C'>>
+          >
+        >
+      >`)
+
+      const testCases = [
+        { input: { boundary: 0, doc: test }, expected: `ul<li<h1<''>>li<p<'A'>ul<li<h2<'B'>>li<h2<'C'>>>>>` },
+        { input: { boundary: 1, doc: test }, expected: `ul<li<h1<'A'>>li<p<''>ul<li<h2<'B'>>li<h2<'C'>>>>>` },
+        { input: { boundary: 2, doc: test.newLine(1) }, expected: `ul<li<h1<'A'>>li<p<''>>li<p<''>ul<li<h2<'B'>>li<h2<'C'>>>>>` },
+        // yeah just throwing stuff in here apparently >_>
+        { input: { boundary: 3, doc: test.newLine(1) }, expected: `ul<li<h1<'A'>>li<p<''>ul<li<h2<''>>li<p<'B'>>li<h2<'C'>>>>>` },
+      ]
+
+      testAll(testEnterNewLine, testCases)
     })
 
   })
