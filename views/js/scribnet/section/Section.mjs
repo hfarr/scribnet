@@ -163,10 +163,14 @@ class Section {
   mix(other) {
 
     if (this.mixesWith(other))
-      return [ this.merge(other) ]
+      return this.mixBehavior(other)
 
     return [ this, other ]
 
+  }
+
+  mixBehavior(other) {
+    return [ this.merge(other) ]
   }
 
   complexMix(other, collapse=(x)=>undefined ) {
