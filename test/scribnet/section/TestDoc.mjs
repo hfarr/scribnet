@@ -591,10 +591,10 @@ describe('Doc', function () {
       li < h1 < 'C' > >       # 17-18
     >`)
 
-    const testDeleteBoundary = ({ input: { boundaries: [ lb, rb ], doc }, expected}) => {
+    const testDeleteBoundary = ({ input: { boundaries: [ lb, rb ], doc }, expected}, testCaseNum) => {
       const actual = printDoc(doc.deleteBoundary(lb, rb))
       const expectedStr = printDoc(parseDoc(expected))
-      assert.strictEqual(actual, expectedStr)
+      assert.strictEqual(actual, expectedStr, `Test case ${testCaseNum}`)
     }
 
     it('merges nested list item with previous (non-ul/non-ol) element', function () {
@@ -607,7 +607,7 @@ describe('Doc', function () {
         { input: { boundaries: [ 6, 7 ], doc: component }, 
           expected: `h1 < 'A ListA' >ul <li < h1 < 'B' >ul <li < h2 < 'bA' > >li < h2 < 'bB' > >>>li < h1 < 'C' > >>`},
         { input: { boundaries: [ 8, 9 ], doc: component }, 
-          expected: `h1 < 'A List' >ul <li < h1 < 'AB' > >li < ul <li < h2 < 'bA' > >li < h2 < 'bB' > >>>li < h1 < 'C' > >>`},
+          expected: `h1 < 'A List' >ul <li < h1 < 'AB' > ul <li < h2 < 'bA' > >li < h2 < 'bB' >>>>li < h1 < 'C' > >>`},
         { input: { boundaries: [ 10, 11 ], doc: component }, 
           expected: `h1 < 'A List' >ul <li < h1 < 'A' > >li < h1 < 'BbA' >ul <li < h2 < 'bB' > >>>li < h1 < 'C' > >>`},
         { input: { boundaries: [ 13, 14 ], doc: component }, 

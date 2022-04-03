@@ -173,6 +173,7 @@ class Context extends Section {
 
       const mixedContexts = sections.filter(sec => sec instanceof MixedContext)
       const context = sections.at(mixedContexts.length) // by LAW this should be defined. TODO actually hah back that assertion up.
+      const merged = this.merge(context)
 
       const detached = mixedContexts.map(sec => sec.splice(0, 1))
       const sliceBound = findLastIndex(detached, x => x.subPieces.length > 0)
@@ -180,10 +181,20 @@ class Context extends Section {
         const reAttached = detached.slice(0, sliceBound + 1)
           .reduceRight((previous, current) => current.splice(0, 0, previous))
 
-        return [this.merge(context), reAttached]
+        // LIs should combine if the ctxs are LI and second LI has a UL as it's first child
+        const shouldCombineLIs = (ctx1, ctx2) => ctx1.block === 'li' && ctx2.block === 'li' && ctx2.sectionAt(0)?.block === 'ul';
+
+        // shouldNest, nest- more idions to put in Segment perhaps? that is, hooks for customizing merge behavior?
+        // TODO ^^  merges are "joins" or "nests" it would seem with some variance
+        // its the difference between [ li < h1 > ul ] and [ li < h1, ul > ]. basically a comma.
+        if (shouldCombineLIs(merged, reAttached)) {
+          return [ merged.addSubSections(...reAttached.subPieces) ]
+        }
+
+        return [ merged, reAttached ]
       }
 
-      return [this.merge(context)]
+      return [ merged ]
     }
     return super.mixBehavior(other)
   }
