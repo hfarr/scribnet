@@ -97,6 +97,12 @@ const [ LEFT, RIGHT ] = [ 0, 1 ]
 const convertIndexToRight = idx => [ idx - RIGHT, RIGHT ]
 const convertIndexToLeft = idx => [ idx - LEFT, LEFT ]
 
+const findLastIndex= (arr, pred) => {
+  let winner = -1;
+  arr.reduceRight((prev, cur, idx) => prev ? prev : pred(cur) ? (winner = idx, true) : false, false)
+  return winner
+}
+
 class Context extends Section {
 
   constructor() {
@@ -162,6 +168,33 @@ class Context extends Section {
     return super.insertBoundary(boundaryLocation, atoms)
   }
 
+  mixBehavior(other) {
+
+    if (other instanceof MixedContext) {
+
+      const sections = [ other, ...other._sectionPathToBoundary(0) ]
+      // by LAW a chain of MixedContexts terminates in a Context/Segment
+      // can probably. construe this behavior out in a better way... later.
+
+
+      // maybe a "detach" method in Section that can "rip out" a Section indicated by a path?
+
+      const mixedContexts = sections.filter(sec => sec instanceof MixedContext)
+      const context = sections.at(mixedContexts.length) // by LAW this should be defined. TODO actually hah back that assertion up.
+      
+      const detached = mixedContexts.map(sec => sec.splice(0,1))
+      const sliceBound = findLastIndex(detached, x => x.subPieces.length > 0)
+      if (sliceBound !== -1) {
+        const reAttached = detached.slice(0,sliceBound + 1)
+          .reduceRight( (previous, current) => current.splice(0,0,previous))
+
+        return [ this.merge(context), reAttached ]
+      }
+
+      return [ this.merge(context) ]
+    }
+    return super.mixBehavior(other)
+  }
 
   // ---------------------------
   //  Context Specific functions
@@ -317,6 +350,12 @@ class MixedContext extends Context {
     const newContexts = this.subPieces[sectionIndex].contextBreakAt(offset)
 
     return [ this.splice(sectionIndex, 1, ...newContexts) ]
+  }
+
+  mergeBehavior(other) {
+    // prerequisite: other is NOT a MixedContext. mixBehavior above should.. take care of that.
+
+    return this.splice(-1, 1, ...this.sectionAt(-1).mix(other))
   }
 }
 

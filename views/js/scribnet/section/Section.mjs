@@ -756,7 +756,7 @@ class Section {
     // supports single integer argument as well
     if (! (path instanceof Array) ) {
       const idx = path
-      return this.subPieces[idx]
+      return this.subPieces.at(idx)
     }
 
     if (path.length === 0) return this
