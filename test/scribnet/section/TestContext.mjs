@@ -264,46 +264,21 @@ describe('MixedContext', function () {
   })
 
   describe('deleteBoundary', function () {
-    const component = MixedContext.createContext('ul', 
-      Context.createContext('li', Context.createContext('h1', Segment.from(...'A'))),
-      Context.createContext('li', Context.createContext('h1', Segment.from(...'B')),
-        Context.createContext('ul',
-          Context.createContext('li', Context.createContext('h2', Segment.from(...'bA'))),
-          Context.createContext('li', Context.createContext('h2', Segment.from(...'bB')))
-      )),
-      Context.createContext('li', Context.createContext('h1', Segment.from(...'C'))),
-    )
-
     const parseDoc = string => (new DocParser(string)).parse()
     const parseContext = string => (new DocParser(string)).context()
     const printDoc = doc => (new DocPrinter(doc)).print()
 
-    const component2 = parseContext(`
+    const component = parseContext(`
     ul < 
-      li < h1< 'A' > > 
-      li < 
-        h1 < 'B' > 
+      li < h1 < 'A' > > 
+      li < h1 < 'B' > 
         ul < 
-          li < 
-            h2 < 'bA' > 
-          >
-          li < 
-            h2 < 'bB' > 
-          >
-        >
+          li < h2 < 'bA' > >
+          li < h2 < 'bB' > > 
+        > 
       > 
-      li <
-        h1 <'C'>
-      >
+      li < h1 <'C'> >
     >`)
-
-    assert(component.eq(component2))
-    assert(component.structureEq(component2))
-
-    const splits = [
-      component.contextSplit(5)[0]  // between 'b' and 'A'
-    ]
-
 
     it('merges nested contexts correctly', function () {
 
@@ -323,6 +298,8 @@ describe('MixedContext', function () {
           >
         `).subPieces[0] },
 /*
+Below example is from an earlier bug
+
         og      3,4
         |'A'||'B'||'bA'||'bB'||'C'|
                   |----||----|     
@@ -373,12 +350,6 @@ describe('MixedContext', function () {
         // assert(actual.structureEq(expected), `Test case ${testCaseNum}: Expected to be structurally equivalent.`)
       }
       testAll(testOne, testCases)
-
-      // const componentUnderTest = splits[0]
-      // const expected = component
-      // const actual = componentUnderTest.deleteBoundary(5, 6)
-
-      // assert(actual.structureEq(expected))
 
     })
   })
