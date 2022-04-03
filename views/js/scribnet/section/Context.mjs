@@ -171,6 +171,14 @@ class Context extends Section {
 
       // maybe a "detach" method in Section that can "rip out" a Section indicated by a path?
 
+      // TODO A lot of complex logic, like this, for doing tree manipulation- we should strive to
+      //    reason about as the interactions between two segments at a time. Right now I'm able
+      //    to more or less easily derive the "earliest ancestor" for a 'mix' operation which is
+      //    enough information for complicated tree operations yet I can't shake the sensation
+      //    that I could model it a little better in smaller pieces. Really leaning into that
+      //    OO, like spinning up new kinds of Contexts for example. Might be good to take that
+      //    approach. Have to see, design is still.. unfolding.
+
       const mixedContexts = sections.filter(sec => sec instanceof MixedContext)
       const context = sections.at(mixedContexts.length) // by LAW this should be defined. TODO actually hah back that assertion up.
       const merged = this.merge(context)
