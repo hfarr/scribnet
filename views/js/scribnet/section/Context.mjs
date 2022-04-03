@@ -88,14 +88,6 @@ const CONTEXT_BLOCKS = [] // blocks that hold contexts
 const filterInline = tag => !BLOCKS.includes(tag)
 const isBlock = tag => BLOCKS.includes(tag.toLowerCase())
 
-// Boundary constants. I did some long hand writing on these, may bring in to comments.
-const [LEFT, RIGHT] = [0, 1]
-
-// Given a boundary, identified by the index to it's immediate right, determine it's address
-// in terms of "index, orientation" ordered pair. That is, "toRight" is the pair where the
-// orientation is RIGHT, "toLeft" where the orientation is LEFT.
-const convertIndexToRight = idx => [idx - RIGHT, RIGHT]
-const convertIndexToLeft = idx => [idx - LEFT, LEFT]
 
 const findLastIndex = (arr, pred) => {
   let winner = -1;
@@ -270,15 +262,6 @@ class Context extends Section {
 
   get totalCursorPositions() {
     return this.boundariesLength - this.overCount()
-    // if (this._numCursorPos === undefined) {
-    //   if (this.subPieces.every(sec => sec instanceof AtomicSection)) {
-    //     this._numCursorPos = 1 + this.length
-    //   } else {
-    //     this._numCursorPos = this.subPieces.reduce((prev, sec) => prev + sec.totalCursorPositions, 0)
-    //   }
-    // }
-    // return this._numCursorPos
-
   }
 
   cursorToBoundary(cursorPosition, favorLeft = true) {
@@ -359,57 +342,6 @@ class MixedContext extends Context {
   }
 }
 
-// TODO Consider to add another Context subclass that is a "Context containing
-// only Segment children". There are a number of situations where we are testing
-// if all subPieces are Segment or not and that has a code smell to it.
-
-class NakedContext extends Context {
-
-  static QUALIFIED_LEAP = 3 // arbitrary number. TODO- the "path" produced by locateBoundaryFullyQUalified is simple,
-  // To simple for NakedContext. see, a naked context doesn't "count" so in effect it's children "expand" to fill it's
-  // space in the level that it occupies. But those children /are not counted/ in the subpieces of the parent of the
-  // naked context. so for now i'm introducing this kludgy "control" step which will need to be processed by whoever
-  // consumes the path. It introduces a noxious interdependency. I'd like to keep it straight forwarded, and I Don't
-  // presently have the energy to invest in a better data structure (say, produce an "instruction set" like byte code
-  // with agreed upon interfaces).
-  // this instruction will be to replace the slot in the path with the next index value (0 if none) plus the boundary
-  // index produced here. It's also an instruction to add in any other NakedContext subPiece lengths encountered
-  // earlier.
-  // or. I can make an executive decision. we'll process mixed siblings by wrapping Segments not in NakedContext but in
-  // default Context. a <p>. I can't presently justify complicated machinery to handle this niche case, not for the 
-  // promised reward. The upside (allowing mixed blocks/inline in the OUTPUT, just not in the behind-the-scenes) doesn't
-  // feel worth it to me.
-  // that might change in the future. For now... putting this dog to rest. I'll leave the class here as a monument to
-  // hubris or something.
-
-  updateBlock(blockTag) {
-    const result = Context.createContext(blockTag, ...this.subPieces)
-    result.indentationAmount = this.indentationAmount
-    return result
-  }
-  updateAttributes(options) {
-    const result = super.updateAttributes(options)
-    if (options.blockTag !== undefined || options.blockTag !== '') {
-      return result.updateBlock(options.blockTag)
-    }
-    return result
-  }
-  _locateBoundaryFullyQualified(boundaryIndex, sectionIndices = []) {
-    // nearly identical to _locateBoundaryFullyQualified in typical Section. The difference is we
-    // do not consider a NakedContext "part" of the path, so we leave off appending the "index".
-    // it's children are considered sort of "direct" children to 
-
-    if (this.subPieces.length === 0) return [sectionIndices, boundaryIndex]
-
-    const [sectionIndex, boundaryIndexInSection] = this._locateBoundary(boundaryIndex)
-
-    return this.subPieces[sectionIndex]._locateBoundaryFullyQualified(boundaryIndexInSection, sectionIndices)
-
-  }
-  set block(tag) { }
-  get block() { return '' }
-}
-
 class Gap extends Section {
   // maybe Gap should have a block tag. Then at least when we merge we can "preserve" the block tag from the context.
   empty() {
@@ -429,17 +361,6 @@ class Gap extends Section {
 
     return other
   }
-
-  // merge(otherSections) {
-  //   if (otherSections.length === 0) return [ this ]
-  // merge(other) {
-
-  //   if (other instanceof Gap) 
-  //     return [ this, Context.from(new Segment()), this ]  // TODO should segment retain styling? hmmm! that would be a bit of a pain
-
-  //   return [ this, other ]
-
-  // }
 
   get boundariesLength() {
     return 0
