@@ -635,8 +635,12 @@ describe('Doc', function () {
       const minimal = parseDoc(`ul < li<h1<'A'>> li<h1<'B'> ul< li<h2<'bA'>> li<h2<'bB'>> > > >`)
 
       const testCases = [
-        { input: { boundaries: [ 1, 4 ], doc: minimal }, 
-          expected: `ul < li<h1<'AbA'> ul< li<h2<'bB'>> > > >`},
+        { input: { boundaries: [ 1, 4 ], doc: minimal }, expected: `ul<li<h1<'AbA'>ul<li<h2<'bB'>>>>>`},
+        { input: { boundaries: [ 1, 5 ], doc: minimal }, expected: `ul<li<h1<'AA'>ul<li<h2<'bB'>>>>>`},
+        { input: { boundaries: [ 1, 6 ], doc: minimal }, expected: `ul<li<h1<'A'>ul<li<h2<'bB'>>>>>`},
+        { input: { boundaries: [ 0, 4 ], doc: minimal }, expected: `ul<li<h1<'bA'>ul<li<h2<'bB'>>>>>`},
+        // ul can go away completely as well. test 4 is maybe better in a different set.
+        { input: { boundaries: [ 1, 7 ], doc: minimal }, expected: `ul<li<h1<'AbB'>>>`},
       ]
 
       testAll(testDeleteBoundary, testCases)
