@@ -591,6 +591,12 @@ describe('Doc', function () {
       li < h1 < 'C' > >       # 17-18
     >`)
 
+    const testDeleteBoundary = ({ input: { boundaries: [ lb, rb ], doc }, expected}) => {
+      const actual = printDoc(doc.deleteBoundary(lb, rb))
+      const expectedStr = printDoc(parseDoc(expected))
+      assert.strictEqual(actual, expectedStr)
+    }
+
     it('merges nested list item with previous (non-ul/non-ol) element', function () {
       // previous element as in what visually comes before the list item in the rendering. Or, the one that arrives
       // immediately prior in an in-order traversal.
@@ -610,12 +616,31 @@ describe('Doc', function () {
           expected: `h1 < 'A List' >ul <li < h1 < 'A' > >li < h1 < 'B' >ul <li < h2 < 'bA' > >li < h2 < 'bBC' > >>>>`},
       ]
 
-      const testOne = ({ input: { boundaries: [ lb, rb ], doc }, expected}) => {
-        const actual = printDoc(doc.deleteBoundary(lb, rb))
-        const expectedStr = printDoc(parseDoc(expected))
-        assert.strictEqual(actual, expectedStr)
-      }
-      testAll(testOne, testCases)
+      testAll(testDeleteBoundary, testCases)
+    })
+
+    it('subsumes uls into earlier "list item" if would otherwise be first child of parent list item', function () {
+      // TODO gotten good at naming these yet?
+      // lets take a visual example. Consider the component above. we cut (8,11). Note that this takes out the 
+      // second 'li', holding the h1 < 'B' > segment.
+      // Currently it results in: li < ul < h2 < 'bB' > > > which is not incorrect.
+      // I'd like to either nest it in the prior list element (likely my preference)
+      // or fix the styling so that presequent markers don't show up. Having <li><ul><li></li></ul></li> causes
+      // two adjacent markers which I don't want.
+      // visually the list would then appear to nest under the prior List, if we opted to just stop rendering the ul/li,
+      // so I will likely nest. But I would still like to solve this for the case where, say, the user tabs over
+      // on a single list item. It causes not indentation but list nesting, arbitrarily, without needing a parent that is
+      // strictly one level lower of nesting.
+
+      const minimal = parseDoc(`ul < li<h1<'A'>> li<h1<'B'> ul< li<h2<'bA'>> li<h2<'bB'>> > > >`)
+
+      const testCases = [
+        { input: { boundaries: [ 1, 4 ], doc: minimal }, 
+          expected: `ul < li<h1<'AbA'> ul< li<h2<'bB'>> > > >`},
+      ]
+
+      testAll(testDeleteBoundary, testCases)
+
     })
 
   })
