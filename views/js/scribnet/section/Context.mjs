@@ -73,7 +73,7 @@ import Segment from "./Segment.mjs"
 // certain facts about that Context such as what kind of children it has, and I can contextually handle
 // different scenarios.
 const BLOCKS = ['p', 'div', 'h1', 'h2', 'h3', 'pre', 'ul', 'ol', 'li'] // any block at all
-const MIXED_BLOCKS = ['div','li'] // blocks that hold only Contexts in practice, but theoretically 'mix' blocks and Segments
+const MIXED_BLOCKS = ['div', 'li'] // blocks that hold only Contexts in practice, but theoretically 'mix' blocks and Segments
 const CONTEXT_BLOCKS = [] // blocks that hold contexts
 
 // I don't particularly /want/ 'div's, I don't expect to render them. They're here to be a default for MixedContext.
@@ -89,15 +89,15 @@ const filterInline = tag => !BLOCKS.includes(tag)
 const isBlock = tag => BLOCKS.includes(tag.toLowerCase())
 
 // Boundary constants. I did some long hand writing on these, may bring in to comments.
-const [ LEFT, RIGHT ] = [ 0, 1 ]
+const [LEFT, RIGHT] = [0, 1]
 
 // Given a boundary, identified by the index to it's immediate right, determine it's address
 // in terms of "index, orientation" ordered pair. That is, "toRight" is the pair where the
 // orientation is RIGHT, "toLeft" where the orientation is LEFT.
-const convertIndexToRight = idx => [ idx - RIGHT, RIGHT ]
-const convertIndexToLeft = idx => [ idx - LEFT, LEFT ]
+const convertIndexToRight = idx => [idx - RIGHT, RIGHT]
+const convertIndexToLeft = idx => [idx - LEFT, LEFT]
 
-const findLastIndex= (arr, pred) => {
+const findLastIndex = (arr, pred) => {
   let winner = -1;
   arr.reduceRight((prev, cur, idx) => prev ? prev : pred(cur) ? (winner = idx, true) : false, false)
   return winner
@@ -116,7 +116,7 @@ class Context extends Section {
 
   static from(...sections) {
     if (sections.some(sec => sec instanceof Context)) return MixedContext.from(...sections)
-      // sections = sections.map(sec => sec instanceof Context ? sec : Context.from(sec))
+    // sections = sections.map(sec => sec instanceof Context ? sec : Context.from(sec))
 
     return super.from(...sections)
   }
@@ -172,7 +172,7 @@ class Context extends Section {
 
     if (other instanceof MixedContext) {
 
-      const sections = [ other, ...other._sectionPathToBoundary(0) ]
+      const sections = [other, ...other._sectionPathToBoundary(0)]
       // by LAW a chain of MixedContexts terminates in a Context/Segment
       // can probably. construe this behavior out in a better way... later.
 
@@ -181,17 +181,17 @@ class Context extends Section {
 
       const mixedContexts = sections.filter(sec => sec instanceof MixedContext)
       const context = sections.at(mixedContexts.length) // by LAW this should be defined. TODO actually hah back that assertion up.
-      
-      const detached = mixedContexts.map(sec => sec.splice(0,1))
+
+      const detached = mixedContexts.map(sec => sec.splice(0, 1))
       const sliceBound = findLastIndex(detached, x => x.subPieces.length > 0)
       if (sliceBound !== -1) {
-        const reAttached = detached.slice(0,sliceBound + 1)
-          .reduceRight( (previous, current) => current.splice(0,0,previous))
+        const reAttached = detached.slice(0, sliceBound + 1)
+          .reduceRight((previous, current) => current.splice(0, 0, previous))
 
-        return [ this.merge(context), reAttached ]
+        return [this.merge(context), reAttached]
       }
 
-      return [ this.merge(context) ]
+      return [this.merge(context)]
     }
     return super.mixBehavior(other)
   }
@@ -212,9 +212,9 @@ class Context extends Section {
 
   contextBreakAt(location) {
 
-    const [ left, right ] = this.split(location)
+    const [left, right] = this.split(location)
 
-    return [ left, right.updateBlock('p') ]
+    return [left, right.updateBlock('p')]
   }
 
   updateBlock(blockTag) {
@@ -223,14 +223,14 @@ class Context extends Section {
     return result
   }
 
-  indent(amount=1) {
+  indent(amount = 1) {
 
     const result = this.copy()
     result.indentation += amount
     return result
 
   }
-  
+
   updateAttributes(options) {
     const { blockTag = this.block, indentDelta = 0 } = options
     const result = this.copy()
@@ -278,10 +278,10 @@ class Context extends Section {
     //   }
     // }
     // return this._numCursorPos
-    
+
   }
 
-  cursorToBoundary(cursorPosition, favorLeft=true) {
+  cursorToBoundary(cursorPosition, favorLeft = true) {
 
     let offset = cursorPosition
     let boundary = 0
@@ -292,7 +292,7 @@ class Context extends Section {
 
     for (const sec of this.subPieces) {
       // const cursorPosModifier = sec instanceof Segment ? modifier : 0
-      if ( offset < sec.totalCursorPositions - cursorPosMod )
+      if (offset < sec.totalCursorPositions - cursorPosMod)
         return boundary + sec.cursorToBoundary(offset)
 
       boundary += sec.boundariesLength
@@ -319,11 +319,11 @@ class MixedContext extends Context {
 
   contextSplit(boundary) {
 
-    const [ index, offset ] = this._locateBoundary(boundary)
+    const [index, offset] = this._locateBoundary(boundary)
     const nextContext = this.subPieces[index]
 
     if (nextContext instanceof MixedContext)
-      return [ this.splice(index, 1, ...nextContext.contextSplit(offset)) ]
+      return [this.splice(index, 1, ...nextContext.contextSplit(offset))]
 
     // instance is a Context that is not mixed
 
@@ -334,22 +334,22 @@ class MixedContext extends Context {
     // LI         LI
     // H1 P P lP  rP P P
 
-    const [ ctxLeft, ctxRight ] = nextContext.contextSplit(offset)
+    const [ctxLeft, ctxRight] = nextContext.contextSplit(offset)
     const left = this.slice(0, index).addSubSections(ctxLeft)
-    const right = this.slice(index + 1).splice(0,0,ctxRight)
+    const right = this.slice(index + 1).splice(0, 0, ctxRight)
     // const left = this.slice(0, index).addSubSections(ctxLeft)
     // const right = this.slice(index + 1).addSubSections(ctxRight)
 
-    return [ left, right ]
+    return [left, right]
 
   }
 
   contextBreakAt(location) {
-    const [ sectionIndex, offset ] = this._locateBoundary(location)
+    const [sectionIndex, offset] = this._locateBoundary(location)
 
     const newContexts = this.subPieces[sectionIndex].contextBreakAt(offset)
 
-    return [ this.splice(sectionIndex, 1, ...newContexts) ]
+    return [this.splice(sectionIndex, 1, ...newContexts)]
   }
 
   mergeBehavior(other) {
@@ -394,19 +394,19 @@ class NakedContext extends Context {
     }
     return result
   }
-  _locateBoundaryFullyQualified(boundaryIndex, sectionIndices=[]) {
+  _locateBoundaryFullyQualified(boundaryIndex, sectionIndices = []) {
     // nearly identical to _locateBoundaryFullyQualified in typical Section. The difference is we
     // do not consider a NakedContext "part" of the path, so we leave off appending the "index".
     // it's children are considered sort of "direct" children to 
 
-    if (this.subPieces.length === 0) return [ sectionIndices, boundaryIndex ]
+    if (this.subPieces.length === 0) return [sectionIndices, boundaryIndex]
 
-    const [ sectionIndex, boundaryIndexInSection ] = this._locateBoundary(boundaryIndex)
+    const [sectionIndex, boundaryIndexInSection] = this._locateBoundary(boundaryIndex)
 
     return this.subPieces[sectionIndex]._locateBoundaryFullyQualified(boundaryIndexInSection, sectionIndices)
 
   }
-  set block(tag) {}
+  set block(tag) { }
   get block() { return '' }
 }
 
@@ -420,7 +420,7 @@ class Gap extends Section {
   }
 
   split() {
-    return [ this, this ]
+    return [this, this]
   }
 
   join(other) {

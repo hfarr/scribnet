@@ -12,8 +12,8 @@ function register(constructor, func) {
   constructor.prototype[func.name] = func
 }
 
-function registerStaticCurry(func) { return function(constructor) { registerStatic(constructor, func ) } }
-function registerCurry(func) { return function(constructor) { register(constructor, func ) } }
+function registerStaticCurry(func) { return function (constructor) { registerStatic(constructor, func) } }
+function registerCurry(func) { return function (constructor) { register(constructor, func) } }
 
 // Parse tools
 const childType = {
@@ -24,7 +24,7 @@ const childType = {
 function parse(serialObj) {
   const result = Object.create(this.prototype, Object.getOwnPropertyDescriptors(serialObj))
   if (childType[this.name] !== null)
-    result.subPieces = [ ...result.subPieces.map(childType[this.name].parse) ]
+    result.subPieces = [...result.subPieces.map(childType[this.name].parse)]
   return result
 }
 // function registerParse(constructor) { constructor.parse = parse.bind(constructor) }
@@ -36,7 +36,7 @@ const registerParse = registerStaticCurry(parse)
 function countSegChildren() {
   // if (this instanceof Segment) return 0
   if (this.subPieces.length === 0) return 0
-  return this.predicateSlice( sec => sec instanceof Segment, 0).length
+  return this.predicateSlice(sec => sec instanceof Segment, 0).length
 }
 function overCount() {
   if (this instanceof Segment) return 0
@@ -76,7 +76,7 @@ function cursorToBoundaryFavorRight(cursorPosition) {
   if (boundaryLeft === 0) boundaryLeft = boundary + position
 
   if (this.subPieces.every(sec => sec instanceof Segment)) {
-    const boundariesKernel = (b1, b2) => this.atomSlice(b1,b2).length === 0
+    const boundariesKernel = (b1, b2) => this.atomSlice(b1, b2).length === 0
     while (boundaryLeft + 1 < this.boundariesLength && boundariesKernel(boundaryLeft, boundaryLeft + 1))
       boundaryLeft += 1
   }
@@ -84,7 +84,7 @@ function cursorToBoundaryFavorRight(cursorPosition) {
 }
 
 export default function mixInFunctionality() {
-  const contextClasses = [ Doc, Context, Segment ]
+  const contextClasses = [Doc, Context, Segment]
 
   contextClasses.forEach(registerParse)
 

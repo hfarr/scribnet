@@ -42,8 +42,8 @@ class Section {
   }
 
   split(boundaryIndex) {
-    if (this.subPieces.length === 0) return [ this, this ]
-    const [ splitSecIndex, offset ] = this._locateBoundary(boundaryIndex)
+    if (this.subPieces.length === 0) return [this, this]
+    const [splitSecIndex, offset] = this._locateBoundary(boundaryIndex)
     const splitSections = this.subPieces[splitSecIndex].split(offset, this.constructor)
     // return this.splice(splitSecIndex, 1, ...splitSections.subPieces)
     // TODO work out whether we want to go with 'wrapping'. Splicing is great, but it also has a flattening effect.
@@ -67,13 +67,13 @@ class Section {
    * @returns new Section, with interior subpieces split
    */
   splitInterior(index) {
-    const [ left, right ] = this.split(index)
+    const [left, right] = this.split(index)
     return left.join(right)
   }
 
   join(other) {
     if (other === undefined) return this
-    return this.copyFrom( ...this.subPieces, ...other.subPieces )
+    return this.copyFrom(...this.subPieces, ...other.subPieces)
   }
 
   /**
@@ -118,7 +118,7 @@ class Section {
 
     const thisRightmost = this.subPieces.at(-1)
     const mixed = thisRightmost.mix(other)
-    return this.copyFrom( ...this.subPieces.slice(0, -1), ...mixed)
+    return this.copyFrom(...this.subPieces.slice(0, -1), ...mixed)
   }
 
   /**
@@ -134,10 +134,10 @@ class Section {
 
     const middleLeft = this.subPieces.at(-1)
     const middleRight = other.subPieces.at(0)
-    
+
     const mixed = middleLeft.mix(middleRight)
 
-    return this.copyFrom( ...this.subPieces.slice(0, -1), ...mixed, ...other.subPieces.slice(1) )
+    return this.copyFrom(...this.subPieces.slice(0, -1), ...mixed, ...other.subPieces.slice(1))
   }
 
   // Hook to set mixing behavior
@@ -165,15 +165,15 @@ class Section {
     if (this.mixesWith(other))
       return this.mixBehavior(other)
 
-    return [ this, other ]
+    return [this, other]
 
   }
 
   mixBehavior(other) {
-    return [ this.merge(other) ]
+    return [this.merge(other)]
   }
 
-  complexMix(other, collapse=(x)=>undefined ) {
+  complexMix(other, collapse = (x) => undefined) {
 
 
     const shouldMerge = other === undefined || this.mixesWith(other)
@@ -184,21 +184,21 @@ class Section {
       // auncle because if this is not undefined, then it refers to the sibling "this" ancestor
       const auncle = collapse()
 
-      if (auncle !== undefined) return [ this.merge(other), auncle ]
-      return [ this.merge(other) ]
+      if (auncle !== undefined) return [this.merge(other), auncle]
+      return [this.merge(other)]
     } else if (other instanceof AtomicSection) {
-      return [ this, other ]
+      return [this, other]
     }
 
     const otherLeftMost = other.sectionAt(0)
     let plugback = (nextLeft) => {
-      if (nextLeft === undefined) 
-        return collapse(other.splice(0,1))
-      return collapse(other.splice(0,1,nextLeft))
-    } 
+      if (nextLeft === undefined)
+        return collapse(other.splice(0, 1))
+      return collapse(other.splice(0, 1, nextLeft))
+    }
 
-    return [ this.mix(otherLeftMost, plugback) ]
-    
+    return [this.mix(otherLeftMost, plugback)]
+
 
     // return [ this.mix(other.sectionAt(0)), other, ...extra ]
 
@@ -228,7 +228,7 @@ class Section {
 
   get atoms() {
     if (this._atoms === undefined) {
-      this._atoms = this.subPieces.map(section => section.atoms ).flat()
+      this._atoms = this.subPieces.map(section => section.atoms).flat()
     }
     return this._atoms
   }
@@ -253,7 +253,7 @@ class Section {
   }
 
   cutEmpty() {
-    return this.copyFrom(...this.subPieces.filter(sec => !sec.empty()).map( sec => sec.cutEmpty() ))
+    return this.copyFrom(...this.subPieces.filter(sec => !sec.empty()).map(sec => sec.cutEmpty()))
   }
 
   //===================================================
@@ -287,7 +287,7 @@ class Section {
       atomIndex -= this.subPieces[sectionIndex].length;
       sectionIndex++;
     }
-    return [ sectionIndex, atomIndex ]
+    return [sectionIndex, atomIndex]
   }
 
   /**
@@ -302,19 +302,19 @@ class Section {
    */
   _locateAtom(atomIndex) {
 
-    if ( atomIndex < 0 ) {
+    if (atomIndex < 0) {
       // atomIndex = this.length === 0 ? 0 : (Math.floor(-atomIndex / this.length) + 1) * this.length + atomIndex
       atomIndex = this.length === 0 ? 0 : (atomIndex % this.length) + this.length
       atomIndex = atomIndex === this.length ? 0 : atomIndex
     }
-      
+
 
     let sectionIndex = 0
     while (sectionIndex < this.subPieces.length && atomIndex >= this.subPieces[sectionIndex].length) {  // Jumps over empty subPieces
       atomIndex -= this.subPieces[sectionIndex].length; // length of a section expresses # atoms so this is still valid
       sectionIndex++;
     }
-    return [ sectionIndex, atomIndex ]
+    return [sectionIndex, atomIndex]
   }
 
 
@@ -327,8 +327,8 @@ class Section {
     // returns coordinate as a section and the atom in that section from which heading right of the atom hits the boundary given by the index
     // boundary index must be index of a boundary with a "flat view". That is boundaries are indexed between 0 and this.characters.length inclusive, ignoring "empty Section" that would otherwise count for 1 boundary
     const atomIndex = boundaryIndex - 1
-    const [ secIdx, offset ] = this._locateAtom(boundaryIndex - 1)
-    return [ secIdx, offset + 1 ]
+    const [secIdx, offset] = this._locateAtom(boundaryIndex - 1)
+    return [secIdx, offset + 1]
     // return this._locateAtom(atomIndex - 1)
   }
   // E.g, _locateBoundaryRight(3) of the following:
@@ -378,13 +378,13 @@ class Section {
       boundaryIndex -= this.subPieces[sectionIndex].boundariesLength
       sectionIndex++
     }
-    return [ sectionIndex, boundaryIndex ]
+    return [sectionIndex, boundaryIndex]
   }
 
   _locateBoundaryFullyQualified(boundaryIndex) {
 
-    const [ sections, indices, offset ] = this._pathToLocation(boundaryIndex)
-    return [ indices, offset ]
+    const [sections, indices, offset] = this._pathToLocation(boundaryIndex)
+    return [indices, offset]
     // if (this.subPieces.length === 0) return [ sectionIndices, boundaryIndex ]
 
     // const [ sectionIndex, boundaryIndexInSection ] = this._locateBoundary(boundaryIndex)
@@ -394,17 +394,17 @@ class Section {
   }
 
   _sectionPathToBoundary(boundaryIndex) {
-    const [ sections, indices, offset ] = this._pathToLocation(boundaryIndex)
+    const [sections, indices, offset] = this._pathToLocation(boundaryIndex)
     return sections
   }
 
-  _pathToLocation(boundaryIndex, sections=[], indices=[]) {
-    if (this.subPieces.length === 0) return [ sections, indices, boundaryIndex ]
+  _pathToLocation(boundaryIndex, sections = [], indices = []) {
+    if (this.subPieces.length === 0) return [sections, indices, boundaryIndex]
 
-    const [ sectionIndex, boundaryIndexInSection ] = this._locateBoundary(boundaryIndex)
+    const [sectionIndex, boundaryIndexInSection] = this._locateBoundary(boundaryIndex)
     const section = this.subPieces[sectionIndex]
 
-    return section._pathToLocation(boundaryIndexInSection, [ ...sections, section ], [ ...indices, sectionIndex ])
+    return section._pathToLocation(boundaryIndexInSection, [...sections, section], [...indices, sectionIndex])
 
   }
 
@@ -415,7 +415,7 @@ class Section {
    * @param atomIndex Index of atom whose container we'd like to find
    */
   _locateSection(atomIndex) {
-    const [ sectionIndex ] = this._locateAtom(atomIndex)
+    const [sectionIndex] = this._locateAtom(atomIndex)
     return sectionIndex
   }
   //===================================================
@@ -424,8 +424,8 @@ class Section {
   delete(start, end = undefined) {
     if (end === undefined) end = this.length
 
-    const [ leftSectionIndex, leftOffset ] = this._locateAtomBoundaryLeft(start)
-    const [ rightSectionIndex, rightOffset ] = this._locateAtomBoundaryRight(end)
+    const [leftSectionIndex, leftOffset] = this._locateAtomBoundaryLeft(start)
+    const [rightSectionIndex, rightOffset] = this._locateAtomBoundaryRight(end)
     const patchedSections = []
     if (leftSectionIndex === rightSectionIndex) {
       patchedSections.push(this.subPieces[leftSectionIndex].delete(leftOffset, rightOffset))
@@ -433,7 +433,7 @@ class Section {
       patchedSections.push(this.subPieces[leftSectionIndex].delete(leftOffset), this.subPieces[rightSectionIndex].delete(0, rightOffset))
     }
 
-    return this.splice(leftSectionIndex, 1 + (rightSectionIndex - leftSectionIndex), ...patchedSections ).cutEmpty()
+    return this.splice(leftSectionIndex, 1 + (rightSectionIndex - leftSectionIndex), ...patchedSections).cutEmpty()
 
   }
 
@@ -448,8 +448,8 @@ class Section {
     if (this.boundariesLength === 1) return this
     if (endBoundary === undefined) endBoundary = this.boundariesLength - 1
 
-    const [ leftSectionIndex, leftOffset ] = this._locateBoundary(startBoundary)
-    const [ rightSectionIndex, rightOffset ] = this._locateBoundary(endBoundary)
+    const [leftSectionIndex, leftOffset] = this._locateBoundary(startBoundary)
+    const [rightSectionIndex, rightOffset] = this._locateBoundary(endBoundary)
 
     const isEarliestCommonAncestor = leftSectionIndex !== rightSectionIndex
 
@@ -460,7 +460,7 @@ class Section {
       const newRightSection = this.subPieces[rightSectionIndex].deleteBoundary(0, rightOffset)
       const patchedSections = newLeftSection.mix(newRightSection)
 
-      return this.splice(leftSectionIndex, 1 + (rightSectionIndex - leftSectionIndex), ...patchedSections ).cutEmpty()
+      return this.splice(leftSectionIndex, 1 + (rightSectionIndex - leftSectionIndex), ...patchedSections).cutEmpty()
 
     } else {
       // This section is a common ancestor, but not the earliest common anscestor
@@ -471,7 +471,7 @@ class Section {
       // within a single child then we expect to receive a single child back, any merging is internal to it, a
       // black box to us, the parent.
 
-      return this.splice( leftSectionIndex, 1, newSection ).cutEmpty()
+      return this.splice(leftSectionIndex, 1, newSection).cutEmpty()
 
     }
 
@@ -485,8 +485,8 @@ class Section {
     //    also we should have more handling of results as lists. It does burden clients a bit which is the issue, as they generally expect
     //    singleton results (and would have to unwrap the list each time). Maybe we do it internally to section and expose the original
     //    behavior for the interface.
-    const [ sectionIndex, sectionOffset ] = this._locateAtom(location)
-    if ( sectionIndex === this.subPieces.length ) {
+    const [sectionIndex, sectionOffset] = this._locateAtom(location)
+    if (sectionIndex === this.subPieces.length) {
       // location references an atom beyond the "right edge". Literal edge case. 
       // We shift the location to reference the first "nonexistant" atom (at the imaginary index represented by the total "length")
       // and insert at the "length" of that section, which will propogate down correctly. Insert, as a function that references character
@@ -505,7 +505,7 @@ class Section {
 
   insertBoundary(boundaryLocation, atoms) {
 
-    const [ sectionIndex, boundaryOffset ] = this._locateBoundary(boundaryLocation)
+    const [sectionIndex, boundaryOffset] = this._locateBoundary(boundaryLocation)
     const newSection = this.subPieces[sectionIndex].insertBoundary(boundaryOffset, atoms)
     return this.splice(sectionIndex, 1, newSection)
 
@@ -519,14 +519,14 @@ class Section {
    * @param end End index
    */
   operate(func, start, end) {
-    const [ left, mid, right ] = this.triSplit(start, end)
+    const [left, mid, right] = this.triSplit(start, end)
     return this.copyFrom(...left.subPieces, ...mid.map(func).subPieces, ...right.subPieces).cutEmpty()
   }
 
 
   triSplit(start, end) {
-    const [ startSection, rest ] = [ ...this.split(start) ]
-    const [ midSection, endSection ] = [ ...rest.split(end - start) ]
+    const [startSection, rest] = [...this.split(start)]
+    const [midSection, endSection] = [...rest.split(end - start)]
 
     return [startSection, midSection, endSection]
   }
@@ -540,19 +540,19 @@ class Section {
     // if (this.answers(func))
     //   return Section.from(...this.triSplit(func, start, end)).cutEmpty()
     // the below also assumes that the subPieces are homogeneous- that is, it assumes if one answers 'func', they all will
-    if (this.subPieces.some(sec => sec instanceof AtomicSection || sec.answers(func))) 
+    if (this.subPieces.some(sec => sec instanceof AtomicSection || sec.answers(func)))
       return this.operate(func, start, end)
-    
+
     const left = this._locateSection(start)
     const right = this._locateSection(end)
 
     const resultSections = []
-    
+
     // TODO... better way to handle telescoping ranges. or, slinky ranges. I like slinky ranges, fun term.
     for (let i = 0, cumulativeLength = 0; i < this.subPieces.length; cumulativeLength += this.subPieces[i].length, i++) {
 
       const section = this.subPieces[i]
-      const [ lb, rb ] = [ i === left ? start - cumulativeLength : 0, i === right ? end - cumulativeLength : section.length ]
+      const [lb, rb] = [i === left ? start - cumulativeLength : 0, i === right ? end - cumulativeLength : section.length]
 
       /* TODO we can, potentially, group these into one step. that is, allow mapRange to handle 
         all of these, for example calling map range with a range that is out of bounds would 
@@ -563,12 +563,12 @@ class Section {
         resultSections.push(section)
       else if (i > left && i < right)
         resultSections.push(section.map(func));
-      else 
+      else
         resultSections.push(section.mapRange(func, lb, rb))
     }
-    
+
     return this.copyFrom(...resultSections).cutEmpty()
-    
+
   }
 
   operateBoundary(func, startBoundary, endBoundary) {
@@ -578,9 +578,9 @@ class Section {
   mapRangeBoundary(func, startBoundary, endBoundary) {
     if (this.subPieces.some(sec => sec.answers(func)))
       return this.operateBoundary(func, startBoundary, endBoundary)
-    
-    const [ leftSectionIndex, leftBoundaryOffset ] = this._locateBoundary(startBoundary)
-    const [ rightSectionIndex, rightBoundaryOffset ] = this._locateBoundary(endBoundary)
+
+    const [leftSectionIndex, leftBoundaryOffset] = this._locateBoundary(startBoundary)
+    const [rightSectionIndex, rightBoundaryOffset] = this._locateBoundary(endBoundary)
     const resultSections = []
 
     for (let i = 0; i < this.subPieces.length; i++) {
@@ -592,13 +592,13 @@ class Section {
         resultSections.push(section)
       } else if (i > leftSectionIndex && i < rightSectionIndex) {
         resultSections.push(section.map(func));
-      } else  {
+      } else {
         const lb = i === leftSectionIndex ? leftBoundaryOffset : 0
         const rb = i === rightSectionIndex ? rightBoundaryOffset : section.boundariesLength - 1
         resultSections.push(section.mapRangeBoundary(func, lb, rb))
       }
     }
-    
+
     return this.copyFrom(...resultSections).cutEmpty()
   }
 
@@ -608,7 +608,7 @@ class Section {
     // reveals whether a given section answers the call, or propogates it. Actually, in terms of 
     // patterns, that reminds me of the event handling pattern. Might use a table, reminds me of Clox
     // and the unary/binary operator table.
-    
+
     // Note: For a generic "Section" this is always false. Passing the result as the answer to "targetedBy"
     //  let's the code state something about the truth value. We have that for a section,
     //  "targetedBy" implies "answers". This way a child can override only targetedBy without breaking the
@@ -645,10 +645,10 @@ class Section {
       if (this.targetedBy(func)) {
         return func(this.copy())
       } else {
-        return this.copyFrom(...this.subPieces.map( func ))
+        return this.copyFrom(...this.subPieces.map(func))
       }
     }
-    return this.copyFrom(...this.subPieces.map( sec => sec.map(func)))
+    return this.copyFrom(...this.subPieces.map(sec => sec.map(func)))
   }
 
 
@@ -659,12 +659,12 @@ class Section {
   predicateSlice(pred, startBoundary, endBoundary = undefined) {
     if (endBoundary === undefined || endBoundary >= this.boundariesLength) endBoundary = this.boundariesLength - 1  // notsure this works for "most" actually, then again. No, it should be right.
 
-    const [ l, mid, r ] = this.triSplit(startBoundary, endBoundary)
+    const [l, mid, r] = this.triSplit(startBoundary, endBoundary)
     if (pred(this)) {
       return mid
     }
 
-    return [ ...mid.subPieces.map(section => section.predicateSlice(pred, 0)) ].flat()
+    return [...mid.subPieces.map(section => section.predicateSlice(pred, 0))].flat()
 
   }
 
@@ -697,12 +697,12 @@ class Section {
 
   kindSlice(kind, startBoundary, endBoundary) {
 
-    return this.predicateSlice( section => section.constructor.name === kind, startBoundary, endBoundary)
+    return this.predicateSlice(section => section.constructor.name === kind, startBoundary, endBoundary)
 
   }
 
   // =====================
-  
+
 
   boundaryToAtomBoundary(boundaryLocation) {
     // Kinda like "boundary to cursor". Multiple boundaries can "collapse" to the same "index" over the atoms, e.g two adjacent boundaries always do.
@@ -710,7 +710,7 @@ class Section {
     if (this.subPieces.length === 0) return 0
 
     if (boundaryLocation >= this.boundariesLength) boundaryLocation = this.boundariesLength - 1
-    const [ sectionIndex, offset ] = this._locateBoundary(boundaryLocation)
+    const [sectionIndex, offset] = this._locateBoundary(boundaryLocation)
     const atomOffset = this.subPieces.slice(0, sectionIndex).reduce((p, c) => p + c.length, 0)
 
     return atomOffset + this.subPieces[sectionIndex].boundaryToAtomBoundary(offset)
@@ -754,14 +754,14 @@ class Section {
   sectionAt(path) {
 
     // supports single integer argument as well
-    if (! (path instanceof Array) ) {
+    if (!(path instanceof Array)) {
       const idx = path
       return this.subPieces.at(idx)
     }
 
     if (path.length === 0) return this
 
-    const [ secIndex, ...rest ] = path
+    const [secIndex, ...rest] = path
 
     return this.subPieces[secIndex]?.sectionAt(rest)
 
@@ -796,7 +796,7 @@ class Section {
 
   _showBoundaries() {
     if (this.empty()) return ''
-    return this.subPieces.map( sp => sp._showBoundaries() ).join('|')
+    return this.subPieces.map(sp => sp._showBoundaries()).join('|')
   }
 
 }
@@ -872,8 +872,8 @@ class AtomicSection extends Section {
 
   split(index) {
     return [
-      this.copyFrom(...this.subPieces.slice(0, index)), 
-      this.copyFrom(...this.subPieces.slice(index)) 
+      this.copyFrom(...this.subPieces.slice(0, index)),
+      this.copyFrom(...this.subPieces.slice(index))
     ]
   }
 
@@ -887,8 +887,8 @@ class AtomicSection extends Section {
 
     if (other === undefined) return this
     if (other instanceof AtomicSection) return this.mergeAtomic(other)
-      // return this.join(other)
-    
+    // return this.join(other)
+
     // Like the merge in Section, merging AtomicSection to a (non-Atomic) Section begs trouble. This copies what Section does but the other way around.
     return this.mergeBehavior(other)
   }
@@ -925,7 +925,7 @@ class AtomicSection extends Section {
   // ============
   predicateSlice(pred, startBoundary, endBoundary) {
 
-    if (pred(this)) return [ this.slice(startBoundary, endBoundary) ]
+    if (pred(this)) return [this.slice(startBoundary, endBoundary)]
 
     return []
   }
@@ -949,8 +949,8 @@ class AtomicSection extends Section {
     return boundaryLocation
   }
 
-  _pathToLocation(boundaryIndex, sections=[], indices=[]) {
-    return [ sections, indices, boundaryIndex ]
+  _pathToLocation(boundaryIndex, sections = [], indices = []) {
+    return [sections, indices, boundaryIndex]
   }
 
   structureEq(other) {

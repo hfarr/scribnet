@@ -8,7 +8,7 @@ import { Gap, isBlock } from "./Context.mjs"
 class Doc extends Section {
 
   static createSection(tag, ...subPieces) {
-    
+
   }
 
   static parseSerialDoc(serializedDoc) {
@@ -26,9 +26,9 @@ class Doc extends Section {
     return isBlock(tag)
   }
 
-  write(string, location=undefined) {
+  write(string, location = undefined) {
     // TODO implement
-    if ( this.empty() )
+    if (this.empty())
       return this.addSubSections(Context.from(new Segment())).insert(0, string)
 
     location = location ?? this.length
@@ -42,8 +42,8 @@ class Doc extends Section {
     // a list of Context. a wrapping Section that understands, well, the Context.
 
     // Boundary work to determine if boundaries are crossed
-    const [ leftSectionIndex, _ ] = this._locateAtomBoundaryLeft(start)
-    const [ rightSectionIndex, __ ] = this._locateAtomBoundaryRight(end)
+    const [leftSectionIndex, _] = this._locateAtomBoundaryLeft(start)
+    const [rightSectionIndex, __] = this._locateAtomBoundaryRight(end)
 
     const result = this.insertSubSections(rightSectionIndex + 1, new Gap()).insertSubSections(leftSectionIndex, new Gap())
     const boundDelete = super.delete.bind(result)
@@ -57,7 +57,7 @@ class Doc extends Section {
   }
 
   updateBlocks(blockTag, startBoundary, endBoundary) {
-    
+
     return this.updateBlockAttributes({ blockTag }, startBoundary, endBoundary)
   }
 
@@ -74,22 +74,22 @@ class Doc extends Section {
    * @returns 
    */
   updateBlockAttributes(options, startBoundary, endBoundary) {
-    const [ leftSectionIndex, leftOffset ] = this._locateBoundary(startBoundary)
-    const [ rightSectionIndex, rightOffset ] = this._locateBoundary(endBoundary)
+    const [leftSectionIndex, leftOffset] = this._locateBoundary(startBoundary)
+    const [rightSectionIndex, rightOffset] = this._locateBoundary(endBoundary)
 
     const patchedContexts = this.contexts.filter((_, index) => index >= leftSectionIndex && index <= rightSectionIndex)
-      .map( ctx => ctx.updateAttributes(options))
+      .map(ctx => ctx.updateAttributes(options))
 
     return this.splice(leftSectionIndex, (rightSectionIndex - leftSectionIndex) + 1, ...patchedContexts)
 
   }
 
-  writeBoundary(string, cursorLocation=undefined) {
+  writeBoundary(string, cursorLocation = undefined) {
     if (cursorLocation === undefined) cursorLocation = this.boundariesLength
 
-    if ( this.empty() )
+    if (this.empty())
       return this.addSubSections(Context.from(new Segment())).insert(0, string)
-    
+
     return super.insertBoundary(cursorLocation, string)
 
   }
@@ -106,18 +106,18 @@ class Doc extends Section {
     // TODO this exemplifies the "update(location)" pattern. we can capture it,
     // embellishing to include what func to use, how to know when to stop, etc.
 
-    const [ index, offset ] = this._locateBoundary(boundary)
+    const [index, offset] = this._locateBoundary(boundary)
     const newSections = this.subPieces[index].contextSplit(offset)
 
     return this.splice(index, 1, ...newSections)
   }
 
   contextBreakAt(location) {
-    const [ secIndex, boundaryOffset ] = this._locateBoundary(location)
-    
+    const [secIndex, boundaryOffset] = this._locateBoundary(location)
+
     const newContexts = this.contexts[secIndex].contextBreakAt(boundaryOffset)
     return this.splice(secIndex, 1, ...newContexts)
-    
+
     // return this.splitInterior(location)
   }
 
@@ -127,16 +127,16 @@ class Doc extends Section {
 
     // these gaps are more like "bookends". We insert them, then kinda "press" them towards each other, squeezing out "merger". An apple press or something. A contraction.
     let left, right
-    left = this.subPieces.findIndex( x => x instanceof Gap )
-    right = this.subPieces.findIndex( (x, i) => x instanceof Gap && i > left )
+    left = this.subPieces.findIndex(x => x instanceof Gap)
+    right = this.subPieces.findIndex((x, i) => x instanceof Gap && i > left)
 
     let merger = this.subPieces[left]
-    for ( let i = left + 1; i < right + 1; i++ ) {
+    for (let i = left + 1; i < right + 1; i++) {
       merger = merger.join(this.subPieces[i])
     }
 
     return this.splice(left, right - left + 1, merger)
-    
+
     // TODO would like to generalize this pattern (joining adjacent Section) into Sections
     //    call it "Squeeze". Love our non-commutative binary operator friends (join could be considered a non commutative binary operation).
     //    and... what do we get when we apply a binary operation over a range of elements...? that's right, reduction! a fold! functors! er.. foldables!
@@ -144,7 +144,7 @@ class Doc extends Section {
   }
 
   // --------
-  cursorToBoundary(cursorPosition, favorLeft=true) {
+  cursorToBoundary(cursorPosition, favorLeft = true) {
 
     // offset counts by cursor positions, boundary counts up by boundaries
     let offset = cursorPosition
@@ -213,11 +213,11 @@ class Doc extends Section {
   }
 
   selectionHasTag(tag, start, end) {
-    const any = this.predicateSlice( sec => sec instanceof Segment && sec.hasTag(tag), start, end )
+    const any = this.predicateSlice(sec => sec instanceof Segment && sec.hasTag(tag), start, end)
     return any.length > 0
   }
   selectionEntirelyHasTag(tag, start, end) {
-    const allMinOne = this.predicateSlice( sec => sec instanceof Segment, start, end )
+    const allMinOne = this.predicateSlice(sec => sec instanceof Segment, start, end)
     return allMinOne.length > 0 && allMinOne.every(sec => sec.hasTag(tag))
   }
 

@@ -10,7 +10,7 @@ class Segment extends AtomicSection {
   }
   static createSegment(tags, string) {
     const result = this.from(...string)
-    result.tags = Array.isArray(tags) ? tags : [ tags ]
+    result.tags = Array.isArray(tags) ? tags : [tags]
     return result
   }
   // static from(...)
@@ -68,7 +68,7 @@ class Segment extends AtomicSection {
     ])
   }
   replaceTags(tags) {
-    const seg = this.copy()   
+    const seg = this.copy()
     seg.tags = this._filterTags(tags)
     return seg
   }
@@ -76,10 +76,10 @@ class Segment extends AtomicSection {
     return this.tags.includes(tag.toLowerCase())
   }
 
-  applyTag(tag) { return this.applyTags( [tag] ) }
-  removeTag(tag) { return this.removeTags( [tag] ) }
-  toggleTag(tag) { return this.toggleTags( [tag] ) }
-  replaceTag(tag) { return this.replaceTags( [tag] ) }
+  applyTag(tag) { return this.applyTags([tag]) }
+  removeTag(tag) { return this.removeTags([tag]) }
+  toggleTag(tag) { return this.toggleTags([tag]) }
+  replaceTag(tag) { return this.replaceTags([tag]) }
 
   get characters() {
     return this.atoms
@@ -92,7 +92,7 @@ class Segment extends AtomicSection {
 
   cursorToBoundary(cursorPosition) {
     if (cursorPosition < this.totalCursorPositions) return cursorPosition
-  
+
     return 0
   }
 
