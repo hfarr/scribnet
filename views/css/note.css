@@ -88,3 +88,9 @@ h2 ~ h2 {
   /* --s0: var(--s2); */
   /* max-width: var(--measure); */
 /* } */
+
+/* Should likely belong in a, say, html render component. */
+/* hides the <li> ::marker when the li nests a list. This categorization is enforced in javacript. */
+.hideMarker {
+  list-style-type: none;
+}

@@ -9,6 +9,15 @@ import { Context, Segment } from "../../section/index.mjs";
 //   yield 0
 // }
 
+function hideMarker(context) {
+  if (context.blockTag !== 'li') return false
+
+  let condition = context.subPieces.length > 0 && context.subPieces[0] instanceof Context
+  if (condition)
+    condition &&= context.subPieces[0].blockTag === 'ul'
+
+  return condition
+}
 
 // TODO-accept editDoc in constructor? :S would an HTML renderer "own" that or would it be more about the specific place 
 //  where rendering occurs (in a document?) hermngh
@@ -104,6 +113,12 @@ class HTMLRenderer extends Renderer {
 
     // if (context.empty()) result += "<br>"
     if (context.length === 0 && !['ul','ol','li'].includes(blockTag)) result += "<br>"
+
+    switch(blockTag) {
+      case 'li': if (hideMarker(context)) attributes['class'] = 'hideMarker'
+      case 'ol':
+      case 'ul': if (context.length === 0) result += "<br>"
+    }
 
     if (context.subPieces.every(sec => sec instanceof Segment)) {
       for (const subsection of context.subPieces) result += this.renderSegment(subsection)
