@@ -71,6 +71,33 @@
   /* max-width: var(--measure); */
 }
 
+/* List decorations */
+/* ul, menu, dir { */
+  /* display: block; */
+  /* list-style-type: disc; */
+  /* margin-block-start: 1em; */
+  /* margin-block-end: 1em; */
+  /* padding-inline-start: 40px; */
+/* } */
+/*  */
+/* 2 deep unordered lists use a circle */
+/* :is(ol, ul, menu, dir) ul, */
+/* :is(ol, ul, menu, dir) menu, */
+/* :is(ol, ul, menu, dir) dir { */
+  /* list-style-type: circle; */
+/* } */
+/*  */
+/* 3 deep (or more) unordered lists use a square */
+/* :is(ol, ul, menu, dir) :is(ol, ul, menu, dir) ul, */
+/* :is(ol, ul, menu, dir) :is(ol, ul, menu, dir) menu, */
+/* :is(ol, ul, menu, dir) :is(ol, ul, menu, dir) dir { */
+  /* list-style-type: square; */
+/* } */
+
+/* li>ul:not(:first-child) {
+  list-style-type: none
+} */
+
 
 /* html, body, div, header, nav, main, footer,
 stack-l, sidebar-l, editor-hf {
