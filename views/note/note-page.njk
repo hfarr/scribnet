@@ -135,7 +135,7 @@ permalink: "note/{{ noteItem.name | slug }}/"
     const editor = document.createElement("editor-hf")
     editor.setAttribute("style", "white-space: pre-wrap;")  // auto part of editor? :S. use that shadow dom?
 
-    if (!contentMap.get(contentWrapper).serial) {
+    if (contentMap.get(contentWrapper).serial === undefined) {
       // If we don't have serial data to load, just append the nodes - the editor will parse the DOM.
       // TODO be more intentional with our code. if we're intending to parse DOM nodes rather than serial data, we should be intentional about that.
       editor.append(...contentWrapper.childNodes)
