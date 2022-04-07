@@ -15,22 +15,6 @@ function register(constructor, func) {
 function registerStaticCurry(func) { return function (constructor) { registerStatic(constructor, func) } }
 function registerCurry(func) { return function (constructor) { register(constructor, func) } }
 
-// Parse tools
-const childType = {
-  [Doc.name]: Context,
-  [Context.name]: Segment,
-  [Segment.name]: null
-}
-function parse(serialObj) {
-  const result = Object.create(this.prototype, Object.getOwnPropertyDescriptors(serialObj))
-  if (childType[this.name] !== null)
-    result.subPieces = [...result.subPieces.map(childType[this.name].parse)]
-  return result
-}
-// function registerParse(constructor) { constructor.parse = parse.bind(constructor) }
-// function registerParse(constructor) { register(constructor, parse) }
-const registerParse = registerStaticCurry(parse)
-
 // Granularity Mapping
 
 function countSegChildren() {
@@ -85,8 +69,6 @@ function cursorToBoundaryFavorRight(cursorPosition) {
 
 export default function mixInFunctionality() {
   const contextClasses = [Doc, Context, Segment]
-
-  contextClasses.forEach(registerParse)
 
   contextClasses.forEach(registerCurry(countSegChildren))
   contextClasses.forEach(registerCurry(overCount))

@@ -4,6 +4,7 @@ import { treeTraverse, traversePruneTokens, treeFoldr, offsetToDOM, boundaryOffs
 import { TokenVisitor } from './Token.mjs'
 // import { Segment, ListSegment } from './Segment.mjs'
 import { Doc, Context, Segment } from '../section/index.mjs'
+import SerialDocParser from './SerialDocParser.mjs'
 
 
 // ========= HTML View/Controller ==========================
@@ -298,11 +299,13 @@ class _EditDocument {
     return doc
   }
   static fromSerializedDocSection(serialDocSection) {
-    const doc = EditDocument.newDocument()
+    
+    const docParser  = new SerialDocParser(serialDocSection)
+
+    // TODO determine best location to handle errors. In Editor?
     try {
-      // const docSection = JSON.parse(serialDocSection)
-      // doc.document = Object.create(Doc.prototype, Object.getOwnPropertyDescriptors(docSection))
-      doc.document = Doc.parseSerialDoc(serialDocSection)
+      const doc = EditDocument.fromDocSection(docParser.parse())
+
       return doc
     } catch (e) {
       console.warn(e)
