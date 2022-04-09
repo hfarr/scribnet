@@ -1,6 +1,8 @@
 'use strict'
 import assert from 'assert';
 import { testAll, DocParser, DocPrinter } from '../../helpers.mjs';
+import { parseDoc, printDoc } from '../../helpers.mjs';
+import { parseContext, printContext } from '../../helpers.mjs';
 
 const PATH = "/home/henry/dev/scribnet/views"
 const { Doc, Context, MixedContext, Segment, Gap } = await import(`${PATH}/js/scribnet/section/index.mjs`)
@@ -350,6 +352,44 @@ Below example is from an earlier bug
         // assert(actual.structureEq(expected), `Test case ${testCaseNum}: Expected to be structurally equivalent.`)
       }
       testAll(testOne, testCases)
+
+    })
+  })
+})
+
+describe('ListContext', function () {
+  const nestedList = parseContext(`
+    ul < 
+      li<'A'>                     # 0-1
+      li< 'B'                     # 2-3
+        ul < 
+          li< p<'bA'> >           # 4-6
+          li< p<'bB'> >           # 7-9
+        >
+      >
+      li < 'C' >                  # 10-11
+    >
+  `)
+
+  describe('increaseIndent', function () {
+
+    it('increases nesting of the list', function () {
+      const expected = parseContext(`
+        ul<li< ul < 
+          li<'A'>            # 0-1
+          li< 'B'            # 2-3
+            ul < 
+              li< p<'bA'> >  # 4-6
+              li< p<'bB'> >  # 7-9
+            >
+          >
+          li < 'C' >         # 10-11
+        > >>
+      `)
+
+      const actual = nestedList.increaseIndent()
+
+      assert.strictEqual(printContext(actual), printContext(expected))
 
     })
   })
