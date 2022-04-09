@@ -702,7 +702,7 @@ class Section {
    * @param {Integer} startBoundary Boundary in first section to be selected
    * @param {Integer} endBoundary Boundary in second selection to be selected
    */
-  sectionSelection(startBoundary, endBoundary) {
+  sectionSelection(startBoundary, endBoundary = undefined) {
     /**
      * TODO
      * In theory, sectionSelection is a mapRangeBoundary with an ID function.
@@ -720,12 +720,19 @@ class Section {
      * tree based on a predicate, that will allow to target certain Segments.
      * Maybe a SpanningVisitor that can select without having to use 'instanceof'
      */
+
+    if (endBoundary === undefined) endBoundary = this.boundariesLength - 1
+
     const [ startSecIdx, startOffset ] = this._locateBoundary(startBoundary)
     const [ endSecIdx, endOffset ] = this._locateBoundary(endBoundary)
 
+    if (startSecIdx === endSecIdx) {
+      const target = this.subPieces[startSecIdx]
+      return this.copyFrom( target.sectionSelection(startOffset, endOffset) )
+    }
 
     const left = this.subPieces[startSecIdx].sectionSelection(startOffset)
-    const right = this.subPieces[endSecIdx].sectionSelection(endOffset)
+    const right = this.subPieces[endSecIdx].sectionSelection(0, endOffset)
     const between = this.subPieces.slice(startSecIdx + 1, endSecIdx)
 
     return this.copyFrom(left, ...between, right)
