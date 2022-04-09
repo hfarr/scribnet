@@ -36,6 +36,6 @@ const parseDoc = string => (new DocParser(string)).parse()
 const printDoc = doc => (new DocPrinter(doc)).print()
 
 const parseContext = string => (new DocParser(string)).context()
-const printContext = ctx => (new DocPrinter(null)).printSection(ctx).join()  // something about the interface here. heh. TODO DocPrinter doesn't really use the param passed to its constructor. OO is not particularly conducive to PrintyPrinting imo
+const printContext = ctx => (new DocPrinter(ctx)).print()  // something about the interface here. heh. TODO DocPrinter doesn't really use the param passed to its constructor. OO is not particularly conducive to PrintyPrinting imo
 
 export { DocParser, DocPrinter, parseDoc, printDoc, parseContext, printContext }

@@ -88,7 +88,7 @@ class DocPrinter {
   }
 
   print() {
-    return this.printSection(this.topSection).join('')
+    return this.printSection(this.topSection)
   }
   get padding() {
     return Array(this.tabWidth * this.tabDepth).fill(" ").join('')
@@ -116,14 +116,14 @@ class DocPrinter {
     const follow = `${this.padding}>\n`
     const childStrings = []
     for (const subSec of section.subPieces) {
-      childStrings.push(...this.printSection(subSec, depth + 1))
+      childStrings.push(this.printSection(subSec, depth + 1))
     }
 
     return [
       lead,
-      ...childStrings,
+      childStrings.join(''),
       follow
-    ]
+    ].join('')
 
   }
   printMixedContext(section, depth) {
@@ -135,15 +135,15 @@ class DocPrinter {
 
     const childStrings = []
     for (const subSec of section.subPieces) {
-      childStrings.push(...this.printSection(subSec, depth + 1))
+      childStrings.push(this.printSection(subSec, depth + 1))
     }
 
 
     return [
       lead,
-      ...childStrings,
+      childStrings.join(''),
       follow
-    ]
+    ].join('')
   }
   printContext(section, depth) {
 
@@ -154,21 +154,19 @@ class DocPrinter {
 
     const childStrings = []
     for (const subSec of section.subPieces) {
-      childStrings.push(...this.printSection(subSec, depth))
+      childStrings.push(this.printSegment(subSec))
     }
 
 
     return [
       lead,
-      ...childStrings,
+      childStrings.join(' '),
       follow
-    ]
+    ].join('')
   }
   printSegment(section, depth) {
 
-    return [ 
-      `'${section.toString()}' `
-    ]
+    return `'${section.toString()}'`
   }
 }
 
