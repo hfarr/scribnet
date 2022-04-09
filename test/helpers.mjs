@@ -38,4 +38,40 @@ const printDoc = doc => (new DocPrinter(doc)).print()
 const parseContext = string => (new DocParser(string)).context()
 const printContext = ctx => (new DocPrinter(ctx)).print()  // something about the interface here. heh. TODO DocPrinter doesn't really use the param passed to its constructor. OO is not particularly conducive to PrintyPrinting imo
 
-export { DocParser, DocPrinter, parseDoc, printDoc, parseContext, printContext }
+function rpad(pad, string) {
+
+  let adjusted = pad - string.length
+  let result = string
+  while (adjusted-- > 0) result += ' '
+
+  return result
+
+}
+
+function printBoundaries(doc) {
+  const printed = printDoc(doc)
+  const lines = printed.split('\n')
+
+  const maxLength = lines.reduce((p, c) => c.length > p ? c.length : p, 0) + 2
+
+  const interior = /'(.*)'/
+  let nextBoundary = 0
+  const mapped = lines.map(line => {
+    if (interior.test(line)) {
+
+      const [ matched, group ] = line.match(interior)
+      const segmentText = group.replaceAll(/' '/g, '')
+      const length = segmentText.length
+
+      const result = `${rpad(maxLength, line)}# ${nextBoundary} to ${ nextBoundary + length }`
+      nextBoundary += length + 1
+      return result
+    }
+    return line
+  })
+
+  return mapped.join('\n')
+} 
+
+
+export { DocParser, DocPrinter, parseDoc, printDoc, parseContext, printContext, printBoundaries }
