@@ -26,6 +26,22 @@ class Doc extends Section {
     return isBlock(tag)
   }
 
+  /*
+    =============
+      Mutations
+    =============
+  */
+
+  applyTags(tags, start, end) {
+    return this.mapRangeBoundary(function applyTags(seg) { return seg.applyTags(tags) }, start, end)
+  }
+  removeTags(tags, start, end) {
+    return this.mapRangeBoundary(function applyTags(seg) { return seg.removeTags(tags) }, start, end)
+  }
+  toggleTags(tags, start, end) {
+    return this.mapRangeBoundary(function applyTags(seg) { return seg.toggleTags(tags) }, start, end)
+  }
+
   write(string, location = undefined) {
     // TODO implement
     if (this.empty())
@@ -197,6 +213,11 @@ class Doc extends Section {
   // _locateBoundary()
 
   // -------------------
+  /*
+    ===========
+      Queries
+    ===========
+  */
 
   get characters() {
     return this.atoms
@@ -204,16 +225,6 @@ class Doc extends Section {
 
   get contexts() {
     return this.subPieces
-  }
-
-  applyTags(tags, start, end) {
-    return this.mapRangeBoundary(function applyTags(seg) { return seg.applyTags(tags) }, start, end)
-  }
-  removeTags(tags, start, end) {
-    return this.mapRangeBoundary(function applyTags(seg) { return seg.removeTags(tags) }, start, end)
-  }
-  toggleTags(tags, start, end) {
-    return this.mapRangeBoundary(function applyTags(seg) { return seg.toggleTags(tags) }, start, end)
   }
 
   selectionHasTag(tag, start, end) {
