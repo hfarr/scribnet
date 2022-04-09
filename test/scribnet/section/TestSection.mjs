@@ -497,6 +497,52 @@ describe(`Section`, function () {
       })
     })
 
+    describe('sectionSplit', function() {
+
+      // const testSection = Section.from(
+      //   Section.from(AtomicSection.from(...'AaA'), AtomicSection.from(...'BbB'), AtomicSection.from(), AtomicSection.from(...'CcC')),
+      //   AtomicSection.from(...'DdD'),
+      //   AtomicSection.from(...'EeE'),
+      //   Section.from(AtomicSection.from()),
+      //   AtomicSection.from(...'FfF'),
+      //   Section.from(AtomicSection.from(...'GgG'), AtomicSection.from(...'HhH')),
+      //   Section.from(AtomicSection.from(...'IiI')),
+      //   AtomicSection.from(...'JjJ')
+      // )
+
+      it ('does not split AtomicSegments', function () {
+
+        // TODO
+
+      })
+
+      it('divides into trees along Section lines', function () {
+
+      })
+
+      it ('creates correct splits', function () {
+        const expectedLeft = Section.from(
+          Section.from(AtomicSection.from(...'AaA'), AtomicSection.from(...'BbB'), AtomicSection.from(), AtomicSection.from(...'CcC')),
+        )
+        const expectedRight = Section.from(
+          Section.from(),
+          AtomicSection.from(...'DdD'),
+          AtomicSection.from(...'EeE'),
+          Section.from(AtomicSection.from()),
+          AtomicSection.from(...'FfF'),
+          Section.from(AtomicSection.from(...'GgG'), AtomicSection.from(...'HhH')),
+          Section.from(AtomicSection.from(...'IiI')),
+          AtomicSection.from(...'JjJ')
+        )
+
+        const [ actualLeft, actualRight ] = testSection.sectionSplit(10)
+
+        assert(actualLeft.structureEq(expectedLeft))
+        assert(actualRight.structureEq(expectedRight))
+
+      })
+    })
+
     describe('sectionSelect', function () {
 
       // const testSection = Section.from(
@@ -512,7 +558,6 @@ describe(`Section`, function () {
 
 
       it('correctly finds spanning tree', function () {
-        const actual = testSection.sectionSelection(10, 27)
         const expected = Section.from(
           Section.from(AtomicSection.from(...'CcC')),
           AtomicSection.from(...'DdD'),
@@ -521,10 +566,39 @@ describe(`Section`, function () {
           AtomicSection.from(...'FfF'),
           Section.from(AtomicSection.from(...'GgG')),
         )
+        const actual = testSection.sectionSelection(10, 27)
 
         assert(actual.structureEq(expected))
       })
       
+      describe('sectionSelectionTriSplit', function () {
+        it('does something', function () {
+        
+          const [ l, m, r ] = testSection.sectionSelectionTriSplit(10, 27)
+          const expectedLeft = Section.from(
+            Section.from(AtomicSection.from(...'AaA'), AtomicSection.from(...'BbB'), AtomicSection.from()),
+          )
+          const expectedMiddle = Section.from(
+            Section.from( AtomicSection.from(...'CcC')),
+            AtomicSection.from(...'DdD'),
+            AtomicSection.from(...'EeE'),
+            Section.from(AtomicSection.from()),
+            AtomicSection.from(...'FfF'),
+            Section.from(AtomicSection.from(...'GgG')),
+          )
+          const expectedRight = Section.from(
+            Section.from(AtomicSection.from(...'HhH')),
+            Section.from(AtomicSection.from(...'IiI')),
+            AtomicSection.from(...'JjJ')
+          )
+
+
+          assert(l.structureEq(expectedLeft))
+          assert(m.structureEq(expectedMiddle))
+          assert(r.structureEq(expectedRight))
+        
+        })
+      })
 
     })
 
