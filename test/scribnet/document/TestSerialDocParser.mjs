@@ -10,17 +10,7 @@ import SerialDocParser from '../../../views/js/scribnet/document/SerialDocParser
 
 import { parseDoc, printDoc } from '../../helpers.mjs';
 
-const testDocAlpha = Doc.from(
-  Context.createContext('h1', Segment.createSegment([], 'AaaaaBbbbb')),
-  Context.createContext('p', Segment.createSegment([], 'CccccDdddd')),
-  Context.createContext('p', Segment.createSegment([], 'EeeeeFffffGgggg')),
-  Context.createContext('p'),
-  Context.createContext('h1', Segment.createSegment([], 'HhhhhIiii\u{1F310}Jjjjj')),
-  Context.createContext('p', Segment.createSegment([], 'KkkkkLllll')),
-)
-
 describe('SerialDocParser', function () {
-
 
   const testDocAlpha = parseDoc(`
     h1  < 'AaaaaBbbbb' >
