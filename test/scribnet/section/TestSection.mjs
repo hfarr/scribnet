@@ -571,10 +571,10 @@ describe(`Section`, function () {
         assert(actual.structureEq(expected))
       })
       
-      describe('sectionSelectionTriSplit', function () {
+      describe('sectionTriSplit', function () {
         it('does something', function () {
         
-          const [ l, m, r ] = testSection.sectionSelectionTriSplit(10, 27)
+          const [ l, m, r ] = testSection.sectionTriSplit(10, 27)
           const expectedLeft = Section.from(
             Section.from(AtomicSection.from(...'AaA'), AtomicSection.from(...'BbB'), AtomicSection.from()),
           )

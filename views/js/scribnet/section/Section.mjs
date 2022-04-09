@@ -721,7 +721,7 @@ class Section {
      * Maybe a SpanningVisitor that can select without having to use 'instanceof'
      */
 
-    const [ l, m, r ] = this.sectionSelectionTriSplit(startBoundary, endBoundary)
+    const [ l, m, r ] = this.sectionTriSplit(startBoundary, endBoundary)
     return m
 
   }
@@ -744,7 +744,7 @@ class Section {
     return [ this.copyFrom( ...left, ml ), this.copyFrom( mr, ...right) ]
   }
 
-  sectionSelectionTriSplit(sb, eb = undefined) {
+  sectionTriSplit(sb, eb = undefined) {
     // this. Feels familiar to the 'structural' parts of mapRangeBoundary. I wonder. TODO wonder & implement.
     if (eb === undefined) eb = this.boundariesLength - 1
 
@@ -1028,7 +1028,7 @@ class AtomicSection extends Section {
     return this
   }
 
-  sectionSelectionTriSplit(start, end) {
+  sectionTriSplit(start, end) {
     return [ this.copyFrom(), this, this.copyFrom() ]
   }
 
