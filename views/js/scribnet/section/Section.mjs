@@ -571,6 +571,12 @@ class Section {
 
   }
 
+  // TODO mapRangeBoundary, operateBoundary, somewhat assume that ops are applied to AtomicSegments, 
+  //    as it involves splitting.
+  //    if we want to target, say, a layer of Contexts that are included in the touched on Range,
+  //    then we are in for hell using this method.
+  //    A continuation of the everlasting story of "this tree doesn't have a good API."
+
   operateBoundary(func, startBoundary, endBoundary) {
     // const [ left, mid, right ] = this.triSplit(start)
     return this.operate(func, startBoundary, endBoundary)
@@ -595,6 +601,7 @@ class Section {
       } else {
         const lb = i === leftSectionIndex ? leftBoundaryOffset : 0
         const rb = i === rightSectionIndex ? rightBoundaryOffset : section.boundariesLength - 1
+        // resultSections.push(section.mapRangeBoundary(func, lb, rb)).flat()
         resultSections.push(section.mapRangeBoundary(func, lb, rb))
       }
     }
@@ -674,6 +681,37 @@ class Section {
 
   findOnIndicesPath(predicate, path) {
 
+  }
+
+  find(predicate, boundary) {
+
+    const [nextSectionIdx, nextBoundary] = this._locateBoundary(boundary)
+    const nextSection = this.subPieces[nextSectionIdx]
+    if (predicate(this)) {
+      return [ nextSectionIdx ]
+    }
+
+    return [ nextSectionIdx, ...nextSection.find(predicate, nextBoundary) ]
+  }
+
+  /**
+   * Return the sub-tree of sections above the Sections containing the start boundary, end boundary,
+   * and anything between.
+   * An inorder traversal of sorts that sits one level of granularity above Atoms (in AtomicSections).
+   * 
+   * @param {Integer} startBoundary Boundary in first section to be selected
+   * @param {Integer} endBoundary Boundary in second selection to be selected
+   */
+  sectionSelection(startBoundary, endBoundary) {
+    const [ startSecIdx, startOffset ] = this._locateBoundary(startBoundary)
+    const [ endSecIdx, endOffset ] = this._locateBoundary(endBoundary)
+
+
+    const left = this.subPieces[startSecIdx].sectionSelection(startOffset)
+    const right = this.subPieces[endSecIdx].sectionSelection(endOffset)
+    const between = this.subPieces.slice(startSecIdx + 1, endSecIdx)
+
+    return this.copyFrom(left, ...between, right)
   }
 
   /**
@@ -930,6 +968,9 @@ class AtomicSection extends Section {
     return []
   }
 
+  sectionSelection(start, end) {
+    return this
+  }
 
   answers(func) {
     // AtomicSection always answers because it has no Section it can pass operations on to
