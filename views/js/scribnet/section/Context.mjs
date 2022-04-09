@@ -420,15 +420,6 @@ class MixedContext extends Context {
 
 class ListContext extends MixedContext {
 
-
-  operateBoundary(func, start, end) {
-
-    const [ left, middle, right ] = this.triSplit(start, end)
-
-
-
-  }
-
   // TODO maybe call this "increaseNesting"
   increaseIndent() {
     return Context.createContext(this.block, Context.createContext('li', this))
@@ -442,37 +433,6 @@ class ListContext extends MixedContext {
 }
 
 class ListItemContext extends MixedContext {
-
-  targetedBy(func) {
-
-    // TODO ooof I am less and less of a fan of my implementation for data manipulations
-    //    Sections are complex trees and don't really expose a lot of tree like interfacing
-    //    then on top of that the "Context classes" (Doc, all the "Context" variations, and Segment)
-    //    build out their own highly specialized logic, some of which tends to inform the 
-    //    Section interface/implementation which ideally we keep separate
-
-    if (func.name === 'increaseIndent' || func.name === 'decreaseIndent') {
-      const hasNoNestedList = this.subPieces[0] !== undefined && !(this.subPieces[0] instanceof ListContext)
-      return hasNoNestedList
-    }
-    return false
-  }
-
-  inceaseIndent() {
-    const nestedChild = Context.createContext('li', Context.createContext('ul', this))
-    return nestedChild
-  }
-
-  decreaseIndent() {
-    const resultPieces = [ this.subPieces[0] ]
-
-    const rest = this.slice(1)
-    if (rest.subPieces.length > 0) {
-      resultPieces.push(rest)
-    }
-
-    return resultPieces
-  }
 
 }
 
