@@ -3,13 +3,15 @@ import assert from 'assert';
 
 import { testAll, DocParser, DocPrinter } from '../../helpers.mjs';
 
+import { parseDoc, printDoc, printBoundaries } from '../../helpers.mjs';
+
 const PATH = "/home/henry/dev/scribnet/views"
 const { Doc, Context, MixedContext, Segment, Gap } = await import(`${PATH}/js/scribnet/section/index.mjs`)
 
 
-const parseDoc = string => (new DocParser(string)).parse()
+// const parseDoc = string => (new DocParser(string)).parse()
 // const parseContext = string => (new DocParser(string)).context()
-const printDoc = doc => (new DocPrinter(doc)).print()
+// const printDoc = doc => (new DocPrinter(doc)).print()
 
 
 describe('Doc', function () {
@@ -231,6 +233,79 @@ describe('Doc', function () {
       assert(result.contexts.slice(1, 4).every(ctx => ctx.block.toLowerCase() === newBlock), 'expect Contexts covering selection to have new block tag')
       assert(result.contexts.slice(0, 1).every(ctx => ctx.block.toLowerCase() !== newBlock), 'expect Contexts before the selection to not have new block tag')
       assert(result.contexts.slice(4).every(ctx => ctx.block.toLowerCase() !== newBlock), 'expect Contexts after the selection to not have the new block tag')
+    })
+  })
+
+  describe('indentation', function () {
+    
+    const testDoc = parseDoc(`
+      h1 < 'A List'>      # 0 to 6
+      p < 'Sample text'>  # 7 to 18
+      ul <
+        li <
+          p < 'A'>        # 19 to 20
+        >
+        li <
+          p < 'B'>        # 21 to 22
+          ul <
+            li <
+              p < 'bA'>   # 23 to 25
+            >
+            li <
+              p < 'bB'>   # 26 to 28
+            >
+          >
+        >
+        li <
+          p < 'C'>        # 29 to 30
+        >
+      >
+    `)
+
+    // const testDocBoundaries = printBoundaries(testDoc)
+    // console.log(testDocBoundaries)
+
+    describe('enterTab', function () {
+
+
+      it ('increases nesting of single interior list', function () {
+        const actual = testDoc.enterTab(23,23)
+
+        const expected = parseDoc(`
+          h1 < 'A List'>      # 0 to 6
+          p < 'Sample text'>  # 7 to 18
+          ul <
+            li <
+              p < 'A'>        # 19 to 20
+            >
+            li <
+              p < 'B'>        # 21 to 22
+              ul <
+                li < ul<li<
+                  p < 'bA'>   # 23 to 25
+                >> >
+                li <
+                  p < 'bB'>   # 26 to 28
+                >
+              >
+            >
+            li <
+              p < 'C'>        # 29 to 30
+            >
+          >
+        `)
+
+        // console.log(printDoc(actual))
+
+        assert.strictEqual(printDoc(actual), printDoc(expected))
+        assert(actual.structureEq(expected))
+
+      })
+
+    })
+
+    describe('enterShiftTab', function () {
+
     })
   })
 

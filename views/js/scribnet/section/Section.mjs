@@ -41,6 +41,10 @@ class Section {
     return result
   }
 
+  accept(visitor) {
+    return visitor.visit(this)
+  }
+
   split(boundaryIndex) {
     if (this.subPieces.length === 0) return [this, this]
     const [splitSecIndex, offset] = this._locateBoundary(boundaryIndex)
@@ -735,9 +739,9 @@ class Section {
 
     if (mr === undefined) {
       if (favorRight) {
-        return [ this.copyFrom( ...left ), this.copyFrom( ml, ...right) ]
+        return left.length > 0 ? [ this.copyFrom( ...left ), this.copyFrom( ml, ...right) ] : [ this.copyFrom( ml, ...right )]
       } else {
-        return [ this.copyFrom( ...left, ml ), this.copyFrom( ...right) ]
+        return right.length > 0 ? [ this.copyFrom( ...left, ml ), this.copyFrom( ...right) ] : [ this.copyFrom( ...left, ml ) ]
       }
     }
 
@@ -751,17 +755,33 @@ class Section {
     const [startSection, rest=undefined] = this.sectionSplit(sb, true)
     const [midSection=undefined, endSection=undefined] = rest?.sectionSplit(eb - sb) ?? []
 
-    if (midSection !== undefined ) {
-      if (endSection !== undefined) {
-        return [startSection, midSection, endSection]
-      }
-      return [ startSection, rest ]
-    } else if ( rest !== undefined ) {
-      return [ startSection, rest, undefined ]
-    } else {
-      return [ undefined, this, undefined ]
-    }
+    return [ startSection, midSection, endSection ]
 
+    // if (midSection !== undefined ) {
+    //   if (endSection !== undefined) {
+    //     return [startSection, midSection, endSection]
+    //   }
+    //   return [ startSection, rest ]
+    // } else if ( rest !== undefined ) {
+    //   return [ startSection, rest, undefined ]
+    // } else {
+    //   return [ undefined, this, undefined ]
+    // }
+
+  }
+
+  stitchMap(visitor, sb=0, eb=this.boundariesLength - 1) {
+    const [ l, m, r ] = this.sectionTriSplit(sb, eb)
+    const midResult = m.accept(visitor)
+
+    let result = midResult
+    if (l !== undefined)  {
+      result = l.merge(result)
+    }
+    if (r !== undefined)  {
+      result = result.merge(r)
+    }
+    return result
   }
 
 

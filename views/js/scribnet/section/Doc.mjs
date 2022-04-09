@@ -5,6 +5,36 @@ import Segment from "./Segment.mjs"
 import Context from "./Context.mjs"
 import { Gap, isBlock } from "./Context.mjs"
 
+class TabIncreaseVisitor {
+
+  visit(section) {
+    switch(section.constructor.name) {
+      case 'ListContext':
+      case 'Context':
+        return section.increaseIndent()
+      case 'Segment':
+        return section
+      default: 
+        return section.copyFrom(...section.subPieces.map(sec => sec.accept(this)))
+    }
+  }
+}
+class TabDecreaseVisitor {
+
+  visit(section) {
+    switch(section.constructor.name) {
+      case 'ListContext':
+      case 'Context':
+        return section.decreaseIndent()
+      case 'Segment':
+        return section
+      default: 
+        return section.copyFrom(...section.subPieces.map(sec => sec.accept(this)))
+    }
+  }
+}
+
+
 class Doc extends Section {
 
   static createSection(tag, ...subPieces) {
@@ -119,6 +149,14 @@ class Doc extends Section {
 
   newLine(boundary) {
     return this.contextSplit(boundary)
+  }
+
+  enterTab(startBoundary, endBoundary) {
+    return this.stitchMap(new TabIncreaseVisitor(), startBoundary, endBoundary)
+  }
+
+  enterShiftTab(startBoundary, endBoundary) {
+    return this.stitchMap(new TabDecreaseVisitor(), startBoundary, endBoundary)
   }
 
   contextSplit(boundary) {

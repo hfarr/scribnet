@@ -114,8 +114,8 @@ class Context extends Section {
   }
 
   static createContext(blockTag, ...segments) {
-    const constructor = MIXED_BLOCKS.includes(blockTag.toLowerCase()) ? MixedContext : Context
-    const result = constructor.from(...segments)
+    // const constructor = MIXED_BLOCKS.includes(blockTag.toLowerCase()) ? MixedContext : Context
+    const result = Context.from(...segments)
     return result.updateBlock(blockTag) // not strictly necessary, we could modify .block here. Trying to stick to a pattern though of preferring "mutative" methods
   }
 
@@ -173,6 +173,10 @@ class Context extends Section {
       return result.insertBoundary(boundaryLocation, atoms)
     }
     return super.insertBoundary(boundaryLocation, atoms)
+  }
+
+  mixesWith(other) {
+    return other instanceof Context && !(other instanceof MixedContext)
   }
 
   mixBehavior(other) {
@@ -255,7 +259,7 @@ class Context extends Section {
 
     if (this.block === 'ul' || this.block === 'ol') {
       return this.convertTo(ListContext)
-    } else if (this.block === 'ul') {
+    } else if (this.block === 'li') {
       return this.convertTo(ListItemContext)
     }
 
@@ -270,7 +274,7 @@ class Context extends Section {
 
   }
 
-  inceaseIndent() {
+  increaseIndent() {
     const result = this.copy()
     result.indentation += 1
     return result
@@ -411,11 +415,11 @@ class MixedContext extends Context {
     return [this.splice(sectionIndex, 1, ...newContexts)]
   }
 
-  mergeBehavior(other) {
+  // mergeBehavior(other) {
     // prerequisite: other is NOT a MixedContext. mixBehavior above should.. take care of that.
 
-    return this.splice(-1, 1, ...this.sectionAt(-1).mix(other))
-  }
+    // return this.splice(-1, 1, ...this.sectionAt(-1).mix(other))
+  // }
 }
 
 class ListContext extends MixedContext {
@@ -430,9 +434,42 @@ class ListContext extends MixedContext {
 
     return result
   }
+
+  mixBehavior(other) {
+    return [ this.merge(other) ]
+  }
+
+  mixesWith(other) {
+    return other instanceof ListContext
+  }
+
+  // mixBehavior(other) {
+  //   if (other instanceof ListContext) {
+  //     return 
+  //   }
+  // }
 }
 
 class ListItemContext extends MixedContext {
+
+  mixesWith(other) {
+    if (other instanceof ListItemContext) {
+      // return (this.subPieces.at(-1) instanceof ListContext) && (other.subPieces.at(0) instanceof ListContext)
+      return other.subPieces.at(0) instanceof ListContext
+    }
+
+    return false
+  }
+
+  mixBehavior(other) {
+    const otherLeft = other.slice(0, 1)
+    const otherRight = other.slice(1)
+
+    if (otherRight.subPieces.length === 0)
+      return [ this.merge(otherLeft) ]
+
+    return [ this.merge(otherLeft), otherRight ]
+  }
 
 }
 
