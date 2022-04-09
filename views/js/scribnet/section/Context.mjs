@@ -434,6 +434,11 @@ class ListContext extends MixedContext {
     return Context.createContext(this.block, Context.createContext('li', this))
   }
 
+  decreaseIndent() {
+    const result = this.subPieces.map(listItem => listItem.subPieces).flat()
+
+    return result
+  }
 }
 
 class ListItemContext extends MixedContext {
