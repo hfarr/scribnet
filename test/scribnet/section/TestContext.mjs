@@ -420,6 +420,17 @@ describe('ListContext', function () {
       assert.deepStrictEqual(actual.map(printContext), expected.map(printContext))
 
     })
+
+    it('inverts an increaseIndent', function() {
+
+      // Note the inverse doesn't as easily go the other way since we don't have a method for making a list out of several not-in-list items (yet)
+
+      const expected = nestedList
+
+      const actual = nestedList.increaseIndent().decreaseIndent()[0]
+
+      assert.strictEqual(printContext(actual), printContext(expected))
+    })
   })
 })
 
