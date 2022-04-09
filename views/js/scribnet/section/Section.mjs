@@ -738,6 +738,45 @@ class Section {
     return this.copyFrom(left, ...between, right)
   }
 
+  sectionSplit(boundary, favorRight=false) {
+    const [ secIdx, offset ] = this._locateBoundary(boundary)
+    const left = this.subPieces.slice(0, secIdx)
+    const right = this.subPieces.slice(secIdx + 1)
+
+    const [ ml, mr=undefined ] = this.subPieces[secIdx].sectionSplit(offset, favorRight)
+
+    if (mr === undefined) {
+      if (favorRight) {
+        return [ this.copyFrom( ...left ), this.copyFrom( ml, ...right) ]
+      } else {
+        return [ this.copyFrom( ...left, ml ), this.copyFrom( ...right) ]
+      }
+    }
+
+    return [ this.copyFrom( ...left, ml ), this.copyFrom( mr, ...right) ]
+  }
+
+  sectionSelectionTriSplit(sb, eb = undefined) {
+    // this. Feels familiar to the 'structural' parts of mapRangeBoundary. I wonder. TODO wonder & implement.
+    if (eb === undefined) eb = this.boundariesLength - 1
+
+    const [startSection, rest=undefined] = this.sectionSplit(sb, true)
+    const [midSection=undefined, endSection=undefined] = rest?.sectionSplit(eb - sb) ?? []
+
+    if (midSection !== undefined ) {
+      if (endSection !== undefined) {
+        return [startSection, midSection, endSection]
+      }
+      return [ startSection, rest ]
+    } else if ( rest !== undefined ) {
+      return [ startSection, rest, undefined ]
+    } else {
+      return [ undefined, this, undefined ]
+    }
+
+  }
+
+
   /**
    * 
    * @param {Function} predicate Function that accepts a Section as input and returns true or false
@@ -992,8 +1031,17 @@ class AtomicSection extends Section {
     return []
   }
 
+
+  sectionSplit(boundary) {
+    return [ this ]
+  }
+
   sectionSelection(start, end) {
     return this
+  }
+
+  sectionSelectionTriSplit(start, end) {
+    return [ this.copyFrom(), this, this.copyFrom() ]
   }
 
   answers(func) {
