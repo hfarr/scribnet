@@ -99,6 +99,8 @@ class DocPrinter {
     switch(section.constructor.name) {
       case 'Doc':
         return this.printDoc(section, depth)
+      case 'ListContext':
+      case 'ListItemContext':
       case 'MixedContext':
         return this.printMixedContext(section, depth)
       case 'Context':
