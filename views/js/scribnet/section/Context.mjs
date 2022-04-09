@@ -126,10 +126,25 @@ class Context extends Section {
     return clone
   }
 
+  convertTo(contextConstructor) {
+    const clone = contextConstructor.from(...this.subPieces)
+    clone.block = this.block
+    clone.indentationAmount = this.indentationAmount
+
+    return clone
+  }
+
   targetedBy(func) {
     const targetedByFuncs = ['updateBlock']
 
-    return targetedByFuncs.includes(func.name)
+
+    const containsSubstringIndent = str => /Indent/i.test(str)
+
+
+    const result = targetedByFuncs.includes(func.name) 
+      | containsSubstringIndent(func.name)
+
+    return result
   }
 
   /**
@@ -229,17 +244,41 @@ class Context extends Section {
   }
 
   updateBlock(blockTag) {
+
     const result = this.copy()
     result.block = blockTag
-    return result
+
+    return result.updateBlockHook()
   }
 
-  indent(amount = 1) {
+  updateBlockHook() {
+
+    if (this.block === 'ul' || this.block === 'ol') {
+      return this.convertTo(ListContext)
+    } else if (this.block === 'ul') {
+      return this.convertTo(ListItemContext)
+    }
+
+    return this
+  }
+
+  indent(amount = 1, offset = undefined) {
 
     const result = this.copy()
     result.indentation += amount
     return result
 
+  }
+
+  inceaseIndent() {
+    const result = this.copy()
+    result.indentation += 1
+    return result
+  }
+  decreaseIndent() {
+    const result = this.copy()
+    result.indentation -= 1
+    return result
   }
 
   updateAttributes(options) {
@@ -316,7 +355,25 @@ class MixedContext extends Context {
   static defaultBlockTag = 'div'
 
   static from(...sections) {
-    return Section.from.bind(MixedContext)(...sections.map(sec => sec instanceof Segment ? Context.from(sec) : sec))
+    return Section.from.bind(this)(...sections.map(sec => sec instanceof Segment ? Context.from(sec) : sec))
+  }
+
+  indent(amount, offset) {
+    // const [ child, nextChild, ...rest ] = this._sectionPathToBoundary(offset)
+    const [ [child, nextChild], [childIndex, nextChildIndex] ] = this._pathToLocation(offset)
+
+    if (child.block === 'li' && !(nextChild instanceof MixedContext)) {
+
+      let newNextChild = nextChild
+      while (amount-- > 0) {
+        newNextChild = Context.createContext('ul', Context.createContext('li', newNextChild))
+      }
+
+      const newChild = child.splice(nextChildIndex, 1, newNextChild);
+      return this.splice(childIndex, 1, newChild)
+    }
+
+    return this.splice(childIndex, 1, child.indent(amount))
   }
 
   contextSplit(boundary) {
@@ -359,6 +416,59 @@ class MixedContext extends Context {
 
     return this.splice(-1, 1, ...this.sectionAt(-1).mix(other))
   }
+}
+
+class ListContext extends MixedContext {
+
+
+  operateBoundary(func, start, end) {
+
+    const [ left, middle, right ] = this.triSplit(start, end)
+
+
+
+  }
+
+  // TODO maybe call this "increaseNesting"
+  increaseIndent() {
+    return Context.createContext(this.block, Context.createContext('li', this))
+  }
+
+}
+
+class ListItemContext extends MixedContext {
+
+  targetedBy(func) {
+
+    // TODO ooof I am less and less of a fan of my implementation for data manipulations
+    //    Sections are complex trees and don't really expose a lot of tree like interfacing
+    //    then on top of that the "Context classes" (Doc, all the "Context" variations, and Segment)
+    //    build out their own highly specialized logic, some of which tends to inform the 
+    //    Section interface/implementation which ideally we keep separate
+
+    if (func.name === 'increaseIndent' || func.name === 'decreaseIndent') {
+      const hasNoNestedList = this.subPieces[0] !== undefined && !(this.subPieces[0] instanceof ListContext)
+      return hasNoNestedList
+    }
+    return false
+  }
+
+  inceaseIndent() {
+    const nestedChild = Context.createContext('li', Context.createContext('ul', this))
+    return nestedChild
+  }
+
+  decreaseIndent() {
+    const resultPieces = [ this.subPieces[0] ]
+
+    const rest = this.slice(1)
+    if (rest.subPieces.length > 0) {
+      resultPieces.push(rest)
+    }
+
+    return resultPieces
+  }
+
 }
 
 class Gap extends Section {
