@@ -360,14 +360,14 @@ Below example is from an earlier bug
 describe('ListContext', function () {
   const nestedList = parseContext(`
     ul < 
-      li<'A'>                     # 0-1
-      li< 'B'                     # 2-3
+      li< p<'A'> >       # 0-1
+      li< p<'B'>         # 2-3
         ul < 
-          li< p<'bA'> >           # 4-6
-          li< p<'bB'> >           # 7-9
+          li< p<'bA'> >  # 4-6
+          li< p<'bB'> >  # 7-9
         >
       >
-      li < 'C' >                  # 10-11
+      li < p<'C'> >      # 10-11
     >
   `)
 
@@ -376,20 +376,48 @@ describe('ListContext', function () {
     it('increases nesting of the list', function () {
       const expected = parseContext(`
         ul<li< ul < 
-          li<'A'>            # 0-1
-          li< 'B'            # 2-3
+          li< p<'A'> >       # 0-1
+          li< p<'B'>         # 2-3
             ul < 
               li< p<'bA'> >  # 4-6
               li< p<'bB'> >  # 7-9
             >
           >
-          li < 'C' >         # 10-11
+          li < p<'C'> >      # 10-11
         > >>
       `)
 
       const actual = nestedList.increaseIndent()
 
       assert.strictEqual(printContext(actual), printContext(expected))
+
+    })
+  })
+
+  describe('decreaseIndent', function() {
+
+    it('decreases nesting of the list', function () {
+      const expected = [
+        parseContext(`
+          p<'A'>          # 0-1
+        `),
+        parseContext(`
+          p< 'B' >        # 2-3
+        `),
+        parseContext(`
+          ul < 
+            li< p<'bA'> > # 4-6
+            li< p<'bB'> > # 7-9
+          >
+        `),
+        parseContext(`
+          p < 'C' >       # 10-11
+        `),
+      ]
+
+      const actual = nestedList.decreaseIndent()
+
+      assert.deepStrictEqual(actual.map(printContext), expected.map(printContext))
 
     })
   })
