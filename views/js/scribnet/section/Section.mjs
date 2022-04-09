@@ -721,21 +721,9 @@ class Section {
      * Maybe a SpanningVisitor that can select without having to use 'instanceof'
      */
 
-    if (endBoundary === undefined) endBoundary = this.boundariesLength - 1
+    const [ l, m, r ] = this.sectionSelectionTriSplit(startBoundary, endBoundary)
+    return m
 
-    const [ startSecIdx, startOffset ] = this._locateBoundary(startBoundary)
-    const [ endSecIdx, endOffset ] = this._locateBoundary(endBoundary)
-
-    if (startSecIdx === endSecIdx) {
-      const target = this.subPieces[startSecIdx]
-      return this.copyFrom( target.sectionSelection(startOffset, endOffset) )
-    }
-
-    const left = this.subPieces[startSecIdx].sectionSelection(startOffset)
-    const right = this.subPieces[endSecIdx].sectionSelection(0, endOffset)
-    const between = this.subPieces.slice(startSecIdx + 1, endSecIdx)
-
-    return this.copyFrom(left, ...between, right)
   }
 
   sectionSplit(boundary, favorRight=false) {
