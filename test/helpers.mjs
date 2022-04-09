@@ -32,4 +32,7 @@ export function testEqualAll(testCases) {
 }
 
 
-export { DocParser, DocPrinter }
+const parseDoc = string => (new DocParser(string)).parse()
+const printDoc = doc => (new DocPrinter(doc)).print()
+
+export { DocParser, DocPrinter, parseDoc, printDoc }
