@@ -703,6 +703,23 @@ class Section {
    * @param {Integer} endBoundary Boundary in second selection to be selected
    */
   sectionSelection(startBoundary, endBoundary) {
+    /**
+     * TODO
+     * In theory, sectionSelection is a mapRangeBoundary with an ID function.
+     * In fact it should be just that. To get there mapRangeBoundary must support
+     * "splitting" at a section granularity, enabling its clients to do so when
+     * needed. As of now it always splits at the Atom level.
+     * To put it another way mapRangeBoundary produces strict spanning trees 
+     * specified by boundaries.
+     * I'd like to extend it to allow spanning trees that terminate not at boundaries
+     * between atoms but at any Section containing those boundaries (+ anything in 
+     * between). I think we'd get a lot of benefits re-implementing it that way, and
+     * I think it would be able to support many of the API functions like this one
+     * for producing specific spanning trees.
+     * To that point I am planning to introduce an API func for producing a spanning
+     * tree based on a predicate, that will allow to target certain Segments.
+     * Maybe a SpanningVisitor that can select without having to use 'instanceof'
+     */
     const [ startSecIdx, startOffset ] = this._locateBoundary(startBoundary)
     const [ endSecIdx, endOffset ] = this._locateBoundary(endBoundary)
 
