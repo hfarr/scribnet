@@ -497,6 +497,37 @@ describe(`Section`, function () {
       })
     })
 
+    describe('sectionSelect', function () {
+
+      // const testSection = Section.from(
+      //   Section.from(AtomicSection.from(...'AaA'), AtomicSection.from(...'BbB'), AtomicSection.from(), AtomicSection.from(...'CcC')),
+      //   AtomicSection.from(...'DdD'),
+      //   AtomicSection.from(...'EeE'),
+      //   Section.from(AtomicSection.from()),
+      //   AtomicSection.from(...'FfF'),
+      //   Section.from(AtomicSection.from(...'GgG'), AtomicSection.from(...'HhH')),
+      //   Section.from(AtomicSection.from(...'IiI')),
+      //   AtomicSection.from(...'JjJ')
+      // )
+
+
+      it('correctly finds spanning tree', function () {
+        const actual = testSection.sectionSelection(10, 27)
+        const expected = Section.from(
+          Section.from(AtomicSection.from(...'CcC')),
+          AtomicSection.from(...'DdD'),
+          AtomicSection.from(...'EeE'),
+          Section.from(AtomicSection.from()),
+          AtomicSection.from(...'FfF'),
+          Section.from(AtomicSection.from(...'GgG')),
+        )
+
+        assert(actual.structureEq(expected))
+      })
+      
+
+    })
+
 
     describe('boundaryToAtomBoundary', function () {
       const testPair = (input, output) => assert.strictEqual(testSection.boundaryToAtomBoundary(input), output)
