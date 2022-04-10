@@ -1125,7 +1125,7 @@ class AtomicSection extends Section {
   }
 
   stitchBehavior(other) {
-    return [ this.merge(other) ]
+    return this.mix(other)
   }
 
   stitch(other) {
