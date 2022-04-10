@@ -208,21 +208,21 @@ describe('MixedContext', function () {
   })
 
   describe('contextSplit', function () {
-    const component = MixedContext.createContext('ul', 
-      MixedContext.createContext('li', 
+    const component = MixedContext.createContext('ul',
+      MixedContext.createContext('li',
         Context.createContext('h1', Segment.from(...'aaa')),
         Context.createContext('h2', Segment.from(...'bbb')),
         Context.createContext('h3', Segment.from(...'ccc')),
       )
     )
 
-    it('creates a new MixedContext at the deepest nested, above the Context', function (){
-      const expected = MixedContext.createContext('ul', 
-        MixedContext.createContext('li', 
+    it('creates a new MixedContext at the deepest nested, above the Context', function () {
+      const expected = MixedContext.createContext('ul',
+        MixedContext.createContext('li',
           Context.createContext('h1', Segment.from(...'aaa')),
           Context.createContext('h2', Segment.from(...'b')),
         ),
-        MixedContext.createContext('li', 
+        MixedContext.createContext('li',
           Context.createContext('p', Segment.from(...'bb')),
           Context.createContext('h3', Segment.from(...'ccc')),
         )
@@ -285,8 +285,9 @@ describe('MixedContext', function () {
     it('merges nested contexts correctly', function () {
 
       const testCases = [
-        { input: { callee: component.contextSplit(5)[0], args: [ 5, 6 ] }, expected: component },
-        { input: { callee: component, args: [ 3, 4 ] }, expected: parseDoc(`
+        { input: { callee: component.contextSplit(5)[0], args: [5, 6] }, expected: component },
+        {
+          input: { callee: component, args: [3, 4] }, expected: parseDoc(`
           ul <
             li < h1 < 'A' > > 
             li < h1 < 'BbA' > 
@@ -298,54 +299,55 @@ describe('MixedContext', function () {
             > 
             li < h1 < 'C' > >
           >
-        `).subPieces[0] },
-/*
-Below example is from an earlier bug
-
-        og      3,4
-        |'A'||'B'||'bA'||'bB'||'C'|
-                  |----||----|     
-                  |-h2-||-h2-|     
-        |---||---||-li-||-li-||---|
-        |h1-||h1-||----ul----||h1-|
-        |li-||-------li------||li-|
-        |------------ul-----------|
-
-                 ||        <-  deleteBoundary(3,4)
-
-        actual                                             |expected
-        |'A'||'B'||'bA'||'bB'||'C'|                        |'A'||'BbA'||'bB'||'C'|
-                  |----||----|                                         |----|     
-                  |-h2-||-h2-|                                         |-h2-|     
-        |---||---||-li-||-li-||---|                        |---||-----||-li-||---|
-        |h1-||-------h1------||h1-|                        |h1-||-h1--||-ul-||h1-|
-        |li-||-------li------||li-|                        |li-||-----li----||li-|
-        |------------ul-----------|                        |---------ul----------|
-
-        prettyprint of Actual
-        'ul <
-          li <
-            h1 < 'A' >
-          >
-          li <
-            h1 <
-        'B'       li <
-                h2 < 'bA' >
-              >
-              li <
-                h2 < 'bB' >
-              >
-            >
-          >
-          li <
-            h1 < 'C' >
-          >
-        >
-        '
-*/        
+        `).subPieces[0]
+        },
+        /*
+        Below example is from an earlier bug
+        
+                og      3,4
+                |'A'||'B'||'bA'||'bB'||'C'|
+                          |----||----|     
+                          |-h2-||-h2-|     
+                |---||---||-li-||-li-||---|
+                |h1-||h1-||----ul----||h1-|
+                |li-||-------li------||li-|
+                |------------ul-----------|
+        
+                         ||        <-  deleteBoundary(3,4)
+        
+                actual                                             |expected
+                |'A'||'B'||'bA'||'bB'||'C'|                        |'A'||'BbA'||'bB'||'C'|
+                          |----||----|                                         |----|     
+                          |-h2-||-h2-|                                         |-h2-|     
+                |---||---||-li-||-li-||---|                        |---||-----||-li-||---|
+                |h1-||-------h1------||h1-|                        |h1-||-h1--||-ul-||h1-|
+                |li-||-------li------||li-|                        |li-||-----li----||li-|
+                |------------ul-----------|                        |---------ul----------|
+        
+                prettyprint of Actual
+                'ul <
+                  li <
+                    h1 < 'A' >
+                  >
+                  li <
+                    h1 <
+                'B'       li <
+                        h2 < 'bA' >
+                      >
+                      li <
+                        h2 < 'bB' >
+                      >
+                    >
+                  >
+                  li <
+                    h1 < 'C' >
+                  >
+                >
+                '
+        */
       ]
 
-      const testOne = ({input: { callee, args }, expected}, testCaseNum) => { 
+      const testOne = ({ input: { callee, args }, expected }, testCaseNum) => {
         const actual = callee.deleteBoundary(...args)
 
         assert.strictEqual(printDoc(actual), printDoc(expected), `Test case ${testCaseNum}: Expected to be structurally equivalent.`)
@@ -394,7 +396,7 @@ describe('ListContext', function () {
     })
   })
 
-  describe('decreaseIndent', function() {
+  describe('decreaseIndent', function () {
 
     it('decreases nesting of the list', function () {
       const expected = [
@@ -421,7 +423,7 @@ describe('ListContext', function () {
 
     })
 
-    it('inverts an increaseIndent', function() {
+    it('inverts an increaseIndent', function () {
 
       // Note the inverse doesn't as easily go the other way since we don't have a method for making a list out of several not-in-list items (yet)
 

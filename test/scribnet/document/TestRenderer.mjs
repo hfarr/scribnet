@@ -14,12 +14,12 @@ const { Doc, Context, Segment, Gap } = await import(`${PATH}/js/scribnet/section
 // const docOrigin = EditDocument.fromListSegment(ListSegment.from(...segments))
 
 const testContexts = [
-  Context.createContext('h1',Segment.from(...'AAAAA')),
-  Context.createContext('p',Segment.from(...'BBBBB')),
-  Context.createContext('p',Segment.from(...'CCCCC')),
-  Context.createContext('h2',Segment.from(...'DDDDD')),
-  Context.createContext('p',Segment.from(...'EEEEE')),
-  Context.createContext('p',Segment.from(...'FFFFF')),
+  Context.createContext('h1', Segment.from(...'AAAAA')),
+  Context.createContext('p', Segment.from(...'BBBBB')),
+  Context.createContext('p', Segment.from(...'CCCCC')),
+  Context.createContext('h2', Segment.from(...'DDDDD')),
+  Context.createContext('p', Segment.from(...'EEEEE')),
+  Context.createContext('p', Segment.from(...'FFFFF')),
 ]
 
 const testDoc = Doc.from(...testContexts)
@@ -51,7 +51,7 @@ describe('Renderer', function () {
     })
 
     describe('wrapMany', function () {
-      it('returns the input if no tags are given', function() {
+      it('returns the input if no tags are given', function () {
         // base case
         const expected = "I am a string"
         const result = wrapMany([], expected)
@@ -59,7 +59,7 @@ describe('Renderer', function () {
         assert.strictEqual(result, expected)
 
       })
-      it('wraps a single piece of content multiple tags', function() {
+      it('wraps a single piece of content multiple tags', function () {
         const result = wrapMany(['bold', 'em'], "I am a string")
 
         const expected = "<bold><em>I am a string</em></bold>"
@@ -73,7 +73,7 @@ describe('Renderer', function () {
     const unescaped = "Silly ' little \"<\" characters > &"
     const actual = escapeString(unescaped)
     const expected = 'Silly &#39; little &quot;&lt;&quot; characters &gt; &amp;'
-    it('escapes the characters', function() {
+    it('escapes the characters', function () {
       assert.strictEqual(actual, expected)
     })
   })
@@ -97,14 +97,14 @@ describe('Renderer', function () {
   describe('HTMLRenderer', function () {
 
     // stripTags regex: removes each pair of open/close angle brackets and word characters within them
-    const stripTags = s => s.replace(/<\/?\w+>/g,'')
+    const stripTags = s => s.replace(/<\/?\w+>/g, '')
     const htmlRenderer = new HTMLRenderer()
     const source = "<h1>Title! what in the <em>heck</em> are all these demo pages for?</h1><p>This document exists to easily construct objects for unit testing!</p><p>Featuring a couple of cool paragraphs, <strong>inline elements,</strong> <strong><em>nested</em> line elements,</strong> and so much more!</p><p>Well, not &quot;so much&quot; more. Just enough to tell me if there are problems! Like maybe some utf-16 😀 pretty glad vscode supports unicode code points...</p><h2>We&#39;ve got headers too</h2><p>I think this is alright for a <em>standard</em> document experience. Don&#39;t you?</p>"
     const testNestedContext = Context.createContext('ul',
       Context.createContext('li', Segment.from('A')),
       Context.createContext('li', Segment.from('B')),
-      Context.createContext('li', 
-        Segment.from('C'), 
+      Context.createContext('li',
+        Segment.from('C'),
         Context.createContext('ul',
           Context.createContext('li', Segment.from(...'cA')),
           Context.createContext('li', Segment.from(...'cB')),
@@ -116,18 +116,18 @@ describe('Renderer', function () {
     )
     const testNestedDoc = Doc.from(testNestedContext)
 
-    it('has the right text', function() {
+    it('has the right text', function () {
       const rendered = htmlRenderer.toHTML(testDoc)
       assert.strictEqual(stripTags(rendered), testDoc.toString())
     })
 
-    it('creates the right HTML', function() {
+    it('creates the right HTML', function () {
       const htmlRenderer = new HTMLRenderer()
       const actual = htmlRenderer.toHTML(testDoc)
       const expected = "<h1>AAAAA</h1><p>BBBBB</p><p>CCCCC</p><h2>DDDDD</h2><p>EEEEE</p><p>FFFFF</p>"
 
       assert.strictEqual(actual, expected)
-    }) 
+    })
 
     describe('renderContext', function () {
 
@@ -152,7 +152,7 @@ describe('Renderer', function () {
     })
 
     describe('Render Nested', function () {
-      const idk ='<ul><li></li><li><ul><li><ul><li></li></ul></li><li></li></ul></li><li></li></ul>'
+      const idk = '<ul><li></li><li><ul><li><ul><li></li></ul></li><li></li></ul></li><li></li></ul>'
 
 
       it('renders correct html', function () {
@@ -162,9 +162,9 @@ describe('Renderer', function () {
         assert.strictEqual(actual, expected)
       })
     })
-    
+
     describe('pathToCursorInDOM', function () {
-      
+
       const funcUnderTest = HTMLRenderer.pathToCursorInDOM
 
       function test(func, { input, expected }) {
@@ -172,10 +172,10 @@ describe('Renderer', function () {
       }
       function testAll(func, testCases) {
         // for (const { input, expected } of testCases ) {
-        for (const testCase of testCases )
+        for (const testCase of testCases)
           test(func, testCase)
       }
-      
+
       it('finds correct "DOM path" & offset with inline tags', function () {
 
         const boldNested = testNestedDoc.toggleTags(['strong'], 10, 13)
@@ -184,8 +184,8 @@ describe('Renderer', function () {
         const lb = 10 + 1, rb = 13 + 1
 
         const testCases = [
-          { input: [ boldNested, lb ], expected: [ [0, 2, 1, 1, 0, 1, 0 ], 0] }, // ul li ul li p strong #text
-          { input: [ boldNested, rb ], expected: [ [0, 2, 1, 2, 0, 0, 0 ], 1] }, // ul li ul li p strong #text
+          { input: [boldNested, lb], expected: [[0, 2, 1, 1, 0, 1, 0], 0] }, // ul li ul li p strong #text
+          { input: [boldNested, rb], expected: [[0, 2, 1, 2, 0, 0, 0], 1] }, // ul li ul li p strong #text
         ]
 
         testAll(HTMLRenderer.pathToCursorInDOM, testCases)
@@ -200,20 +200,20 @@ describe('Renderer', function () {
         const basic2 = basic.writeBoundary('e', 5)
         const basic3 = basic.writeBoundary('efghi', 5).toggleTags(['t'], 6, 8)
         const testCases = [
-          { input: [ basic, 0 ], expected: [ [ 0, 0 ], 0 ] },
-          { input: [ basic, 1 ], expected: [ [ 0, 0 ], 1 ] },
-          { input: [ basic, 2 ], expected: [ [ 0, 0 ], 2 ] },
-          { input: [ basic, 3 ], expected: [ [ 0, 0 ], 2 ] }, // boundaries mapped to DOM become /flat/
-          { input: [ basic, 4 ], expected: [ [ 0, 0 ], 3 ] },
-          { input: [ basic, 5 ], expected: [ [ 0, 0 ], 4 ] },
-          { input: [ basic2, 0 ], expected: [ [ 0, 0 ], 0 ] },
-          { input: [ basic2, 1 ], expected: [ [ 0, 0 ], 1 ] },
-          { input: [ basic2, 2 ], expected: [ [ 0, 0 ], 2 ] },
-          { input: [ basic2, 3 ], expected: [ [ 0, 0 ], 2 ] }, // boundaries mapped to DOM become /flat/
-          { input: [ basic2, 4 ], expected: [ [ 0, 0 ], 3 ] },
-          { input: [ basic2, 5 ], expected: [ [ 0, 0 ], 4 ] },
-          { input: [ basic2, 6 ], expected: [ [ 0, 0 ], 5 ] },
-          { input: [ basic3, 12 ], expected: [ [ 0, 2 ], 2 ] },
+          { input: [basic, 0], expected: [[0, 0], 0] },
+          { input: [basic, 1], expected: [[0, 0], 1] },
+          { input: [basic, 2], expected: [[0, 0], 2] },
+          { input: [basic, 3], expected: [[0, 0], 2] }, // boundaries mapped to DOM become /flat/
+          { input: [basic, 4], expected: [[0, 0], 3] },
+          { input: [basic, 5], expected: [[0, 0], 4] },
+          { input: [basic2, 0], expected: [[0, 0], 0] },
+          { input: [basic2, 1], expected: [[0, 0], 1] },
+          { input: [basic2, 2], expected: [[0, 0], 2] },
+          { input: [basic2, 3], expected: [[0, 0], 2] }, // boundaries mapped to DOM become /flat/
+          { input: [basic2, 4], expected: [[0, 0], 3] },
+          { input: [basic2, 5], expected: [[0, 0], 4] },
+          { input: [basic2, 6], expected: [[0, 0], 5] },
+          { input: [basic3, 12], expected: [[0, 2], 2] },
         ]
         // test(funcUnderTest, testCases.at(-1))
         testAll(funcUnderTest, testCases)
@@ -229,10 +229,10 @@ describe('Renderer', function () {
         const testCases = [
           // note that we expect lb - 1, lb to be in the same kernel (map to the same output). that is because the path that pathToCursorInDOM gives the offset of the path based on cursors, and multiple boundaries can map to the same cursor. These ones do.
           //  same with rb, rb + 1
-          { input: [ toggleTwice, lb - 1 ], expected: [ [0, 2, 1, 1, 0, 0 ], 1] }, // ul li ul li p #text
-          { input: [ toggleTwice, lb ],     expected: [ [0, 2, 1, 1, 0, 0 ], 1] }, // ul li ul li p #text
-          { input: [ toggleTwice, rb ],     expected: [ [0, 2, 1, 2, 0, 0 ], 1] }, // ul li ul li p #text
-          { input: [ toggleTwice, rb + 1 ], expected: [ [0, 2, 1, 2, 0, 0 ], 1] }, // ul li ul li p #text
+          { input: [toggleTwice, lb - 1], expected: [[0, 2, 1, 1, 0, 0], 1] }, // ul li ul li p #text
+          { input: [toggleTwice, lb], expected: [[0, 2, 1, 1, 0, 0], 1] }, // ul li ul li p #text
+          { input: [toggleTwice, rb], expected: [[0, 2, 1, 2, 0, 0], 1] }, // ul li ul li p #text
+          { input: [toggleTwice, rb + 1], expected: [[0, 2, 1, 2, 0, 0], 1] }, // ul li ul li p #text
         ]
 
         testAll(funcUnderTest, testCases)

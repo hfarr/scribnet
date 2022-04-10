@@ -237,7 +237,7 @@ describe('Doc', function () {
   })
 
   describe('indentation', function () {
-    
+
     const testDoc = parseDoc(`
       h1 < 'A List'>      # 0 to 6
       p < 'Sample text'>  # 7 to 18
@@ -268,8 +268,8 @@ describe('Doc', function () {
     describe('enterTab', function () {
 
 
-      it ('increases nesting of single interior list', function () {
-        const actual = testDoc.enterTab(23,23)
+      it('increases nesting of single interior list', function () {
+        const actual = testDoc.enterTab(23, 23)
 
         const expected = parseDoc(`
           h1 < 'A List'>      # 0 to 6
@@ -620,12 +620,14 @@ describe('Doc', function () {
       assert(comp2.length === 0)
     })
 
-    it('supports comments', function() {
+    it('supports comments', function () {
       assert(parseDoc(`# non parsed, non error`))
       const testCases = [
         { input: `# non parsed, non error`, expected: `Doc <>` },
-        { input: `Doc < # non parsed, non error
-                  H1 < 'Hello' > >`, expected: `Doc < h1 < 'Hello' > >` },
+        {
+          input: `Doc < # non parsed, non error
+                  H1 < 'Hello' > >`, expected: `Doc < h1 < 'Hello' > >`
+        },
       ]
 
       const testOne = ({ input, expected }) => {
@@ -640,7 +642,7 @@ describe('Doc', function () {
 
   describe('List elements', function () {
     // A big collection of tests for lists, specifically.
-    
+
     const component = parseDoc(`
     h1 < 'A List' >           # boundaries 0-6
     ul <
@@ -654,12 +656,12 @@ describe('Doc', function () {
       li < h1 < 'C' > >       # 17-18
     >`)
 
-    const testDeleteBoundary = ({ input: { boundaries: [ lb, rb ], doc }, expected}, testCaseNum) => {
+    const testDeleteBoundary = ({ input: { boundaries: [lb, rb], doc }, expected }, testCaseNum) => {
       const actual = printDoc(doc.deleteBoundary(lb, rb))
       const expectedStr = printDoc(parseDoc(expected))
       assert.strictEqual(actual, expectedStr, `Test case ${testCaseNum}`)
     }
-    const testEnterNewLine = ({ input: { boundary, doc }, expected}, testCaseNum) => {
+    const testEnterNewLine = ({ input: { boundary, doc }, expected }, testCaseNum) => {
       const actual = printDoc(doc.newLine(boundary))
       const expectedStr = printDoc(parseDoc(expected))
       assert.strictEqual(actual, expectedStr, `Test case ${testCaseNum}`)
@@ -670,18 +672,28 @@ describe('Doc', function () {
       // immediately prior in an in-order traversal.
 
       const initial = `h1 < 'A List' >ul <li < h1 < 'A' > >li < h1 < 'B' >ul <li < h2 < 'bA' > >li < h2 < 'bB' > >>>li < h1 < 'C' > >>`
-          // expected: `h1 < 'A List' >ul <li < h1 < 'A' > >li < h1 < 'B' >ul <li < h2 < 'bA' > >li < h2 < 'bB' > >>>li < h1 < 'C' > >>`},
+      // expected: `h1 < 'A List' >ul <li < h1 < 'A' > >li < h1 < 'B' >ul <li < h2 < 'bA' > >li < h2 < 'bB' > >>>li < h1 < 'C' > >>`},
       const testCases = [
-        { input: { boundaries: [ 6, 7 ], doc: component }, 
-          expected: `h1 < 'A ListA' >ul <li < h1 < 'B' >ul <li < h2 < 'bA' > >li < h2 < 'bB' > >>>li < h1 < 'C' > >>`},
-        { input: { boundaries: [ 8, 9 ], doc: component }, 
-          expected: `h1 < 'A List' >ul <li < h1 < 'AB' > ul <li < h2 < 'bA' > >li < h2 < 'bB' >>>>li < h1 < 'C' > >>`},
-        { input: { boundaries: [ 10, 11 ], doc: component }, 
-          expected: `h1 < 'A List' >ul <li < h1 < 'A' > >li < h1 < 'BbA' >ul <li < h2 < 'bB' > >>>li < h1 < 'C' > >>`},
-        { input: { boundaries: [ 13, 14 ], doc: component }, 
-          expected: `h1 < 'A List' >ul <li < h1 < 'A' > >li < h1 < 'B' >ul <li < h2 < 'bAbB' > >>>li < h1 < 'C' > >>`},
-        { input: { boundaries: [ 16, 17 ], doc: component }, 
-          expected: `h1 < 'A List' >ul <li < h1 < 'A' > >li < h1 < 'B' >ul <li < h2 < 'bA' > >li < h2 < 'bBC' > >>>>`},
+        {
+          input: { boundaries: [6, 7], doc: component },
+          expected: `h1 < 'A ListA' >ul <li < h1 < 'B' >ul <li < h2 < 'bA' > >li < h2 < 'bB' > >>>li < h1 < 'C' > >>`
+        },
+        {
+          input: { boundaries: [8, 9], doc: component },
+          expected: `h1 < 'A List' >ul <li < h1 < 'AB' > ul <li < h2 < 'bA' > >li < h2 < 'bB' >>>>li < h1 < 'C' > >>`
+        },
+        {
+          input: { boundaries: [10, 11], doc: component },
+          expected: `h1 < 'A List' >ul <li < h1 < 'A' > >li < h1 < 'BbA' >ul <li < h2 < 'bB' > >>>li < h1 < 'C' > >>`
+        },
+        {
+          input: { boundaries: [13, 14], doc: component },
+          expected: `h1 < 'A List' >ul <li < h1 < 'A' > >li < h1 < 'B' >ul <li < h2 < 'bAbB' > >>>li < h1 < 'C' > >>`
+        },
+        {
+          input: { boundaries: [16, 17], doc: component },
+          expected: `h1 < 'A List' >ul <li < h1 < 'A' > >li < h1 < 'B' >ul <li < h2 < 'bA' > >li < h2 < 'bBC' > >>>>`
+        },
       ]
 
       testAll(testDeleteBoundary, testCases)
@@ -690,7 +702,7 @@ describe('Doc', function () {
     it('merges segments when a boundary between a list and succeeding segment is deleted', function () {
       const original = parseDoc(`ul < li < h1<'A'> > > h2<'B'>`)
       const testCases = [
-        { input: { boundaries: [ 1, 2 ], doc: original }, expected: `ul < li < h1<'AB'> > >` },
+        { input: { boundaries: [1, 2], doc: original }, expected: `ul < li < h1<'AB'> > >` },
       ]
 
       testDeleteBoundary(testCases[0], 0)
@@ -714,12 +726,12 @@ describe('Doc', function () {
       const minimal = parseDoc(`ul < li<h1<'A'>> li<h1<'B'> ul< li<h2<'bA'>> li<h2<'bB'>> > > >`)
 
       const testCases = [
-        { input: { boundaries: [ 1, 4 ], doc: minimal }, expected: `ul<li<h1<'AbA'>ul<li<h2<'bB'>>>>>`},
-        { input: { boundaries: [ 1, 5 ], doc: minimal }, expected: `ul<li<h1<'AA'>ul<li<h2<'bB'>>>>>`},
-        { input: { boundaries: [ 1, 6 ], doc: minimal }, expected: `ul<li<h1<'A'>ul<li<h2<'bB'>>>>>`},
-        { input: { boundaries: [ 0, 4 ], doc: minimal }, expected: `ul<li<h1<'bA'>ul<li<h2<'bB'>>>>>`},
+        { input: { boundaries: [1, 4], doc: minimal }, expected: `ul<li<h1<'AbA'>ul<li<h2<'bB'>>>>>` },
+        { input: { boundaries: [1, 5], doc: minimal }, expected: `ul<li<h1<'AA'>ul<li<h2<'bB'>>>>>` },
+        { input: { boundaries: [1, 6], doc: minimal }, expected: `ul<li<h1<'A'>ul<li<h2<'bB'>>>>>` },
+        { input: { boundaries: [0, 4], doc: minimal }, expected: `ul<li<h1<'bA'>ul<li<h2<'bB'>>>>>` },
         // ul can go away completely as well. test 4 is maybe better in a different set.
-        { input: { boundaries: [ 1, 7 ], doc: minimal }, expected: `ul<li<h1<'AbB'>>>`},
+        { input: { boundaries: [1, 7], doc: minimal }, expected: `ul<li<h1<'AbB'>>>` },
       ]
 
       testAll(testDeleteBoundary, testCases)

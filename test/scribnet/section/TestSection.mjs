@@ -140,20 +140,20 @@ describe(`Section`, function () {
       }
     })
 
-    describe('_locateBoundary*', function() {
+    describe('_locateBoundary*', function () {
       const testSection = Section.from(AtomicSection.from(...'AAAAA'), Section.from(), Section.from(AtomicSection.from(), AtomicSection.from()), AtomicSection.from(...'BBBBB'))
 
       it('yields expected boundary locations', function () {
         // overly prescriptive? maybe not. Suggests to me, though, that maybe I should just make this the implementation. Each section is just 1 + its normal length!
         // but I think I like demonstrating that the recursive definition is equal to this "closed form".
-        assert.deepStrictEqual(testSection._locateBoundary(0), [0, 0] )
-        assert.deepStrictEqual(testSection._locateBoundary(5), [0, 5] )
-        assert.deepStrictEqual(testSection._locateBoundary(6), [1, 0] )
-        assert.deepStrictEqual(testSection._locateBoundary(7), [2, 0] )
-        assert.deepStrictEqual(testSection._locateBoundary(8), [2, 1] )
-        assert.deepStrictEqual(testSection._locateBoundary(9), [3, 0] )
-        assert.deepStrictEqual(testSection._locateBoundary(10), [3, 1] )
-        assert.deepStrictEqual(testSection._locateBoundary(14), [3, 5] )
+        assert.deepStrictEqual(testSection._locateBoundary(0), [0, 0])
+        assert.deepStrictEqual(testSection._locateBoundary(5), [0, 5])
+        assert.deepStrictEqual(testSection._locateBoundary(6), [1, 0])
+        assert.deepStrictEqual(testSection._locateBoundary(7), [2, 0])
+        assert.deepStrictEqual(testSection._locateBoundary(8), [2, 1])
+        assert.deepStrictEqual(testSection._locateBoundary(9), [3, 0])
+        assert.deepStrictEqual(testSection._locateBoundary(10), [3, 1])
+        assert.deepStrictEqual(testSection._locateBoundary(14), [3, 5])
       })
 
 
@@ -172,30 +172,30 @@ describe(`Section`, function () {
           // in both the result is to pass back the input, essentially.
 
           const test_testSectionCases = [
-            [ 0, [ [0], 0 ] ],
-            [5, [ [ 0 ], 5 ]],
-            [6, [ [ 1 ], 0 ]],  // Section with no subPieces base case
-            [7, [ [ 2, 0 ], 0 ]],
-            [8, [ [ 2, 1 ], 0 ]],
-            [9, [ [ 3 ], 0 ]],
-            [14, [ [ 3 ], 5 ]],
+            [0, [[0], 0]],
+            [5, [[0], 5]],
+            [6, [[1], 0]],  // Section with no subPieces base case
+            [7, [[2, 0], 0]],
+            [8, [[2, 1], 0]],
+            [9, [[3], 0]],
+            [14, [[3], 5]],
           ]
           const test_testSection2Cases = [
-            [ 0, [ [ 0, 0 ], 0 ] ],
-            [ 3, [ [ 0, 0 ], 3 ] ],
-            [ 4, [ [ 0, 1, 0 ], 0 ] ],
-            [ 6, [ [ 0, 1, 0 ], 2 ] ],
+            [0, [[0, 0], 0]],
+            [3, [[0, 0], 3]],
+            [4, [[0, 1, 0], 0]],
+            [6, [[0, 1, 0], 2]],
           ]
           const test_testSection3Cases = [
-            [ 0, [ [ ], 0 ] ],
-            [ 3, [ [ ], 3 ] ],
+            [0, [[], 0]],
+            [3, [[], 3]],
           ]
-          const test = (CuT, [ input, expectedOutput ]) => assert.deepStrictEqual(CuT._locateBoundaryFullyQualified(input), expectedOutput)
+          const test = (CuT, [input, expectedOutput]) => assert.deepStrictEqual(CuT._locateBoundaryFullyQualified(input), expectedOutput)
 
           for (const testCase of test_testSectionCases) test(testSection, testCase)
           for (const testCase of test_testSection2Cases) test(testSection2, testCase)
           for (const testCase of test_testSection3Cases) test(testSection3, testCase) // AtomicSection base case
-          test(testSection4, [ 0, [ [ ], 0 ] ]) // Section with no subPieces base case
+          test(testSection4, [0, [[], 0]]) // Section with no subPieces base case
 
         })
 
@@ -203,8 +203,8 @@ describe(`Section`, function () {
     })
 
 
-    describe('boundariesLength', function() {
-      it('considers topologically overlapping boundaries the same', function() {
+    describe('boundariesLength', function () {
+      it('considers topologically overlapping boundaries the same', function () {
         // this is my way of saying that when two Section have a boundary in the same "place" it is considered one "boundary"
         // as a whole. For example, say a Section contains two AtomicSection. on the whole there are 3 Boundary,
         // far left, one between the AtomicSection, far right. On the far left the Section itself would contribute 
@@ -231,19 +231,19 @@ describe(`Section`, function () {
         basicSection.delete(10, 23)
         assert(basicSection.eq(Section.from(...listSections)))
       })
-      it('deletes "within" a Section, if a delete is contained within a section.', function (){ // poor naming for this test. The idea: When deleting Section uses 'split' to cut out the deleted Section. but it doesn't join the pieces, it is a deep cut all the way down.
-        const result = highSection.delete(2,3)
+      it('deletes "within" a Section, if a delete is contained within a section.', function () { // poor naming for this test. The idea: When deleting Section uses 'split' to cut out the deleted Section. but it doesn't join the pieces, it is a deep cut all the way down.
+        const result = highSection.delete(2, 3)
         assert.equal(result.subPieces.length, highSection.subPieces.length);
       })
 
       it('cuts across sections correctly', function () {
-        const result = highSection.delete(8,12)
+        const result = highSection.delete(8, 12)
         assert.equal(result.subPieces.length, highSection.subPieces.length);
       })
-      it('cuts out interior sections', function() {
+      it('cuts out interior sections', function () {
         const testSection = Section.from(...["AAA", "BBB", "CCC"].map(wrapAtomic))
 
-        const result = testSection.delete(2,7)
+        const result = testSection.delete(2, 7)
 
         assert.equal(result.subPieces.length, testSection.subPieces.length - 1)
         assert.equal(result.atoms.join(''), 'AACC')
@@ -251,7 +251,7 @@ describe(`Section`, function () {
 
     })
 
-    describe('deleteBoundary', function() {
+    describe('deleteBoundary', function () {
       it('deletes correctly', function () {
         const result = testSection.deleteBoundary(3, 4)
 
@@ -262,11 +262,11 @@ describe(`Section`, function () {
         assert.deepStrictEqual(result.atoms.join(''), expectedString)
 
         // Since a boundary between segments is deleted the segments are joined
-        assert.deepStrictEqual(result.subPieces[0].subPieces.length , testSection.cutEmpty().subPieces[0].subPieces.length - 1)
+        assert.deepStrictEqual(result.subPieces[0].subPieces.length, testSection.cutEmpty().subPieces[0].subPieces.length - 1)
 
       })
 
-      it('has correct merge behavior', function() {
+      it('has correct merge behavior', function () {
         // Not said in test name, but a delete boundary can be thought of as taking everything between the boundaries and cutting it out,
         // effectively bringing the boundaries together like drawing a curtain. The outcome then is one boundary, in theory.
         // An upshot to that is deleteBoundary(x, x) returns the original, as there's no items between the boundaries meaning the
@@ -289,12 +289,12 @@ describe(`Section`, function () {
         // cutting any ordered pair of (3,4,5,6) should yield a section with identical atoms, and either 1 or 2 fewer
         // subPieces.
         const cases = [
-          [3,4], [3,5], [3,6],
-          [4,5], [4,6], 
-          [5,6]
+          [3, 4], [3, 5], [3, 6],
+          [4, 5], [4, 6],
+          [5, 6]
         ]
 
-        for (const [ lb, rb ] of cases ) {
+        for (const [lb, rb] of cases) {
           assert.strictEqual(testSection.deleteBoundary(lb, rb).subPieces.length, testSection.subPieces.length - (rb - lb))
           assert.strictEqual(testSection2.deleteBoundary(lb, rb).subPieces.length, testSection2.subPieces.length - (rb - lb))
 
@@ -314,11 +314,11 @@ describe(`Section`, function () {
         // first and last boundaries that can be the right boundary of an adjacent pair
         const testSectionNonEmpty = testSection.cutEmpty()
         for (let i = 1; i < testSectionNonEmpty.boundariesLength; i++) {
-          if (testSectionNonEmpty.areBoundariesAdjacent( i - 1, i ))
-            testCases.push( { bounds: [ i - 1, i ], section: testSectionNonEmpty } )
+          if (testSectionNonEmpty.areBoundariesAdjacent(i - 1, i))
+            testCases.push({ bounds: [i - 1, i], section: testSectionNonEmpty })
         }
 
-        const testOne = ( { bounds: [lb, rb], section}, testCaseNum ) => {
+        const testOne = ({ bounds: [lb, rb], section }, testCaseNum) => {
           const failMsg = `Test case ${testCaseNum}: Expect result section to have one fewer boundaries than original. Bounds lb ${lb}, rb ${rb}`
           assert.strictEqual(section.deleteBoundary(lb, rb).boundariesLength, section.boundariesLength - 1, failMsg)
         }
@@ -326,7 +326,7 @@ describe(`Section`, function () {
         testOne(testCases[2], 3)
 
         testAll(testOne, testCases)
-        
+
       })
     })
 
@@ -341,7 +341,7 @@ describe(`Section`, function () {
         assert.strictEqual(result.atoms.join(''), expectedString)
         assert.strictEqual(result.subPieces.length, 1)
         assert.strictEqual(result.subPieces[0].subPieces.length, 1)
-        assert.strictEqual(result.subPieces[0].subPieces[0].subPieces.length, expectedString.length )
+        assert.strictEqual(result.subPieces[0].subPieces[0].subPieces.length, expectedString.length)
         // assert.strictEqual(result.subPieces[0].subPieces.length, 1)
 
       })
@@ -394,31 +394,31 @@ describe(`Section`, function () {
       // })
     })
 
-    describe('insertBoundary', function() {
-      it('produces matching strings with identical insertions to adjacent boundaries', function() {
+    describe('insertBoundary', function () {
+      it('produces matching strings with identical insertions to adjacent boundaries', function () {
 
         const insertString = '___'
         const adjacentPairs = [
-          [3,4],
-          [7,8],
-          [8,9],  // boundary 8 is the single boundary of an empty section so its adjacent to two other boundaries
-          [12,13],
-          [16,17],
-          [20,21], 
-          [21,22], // boundary 21 is another single boundary of an empty Section (one that contains an empty AtomicSection note)
-          [25,26],
-          [29,30],
-          [33,34],
-          [37,38],
+          [3, 4],
+          [7, 8],
+          [8, 9],  // boundary 8 is the single boundary of an empty section so its adjacent to two other boundaries
+          [12, 13],
+          [16, 17],
+          [20, 21],
+          [21, 22], // boundary 21 is another single boundary of an empty Section (one that contains an empty AtomicSection note)
+          [25, 26],
+          [29, 30],
+          [33, 34],
+          [37, 38],
         ]
-        for (const [ b1, b2 ] of adjacentPairs ) {
+        for (const [b1, b2] of adjacentPairs) {
           assert.deepStrictEqual(testSection.insertBoundary(b1, insertString).atoms, testSection.insertBoundary(b2, insertString).atoms)
         }
       })
     })
 
-    describe('addSubSections', function(){ 
-      it('appends to an empty section successfully', function() {
+    describe('addSubSections', function () {
+      it('appends to an empty section successfully', function () {
         const emptySec = Section.from()
         const appendee1 = Section.from(AtomicSection.from('AAA'), AtomicSection.from('BBB'))
         const appendee2 = AtomicSection.from('CCC')
@@ -427,7 +427,7 @@ describe(`Section`, function () {
         const expectedString = 'AAABBBCCC'
         assert.equal(result.atoms.join(''), expectedString)
       })
-      it('supports chaining calls', function() {
+      it('supports chaining calls', function () {
         const emptySec = Section.from()
         const appendee1 = Section.from(AtomicSection.from('AAA'), AtomicSection.from('BBB'))
         const appendee2 = AtomicSection.from('CCC')
@@ -497,7 +497,7 @@ describe(`Section`, function () {
       })
     })
 
-    describe('sectionSplit', function() {
+    describe('sectionSplit', function () {
 
       // const testSection = Section.from(
       //   Section.from(AtomicSection.from(...'AaA'), AtomicSection.from(...'BbB'), AtomicSection.from(), AtomicSection.from(...'CcC')),
@@ -510,7 +510,7 @@ describe(`Section`, function () {
       //   AtomicSection.from(...'JjJ')
       // )
 
-      it ('does not split AtomicSegments', function () {
+      it('does not split AtomicSegments', function () {
 
         // TODO
 
@@ -520,7 +520,7 @@ describe(`Section`, function () {
 
       })
 
-      it ('creates correct splits', function () {
+      it('creates correct splits', function () {
         const expectedLeft = Section.from(
           Section.from(AtomicSection.from(...'AaA'), AtomicSection.from(...'BbB'), AtomicSection.from(), AtomicSection.from(...'CcC')),
         )
@@ -534,7 +534,7 @@ describe(`Section`, function () {
           AtomicSection.from(...'JjJ')
         )
 
-        const [ actualLeft, actualRight ] = testSection.sectionSplit(10)
+        const [actualLeft, actualRight] = testSection.sectionSplit(10)
 
         assert(actualLeft.structureEq(expectedLeft))
         assert(actualRight.structureEq(expectedRight))
@@ -569,16 +569,16 @@ describe(`Section`, function () {
 
         assert(actual.structureEq(expected))
       })
-      
+
       describe('sectionTriSplit', function () {
         it('does something', function () {
-        
-          const [ l, m, r ] = testSection.sectionTriSplit(10, 27)
+
+          const [l, m, r] = testSection.sectionTriSplit(10, 27)
           const expectedLeft = Section.from(
             Section.from(AtomicSection.from(...'AaA'), AtomicSection.from(...'BbB'), AtomicSection.from()),
           )
           const expectedMiddle = Section.from(
-            Section.from( AtomicSection.from(...'CcC')),
+            Section.from(AtomicSection.from(...'CcC')),
             AtomicSection.from(...'DdD'),
             AtomicSection.from(...'EeE'),
             Section.from(AtomicSection.from()),
@@ -595,7 +595,7 @@ describe(`Section`, function () {
           assert(l.structureEq(expectedLeft))
           assert(m.structureEq(expectedMiddle))
           assert(r.structureEq(expectedRight))
-        
+
         })
       })
 
@@ -608,12 +608,12 @@ describe(`Section`, function () {
       it('locates correct "index" in the atoms', function () {
         const cases = [
           [0, 0], [3, 3], [4, 3], [7, 6], [8, 6], [9, 6],
-          [12, 9], [13,9], [16, 12], [17, 12],
+          [12, 9], [13, 9], [16, 12], [17, 12],
           [18, 13], [19, 14],
           [20, 15], [21, 15], [22, 15],
-          [ testSection.boundariesLength - 1, testSection.length ]
+          [testSection.boundariesLength - 1, testSection.length]
         ]
-        for (const [ input, output ] of cases) {
+        for (const [input, output] of cases) {
           testPair(input, output)
         }
 
@@ -631,7 +631,7 @@ describe(`Section`, function () {
     })
 
     describe('structureEq', function () {
-      
+
       // const testSectionMirror = 
       const testSectionMirror = Section.from(
         Section.from(AtomicSection.from(...'AaA'), AtomicSection.from(...'BbB'), AtomicSection.from(), AtomicSection.from(...'CcC')),
@@ -643,7 +643,7 @@ describe(`Section`, function () {
         Section.from(AtomicSection.from(...'IiI')),
         AtomicSection.from(...'JjJ')
       )
-      
+
       it('is structurally equivalent to itself', function () {
         assert(testSection.structureEq(testSection))
       })

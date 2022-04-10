@@ -2,10 +2,10 @@
 import assert from 'assert';
 const PATH = "/home/henry/dev/scribnet/views"
 
-const { default: EditDocument, expose: {} } = await import(`${PATH}/js/scribnet/document/EditDocument.mjs`)
+const { default: EditDocument, expose: { } } = await import(`${PATH}/js/scribnet/document/EditDocument.mjs`)
 const { Segment, Context, Doc } = await import(`${PATH}/js/scribnet/section/index.mjs`)
 
-describe('EditDocument', function() {
+describe('EditDocument', function () {
   const editDoc = EditDocument.fromBlockContexts(
     [
       Context.createContext('h1', Segment.from(..."Document Title")),
@@ -35,14 +35,14 @@ describe('EditDocument', function() {
     return doc.document.contexts.some(ctx => ctx.segments.some(seg => seg.hasTag(tag)))
   }
 
-  describe('selection', function() {
-    it ('selected the correct string', function() {
+  describe('selection', function () {
+    it('selected the correct string', function () {
       editDoc.select(36, 46)
       assert.strictEqual(editDoc.selection(), "paragraph.")
 
     })
 
-    it ('selects across Context correctly', function (){
+    it('selects across Context correctly', function () {
       testDocAlpha.select(14, 25)
       assert.strictEqual(testDocAlpha.selection(), 'ccDddddEee')
 
@@ -50,16 +50,16 @@ describe('EditDocument', function() {
 
   })
 
-  describe('applyTag', function() {
+  describe('applyTag', function () {
 
 
-    it('does not change the content', function() {
+    it('does not change the content', function () {
       // TODO remove/rewrite
       editDoc.select(34, 43)
       const nextDoc = editDoc.applyTag('strong')
       assert.strictEqual(nextDoc.toString(), editDoc.toString())
     })
-    it('has the same selection', function() {
+    it('has the same selection', function () {
       // TODO remove/rewrite
       editDoc.select(34, 43)
       const nextDoc = editDoc.applyTag('strong')
@@ -67,17 +67,17 @@ describe('EditDocument', function() {
       assert.strictEqual(nextDoc.focus, editDoc.focus)
     })
 
-    it('has the tag after applying', function() {
+    it('has the tag after applying', function () {
       testDocAlpha.select(24, 26)
       const result = testDocAlpha.applyTag('tag1')
       assert(!docHasTagAnywhere(testDocAlpha, 'tag1'), "Expected test doc to start without 'tag1' tag")
       assert(docHasTagAnywhere(result, 'tag1'), "Expected document result of applying 'tag1' to contain 'tag1'")
     })
-    it('applies the tag in the correct place', function() {
+    it('applies the tag in the correct place', function () {
       testDocAlpha.select(24, 26)
       const resultDoc = testDocAlpha.applyTag('tag1').document
       assert(resultDoc.contexts[2].segments[1].hasTag('tag1'), "expect correct segment to have tag")
-      
+
       const resultDivisionOfStrings = resultDoc.contexts[2].segments.map(s => s.atoms.join(''))
       // the middle 'ee' segment is the segment to which the tag is applied. If the tagged portion were different, the resulting
       // division of the segments into the strings they represent would not match the array.
@@ -86,34 +86,34 @@ describe('EditDocument', function() {
 
   })
 
-  describe('toggleTag', function() {
-    it('toggles on', function(){ 
+  describe('toggleTag', function () {
+    it('toggles on', function () {
       testDocAlpha.select(24, 26)
       const result = testDocAlpha.toggleTag('tag1')
       assert(!docHasTagAnywhere(testDocAlpha, 'tag1'), "Expected test doc to start without 'tag1' tag")
       assert(docHasTagAnywhere(result, 'tag1'), "Expected document result of toggling 'tag1' to contain 'tag1'")
     })
-    it('toggles off', function(){ 
+    it('toggles off', function () {
       testDocAlpha.select(24, 26)
       const original = testDocAlpha.applyTag('tag1')
       const result = original.toggleTag('tag1')
       assert(docHasTagAnywhere(original, 'tag1'), "Expected original doc to start with 'tag1' tag")
       assert(!docHasTagAnywhere(result, 'tag1'), "Expected result doc to not have 'tag1' tag")
     })
-    it('toggles on and off', function(){ 
+    it('toggles on and off', function () {
       testDocAlpha.select(24, 26)
       const result1 = testDocAlpha.toggleTag('tag1')
       const result2 = result1.toggleTag('tag1')
       assert(docHasTagAnywhere(result1, 'tag1'), "Expected result1 to have 'tag1' tag")
       assert(!docHasTagAnywhere(result2, 'tag1'), "Expected result2 to not have 'tag1' tag")
     })
-    it('works across Context boundaries', function() {
-      testDocAlpha.select(14,25)
+    it('works across Context boundaries', function () {
+      testDocAlpha.select(14, 25)
       const result = testDocAlpha.toggleTag('tag1')
       assert(docHasTagAnywhere(result, 'tag1'), 'expect result to have \'tag1\'')
     })
     it('applies tag if selection has mix of tagged and untagged Segments', function () {
-      testDocAlpha.select(24,26)
+      testDocAlpha.select(24, 26)
       const original = testDocAlpha.applyTag('tag1')
       const lb = 25
       const rb = 32
@@ -123,8 +123,8 @@ describe('EditDocument', function() {
     })
   })
 
-  describe('write', function() {
-    it('writes in the expected location', function() {
+  describe('write', function () {
+    it('writes in the expected location', function () {
       testDocAlpha.select(33)
       const result = testDocAlpha.write('_')
 
@@ -137,7 +137,7 @@ describe('EditDocument', function() {
       testDocAlpha.select(24, 26)
       const result1 = testDocAlpha.applyTag('tag1')
       result1.select(38)  // cursor resting on the empty context from testDocAlpha
-      const result2 = result1.write('a')  
+      const result2 = result1.write('a')
 
       assert.deepStrictEqual(result2.document.contexts[2].atoms, 'EeeeeFffffGgggg'.split(''), "expect writing after toggling a tag to write to correct location")
       assert.deepStrictEqual(result2.document.contexts[3].atoms, ['a'], "expect writing after toggling a tag to write to correct location")
@@ -145,7 +145,7 @@ describe('EditDocument', function() {
     })
   })
 
-  describe('enterNewline', function() {
+  describe('enterNewline', function () {
 
     // it('advances cursor position to start of new context', function () {
     it('breaks at every possible cursor location and advances cursor position to start of new context', function () {
@@ -171,17 +171,17 @@ describe('EditDocument', function() {
     })
   })
 
-  describe('delete', function() {
+  describe('delete', function () {
     it('deletes correctly', function () {
 
     })
 
-    it('deletes single boundary correctly when cursor positioned after a Context with more than one segment', function () { 
+    it('deletes single boundary correctly when cursor positioned after a Context with more than one segment', function () {
       // a mouthful of a test function. But a peculiar edge case we want to allow for.
       testDocAlpha.select(24, 26)
       const result1 = testDocAlpha.applyTag('tag1')
       result1.select(38)  // cursor resting on the empty context from testDocAlpha
-      const result2 = result1.delete()  
+      const result2 = result1.delete()
 
       assert.strictEqual(result2.document.contexts.length, testDocAlpha.document.contexts.length - 1, "expect delete on the boundary of an empty context to remove that context")
 
@@ -197,7 +197,7 @@ describe('EditDocument', function() {
       assert(docHasTagAnywhere(result, 'tag1'), 'expect result to have tag1')
     })
 
-    it('preserves tags of segments involved in delete', function() {
+    it('preserves tags of segments involved in delete', function () {
       // TODO my tests for EditDoc know a little too much about the underlying "Doc". For now... that is okay. What I need is more "query" capabilities to ask
       //  an edit doc things about itself so I don't have to unpack its guts.
       testDocAlpha.select(24, 27)

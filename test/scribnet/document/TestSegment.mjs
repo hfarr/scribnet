@@ -12,14 +12,14 @@ describe('Segment', function () {
 
   })
 
-  describe('hasTags', function() {
-    it('ignores case', function() {
+  describe('hasTags', function () {
+    it('ignores case', function () {
       assert(basicSegment.hasTag('p') && basicSegment.hasTag('P'))
       assert(segmentEmStrong.hasTag('em') && segmentEmStrong.hasTag('EM'))
       assert(!segmentEmStrong.hasTag('h1') && !segmentEmStrong.hasTag('H1'))
     })
 
-    it('returns false for tags that are not present', function() {
+    it('returns false for tags that are not present', function () {
       assert(!segmentEmStrong.hasTag('H1'))
       assert(!basicSegment.hasTag('PRE'))
     })
@@ -47,19 +47,19 @@ describe('Segment', function () {
     })
   })
 
-  describe('removeTags', function() {
-    it('should yield a segment without the removed tags', function() {
+  describe('removeTags', function () {
+    it('should yield a segment without the removed tags', function () {
       assert(!segmentEmStrong.removeTags(['em']).hasTag('em'))
       assert(!segmentEmStrong.removeTags(['p', 'strong']).hasTag('p'))
       assert(!segmentEmStrong.removeTags(['p', 'strong']).hasTag('strong'))
     })
 
-    it('should leave in place non-removed tags', function() {
+    it('should leave in place non-removed tags', function () {
       assert(segmentEmStrong.removeTags(['em']).hasTag('p'))
       assert(segmentEmStrong.removeTags(['em']).hasTag('strong'))
     })
 
-    it('should not change the original', function() {
+    it('should not change the original', function () {
       const copied = segmentEmStrong.copy()
       segmentEmStrong.removeTags(['em']).hasTag('em')
       assert(segmentEmStrong.eq(copied))
@@ -80,16 +80,16 @@ describe('Segment', function () {
   // yeah this is just. like "XOR" between two sets (S1 u S2) - (S1 n S2)
   // highly suggestive we oughta kick it up a level of abstraction. I'm
   // fairly committed to implementing all these operations though.
-  describe('toggleTags', function() {
+  describe('toggleTags', function () {
     const tagsToToggle = ['em', 'mark', 'span']
-    it ('adds and removes tags', function() {
+    it('adds and removes tags', function () {
       const toggled = segmentEmStrong.toggleTags(tagsToToggle)
       assert(!toggled.hasTag('em'))
       assert(toggled.hasTag('mark'))
       assert(toggled.hasTag('span'))
     })
 
-    it ('is self invertible', function() {
+    it('is self invertible', function () {
       const twiceToggled = segmentEmStrong.toggleTags(tagsToToggle).toggleTags(tagsToToggle)
       assert(segmentEmStrong.eq(twiceToggled))
     })
@@ -150,7 +150,7 @@ describe('ListSegment', function () {
       checkLen(listSeg2)
       checkLen(mixedTagSegments)
     })
-    it('is creates an equivalent segment ', function() {
+    it('is creates an equivalent segment ', function () {
       const checkEq = seg => {
         for (let i = 0; i <= seg.length; i++) {
           assert(seg.eq(seg.split(i)), `Failed for seg ${seg}.`)
@@ -194,24 +194,24 @@ describe('ListSegment', function () {
     })
   })
 
-  describe('delete', function() {
+  describe('delete', function () {
 
-    it('removes the characters', function() {
-      const deleted = listSeg2.delete(17,22)
+    it('removes the characters', function () {
+      const deleted = listSeg2.delete(17, 22)
       // const expected = 
       assert(deleted.characters.join('') === "Test ContentBare thensome emphasisBUT not here")
     })
   })
 
-  describe('insert',function() {
-    it('writes the text', function() {
+  describe('insert', function () {
+    it('writes the text', function () {
       const inserted = listSeg2.insert(22, 'and this text, ')
       assert(inserted.characters.join('') === "Test ContentBare text and this text, thensome emphasisBUT not here")
     })
   })
 
-  describe('toggleTags', function() {
-    it('applies tags if any component segment lacks the tag', function() {
+  describe('toggleTags', function () {
+    it('applies tags if any component segment lacks the tag', function () {
       const expected_1 = ListSegment.from(
         Segment.taggedSegment(['h1'], 'Test Content'),
         Segment.taggedSegment(['p'], 'Bare text then'),
@@ -251,7 +251,7 @@ describe('ListSegment', function () {
       // assert(mixedTagSegments.applyTags(['em'], 47, 51).segments.slice(3,6).every(s => s.hasTag('strong')))
     })
 
-    it('is removes tags if ALL segments have the tag', function() {
+    it('is removes tags if ALL segments have the tag', function () {
       const boldApplied = boldApplyExpected.toggleTags(['strong'], 28, 42)
       assert(boldApplied.toggleTags(['strong'], 28, 42).eq(boldApplyExpected.removeTags(['strong'], 28, 42)))
       // assert(boldApplyExpected.toggleTags(['strong'], 31, 46).toggleTags(['strong'], 31, 46).eq(boldApplyExpected))

@@ -24,7 +24,7 @@ export function testAll(singleTester, testCases) {
 export function testFuncAll(func, testCases) {
   // for (const testCase of testCases )
   //   testFunc(func, testCase)
-  testAll( (testCase, testCaseNum) => testFunc(func, testCase, testCaseNum), testCases )
+  testAll((testCase, testCaseNum) => testFunc(func, testCase, testCaseNum), testCases)
 }
 
 export function testEqualAll(testCases) {
@@ -59,11 +59,11 @@ function printBoundaries(doc) {
   const mapped = lines.map(line => {
     if (interior.test(line)) {
 
-      const [ matched, group ] = line.match(interior)
+      const [matched, group] = line.match(interior)
       const segmentText = group.replaceAll(/' '/g, '')
       const length = segmentText.length
 
-      const result = `${rpad(maxLength, line)}# ${nextBoundary} to ${ nextBoundary + length }`
+      const result = `${rpad(maxLength, line)}# ${nextBoundary} to ${nextBoundary + length}`
       nextBoundary += length + 1
       return result
     }
@@ -71,7 +71,7 @@ function printBoundaries(doc) {
   })
 
   return mapped.join('\n')
-} 
+}
 
 
 export { DocParser, DocPrinter, parseDoc, printDoc, parseContext, printContext, printBoundaries }
