@@ -80,6 +80,19 @@ class Section {
     return this.copyFrom(...this.subPieces, ...other.subPieces)
   }
 
+  deepJoin(other) {
+    if (other === undefined) return this
+
+    const middleLeft = this.subPieces.at(-1)
+    const middleRight = other.subPieces.at(0)
+
+    if ( middleLeft !== undefined && middleRight !== undefined ) {
+      return this.copyFrom(...this.subPieces.slice(0, -1), middleLeft.deepJoin(middleRight), ...other.subPieces.slice(1))
+    } 
+
+    return this.copyFrom(...this.subPieces, ...other.subPieces)
+  }
+
   /**
    * Merge is the inverse of "split". 
    * Merging does not commute, A.merge(B) is not necessarily the same as B.merge(A)
@@ -441,6 +454,61 @@ class Section {
 
   }
 
+  stitchesWith(other) {
+    return true
+  }
+
+  stitchBehavior(other) {
+
+    const midLeft = this.subPieces.at(-1)
+    const midRight = other.subPieces.at(0)
+    if (midLeft !== undefined && midRight !== undefined) {
+      return [ this.splice(-1, 1, ...midLeft.stitch(midRight), ...other.subPieces.slice(1)) ]
+    }
+
+    return [ this.join(other) ]
+  }
+
+  stitch(other) {
+
+    if (other instanceof AtomicSection) {
+      if (this.subPieces.length > 0) {
+        return [ this.splice(-1, 1, ...this.subPieces.at(-1).stitch(other)) ]
+      }
+      return [ this.addSubSections(other) ]
+    }
+
+    if (this.stitchesWith(other)) {
+      return this.stitchBehavior(other)
+    }
+
+    return [ this, other ]
+  }
+
+  snipStop() {
+    return false
+  }
+
+  snip(boundary) {
+
+    // const path = this._sectionPathToBoundary(boundary)
+    if (this.subPieces.length === 0) {
+      return [ this, undefined, !this.snipStop() ]
+    }
+    const [ secIdx, offset ] = this._locateBoundary(boundary)
+    
+    const [ snipped, rest, stopped ] = this.subPieces[secIdx].snip(offset)
+    if (stopped) {
+      return [ snipped, this.splice(secIdx, 1, rest), true ]
+    } 
+    if ( !this.snipStop() ) {
+      return [ snipped, this.splice(secIdx, 1), true ]
+    }
+
+    return [ this, undefined, false ]
+
+  }
+
   // least intrusive boundary join? or perhaps. using the mix api?
   deleteBoundary(startBoundary, endBoundary = undefined) {
     // Delete boundary is a complex tree operation.
@@ -462,9 +530,26 @@ class Section {
 
       const newLeftSection = this.subPieces[leftSectionIndex].deleteBoundary(leftOffset)
       const newRightSection = this.subPieces[rightSectionIndex].deleteBoundary(0, rightOffset)
-      const patchedSections = newLeftSection.mix(newRightSection)
+      // const patchedSections = newLeftSection.mix(newRightSection)
 
-      return this.splice(leftSectionIndex, 1 + (rightSectionIndex - leftSectionIndex), ...patchedSections).cutEmpty()
+      // return this.splice(leftSectionIndex, 1 + (rightSectionIndex - leftSectionIndex), ...patchedSections).cutEmpty()
+
+      const [ snipLeft, left ] = newLeftSection.snip(newLeftSection.boundariesLength - 1)
+      const [ snipRight, right ] = newRightSection.snip(0)
+
+      const [ stitchedSection, ...rest ] = snipLeft.stitch(snipRight)
+      let mixed
+      if (left !== undefined) {
+        mixed = [ ...left.mix(stitchedSection), ...rest ]
+      } else {
+        mixed = [ stitchedSection, ...rest ]
+      }
+
+      if (right !== undefined) {
+        mixed = mixed.at(-1).mix(right)
+      }
+
+      return this.splice(leftSectionIndex, 1 + (rightSectionIndex - leftSectionIndex), ...mixed).cutEmpty()
 
     } else {
       // This section is a common ancestor, but not the earliest common anscestor
@@ -1029,6 +1114,25 @@ class AtomicSection extends Section {
   }
   deleteBoundary(start, end = undefined) {
     return this.delete(start, end)
+  }
+
+  snipStop() {
+    return true
+  }
+
+  snip(boundary) {
+    return [ this, undefined, false ]
+  }
+
+  stitchBehavior(other) {
+    return [ this.merge(other) ]
+  }
+
+  stitch(other) {
+    if (this.stitchesWith(other)) {
+      return this.stitchBehavior(other)
+    }
+    return [ this, other ]
   }
 
   // ============

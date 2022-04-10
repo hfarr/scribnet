@@ -147,6 +147,10 @@ class Context extends Section {
     return result
   }
 
+  snipStop() {
+    return true
+  }
+
   /**
    * Determines whether this Section is considered "empty".
    * Contexts are always non-empty, even if they have 0
@@ -224,6 +228,16 @@ class Context extends Section {
       return [ merged ]
     }
     return super.mixBehavior(other)
+  }
+
+  stitchBehavior(other) {
+    if (other instanceof ListItemContext) {
+      if (other.subPieces.length > 0) {
+        return [ ...this.stitch(other.subPieces.at(0)), ...other.subPieces.slice(1) ]
+      }
+    }
+
+    return super.stitchBehavior(other)
   }
 
   // ---------------------------
@@ -362,6 +376,10 @@ class MixedContext extends Context {
     return Section.from.bind(this)(...sections.map(sec => sec instanceof Segment ? Context.from(sec) : sec))
   }
 
+  snipStop() {
+    return false;
+  }
+
   indent(amount, offset) {
     // const [ child, nextChild, ...rest ] = this._sectionPathToBoundary(offset)
     const [ [child, nextChild], [childIndex, nextChildIndex] ] = this._pathToLocation(offset)
@@ -443,6 +461,7 @@ class ListContext extends MixedContext {
     return other instanceof ListContext
   }
 
+
   // mixBehavior(other) {
   //   if (other instanceof ListContext) {
   //     return 
@@ -469,6 +488,19 @@ class ListItemContext extends MixedContext {
       return [ this.merge(otherLeft) ]
 
     return [ this.merge(otherLeft), otherRight ]
+  }
+
+  stitchBehavior(other) {
+    if (other instanceof Context) {
+      if (this.subPieces.length > 0) {
+        this.splice(-1, 1, ...this.subPieces.at(-1).stitch(other))
+      }
+      return [ this.addSubSections(other) ]
+    }
+  }
+
+  snipStop() {
+    return true
   }
 
 }
