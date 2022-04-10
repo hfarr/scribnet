@@ -520,6 +520,14 @@ describe(`Section`, function () {
 
       })
 
+      it('splits correclty when a Section has no sub sections', function () {
+        const original = Section.from()
+        const [ actualLeft, actualRight ] = original.sectionSplit(0)
+        
+        assert.notStrictEqual(actualLeft, undefined)
+        assert.strictEqual(actualLeft, undefined)
+      })
+
       it('creates correct splits', function () {
         const expectedLeft = Section.from(
           Section.from(AtomicSection.from(...'AaA'), AtomicSection.from(...'BbB'), AtomicSection.from(), AtomicSection.from(...'CcC')),
