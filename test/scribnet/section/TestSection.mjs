@@ -525,7 +525,7 @@ describe(`Section`, function () {
         const [ actualLeft, actualRight ] = original.sectionSplit(0)
         
         assert.notStrictEqual(actualLeft, undefined)
-        assert.strictEqual(actualLeft, undefined)
+        assert.strictEqual(actualRight, undefined)
       })
 
       it('creates correct splits', function () {
