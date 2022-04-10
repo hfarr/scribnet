@@ -323,6 +323,30 @@ describe('Doc', function () {
     })
   })
 
+  describe('createList', function () {
+
+    it('creates new unordered list', function () {
+
+      const original = parseDoc(`h1 < 'Aaa' > p < 'Bbb' > `)
+
+      // const actual = original.createList(false, 5, 5)
+
+      const testCases = [
+        { actual: original.createList(false, 5, 5), expected: parseDoc(`h1 < 'Aaa' > ul < li < p < 'Bbb' > > >`)},
+      ]
+
+      const testOne = ({ actual, expected }, testNum) => {
+        assert.strictEqual(printDoc(actual), printDoc(expected), `[Test case ${testNum}] Expect to be equal`)
+      }
+
+      testAll(testOne , testCases)
+
+
+
+
+    })
+  })
+
   describe('contextBreak', function () {
     const testDoc = Doc.from(testContext1, Context.from(), testContext2)
     it('results in one more Context subPiece than original', function () {
