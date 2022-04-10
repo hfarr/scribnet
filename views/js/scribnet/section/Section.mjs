@@ -836,24 +836,16 @@ class Section {
   }
 
   sectionTriSplit(sb, eb = undefined) {
+    // TODO this needs more rigorous testing
     // this. Feels familiar to the 'structural' parts of mapRangeBoundary. I wonder. TODO wonder & implement.
     if (eb === undefined) eb = this.boundariesLength - 1
 
     const [startSection, rest=undefined] = this.sectionSplit(sb, true)
-    const [midSection=undefined, endSection=undefined] = rest?.sectionSplit(eb - sb) ?? []
+
+    const ebOffset = startSection?.boundariesLength ?? sb
+    const [midSection=undefined, endSection=undefined] = rest?.sectionSplit(eb - ebOffset)
 
     return [ startSection, midSection, endSection ]
-
-    // if (midSection !== undefined ) {
-    //   if (endSection !== undefined) {
-    //     return [startSection, midSection, endSection]
-    //   }
-    //   return [ startSection, rest ]
-    // } else if ( rest !== undefined ) {
-    //   return [ startSection, rest, undefined ]
-    // } else {
-    //   return [ undefined, this, undefined ]
-    // }
 
   }
 

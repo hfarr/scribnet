@@ -64,6 +64,20 @@ class ListCreateVisitor {
   }
 }
 
+class BlockUpdateVisitor {
+  constructor(tag) {
+    this.blockTag = tag
+  }
+  visit(section) {
+    switch(section.constructor.name) {
+      case 'Context':
+        return section.updateBlock(this.blockTag)
+      default: 
+        return section.copyFrom(...section.subPieces.map(sec => sec.accept(this)))
+    }
+  }
+}
+
 
 class Doc extends Section {
 
@@ -134,7 +148,7 @@ class Doc extends Section {
 
   updateBlocks(blockTag, startBoundary, endBoundary) {
 
-    return this.updateBlockAttributes({ blockTag }, startBoundary, endBoundary)
+    return this.visitThenListMix(new BlockUpdateVisitor(blockTag), startBoundary, endBoundary)
   }
 
   indent(amount, startBoundary, endBoundary) {
@@ -195,6 +209,10 @@ class Doc extends Section {
     return result
 
   }
+
+  // visitTheJoin(visitor, sb, eb) {
+
+  // }
 
   enterTab(startBoundary, endBoundary) {
     return this.visitThenListMix(new TabIncreaseVisitor(), startBoundary, endBoundary)
