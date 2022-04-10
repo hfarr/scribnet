@@ -309,23 +309,15 @@ describe('Doc', function () {
     })
 
     it('allows tabbing when cursor is straddling a context gap', function () {
-      const original = parseDoc(`
-      ul <
-        li < p<'A'> >
-        li < p<'B'> >
-      >
-      `)
-      const expected = parseDoc(`
-      ul <  li<ul<
-        li < p<'A'> >
-        li < p<'B'> >
-        
-      >> >
-      `)
+      const testCases = [
+        { args: [0, 2], original: parseDoc(`ul < li < p<'A'> > li < p<'B'> > >`), expected: parseDoc(`ul < li<ul< li < p<'A'> > li < p<'B'> > >> >`) },
+        { args: [0, 2], original: parseDoc(`ul < li < p<'A'> > li < p< '' > > >`), expected: parseDoc(`ul < li<ul< li < p<'A'> > li < p< '' > > >> >`) },
+        { args: [0, 2], original: parseDoc(`ul < li < p<'A'> > li < p< > > >`), expected: parseDoc(`ul < li<ul< li < p<'A'> > li < p< > > >> >`) },  // no segment to the 'p'
+      ]
 
-      const actual = original.enterTab(0,2)
+      const testOne = ( { original, args, expected }, testNum ) => assert.strictEqual(printDoc(original.enterTab(...args)), printDoc(expected), `[Test case ${testNum}] Expected strict equality`)
 
-      assert.strictEqual(printDoc(actual), printDoc(expected))
+      testAll(testOne, testCases)
     })
   })
 
