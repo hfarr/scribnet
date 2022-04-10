@@ -855,6 +855,22 @@ class Section {
     const [ l, m, r ] = this.sectionTriSplit(sb, eb)
     const midResult = m.accept(visitor)
 
+    if (midResult instanceof Array) {
+      let [ ml, ...rest ] = midResult
+      let result = ml
+      if (l !== undefined) result = l.merge(result)
+
+      ([ ml, ...rest ] = rest)
+      while ( ml !== undefined ) {
+        result = result.merge(ml)
+      }
+
+      if (r !== undefined) result = result.merge(r)
+
+      return result
+    }
+
+
     let result = midResult
     if (l !== undefined)  {
       result = l.merge(result)

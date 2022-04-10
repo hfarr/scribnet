@@ -29,7 +29,7 @@ class TabDecreaseVisitor {
       case 'Segment':
         return section
       default: 
-        return section.copyFrom(...section.subPieces.map(sec => sec.accept(this)))
+        return section.copyFrom(...section.subPieces.map(sec => sec.accept(this)).flat())
     }
   }
 }
