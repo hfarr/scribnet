@@ -424,6 +424,15 @@ class _EditDocument {
     return newDoc
   }
 
+  createList(ordered = false) {
+    const lb = this._startBoundary
+    const rb = this._endBoundary
+    const newDoc = this.copy()
+    newDoc.document = this.document.createList(ordered, lb, rb)
+    newDoc.notifySelectListeners()  // TODO gotta do away with this pattern... or update it... something. wow I really just kept copy/pasting the same todos huh
+    return newDoc
+  }
+
   indentBlock(amount = 1) {
     const lb = this._startBoundary
     const rb = this._endBoundary

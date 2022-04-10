@@ -287,7 +287,7 @@ export class Editor {
     this.controller.setTransitoryAction('^* |', () => {
       console.debug('start, star, space!')
       this.currentDocument.select(this.currentDocument.startOffset - 2, this.currentDocument.startOffset)
-      this.pushNewDoc(this.currentDocument.delete().setBlockTag('ul'))
+      this.pushNewDoc(this.currentDocument.delete().createList())
       // tempEd = tempED.setBlockTag('ul')
 
       // this.controller.deleteAction()
