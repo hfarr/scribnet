@@ -493,19 +493,19 @@ class Section {
 
     // const path = this._sectionPathToBoundary(boundary)
     if (this.subPieces.length === 0) {
-      return [ this, undefined, !this.snipStop() ]
+      return [ this, x => x, !this.snipStop() ]
     }
     const [ secIdx, offset ] = this._locateBoundary(boundary)
     
-    const [ snipped, rest, stopped ] = this.subPieces[secIdx].snip(offset)
+    const [ snipped, inject, stopped ] = this.subPieces[secIdx].snip(offset)
     if (stopped) {
-      return [ snipped, this.splice(secIdx, 1, rest), true ]
+      return [ snipped, x => this.splice(secIdx, 1, inject(x)), true ]
     } 
     if ( !this.snipStop() ) {
-      return [ snipped, this.splice(secIdx, 1), true ]
+      return [ snipped, x => x !== undefined ? this.splice(secIdx, 1, x) : this.splice(secIdx, 1), true ]
     }
 
-    return [ this, undefined, false ]
+    return [ this, x => x, false ]
 
   }
 
@@ -534,19 +534,15 @@ class Section {
 
       // return this.splice(leftSectionIndex, 1 + (rightSectionIndex - leftSectionIndex), ...patchedSections).cutEmpty()
 
-      const [ snipLeft, left ] = newLeftSection.snip(newLeftSection.boundariesLength - 1)
-      const [ snipRight, right ] = newRightSection.snip(0)
+      const [ snipLeft, injectLeft ] = newLeftSection.snip(newLeftSection.boundariesLength - 1)
+      const [ snipRight, injectRight ] = newRightSection.snip(0)
 
       const [ stitchedSection, ...rest ] = snipLeft.stitch(snipRight)
-      let mixed
-      if (left !== undefined) {
-        mixed = [ ...left.mix(stitchedSection), ...rest ]
-      } else {
-        mixed = [ stitchedSection, ...rest ]
-      }
+      const rightSide = injectRight()
+      const mixed = [ injectLeft(stitchedSection), ...rest ]
 
-      if (right !== undefined) {
-        mixed = mixed.at(-1).mix(right)
+      if (rightSide !== undefined) {
+        mixed.push(rightSide)
       }
 
       return this.splice(leftSectionIndex, 1 + (rightSectionIndex - leftSectionIndex), ...mixed).cutEmpty()
@@ -1121,7 +1117,7 @@ class AtomicSection extends Section {
   }
 
   snip(boundary) {
-    return [ this, undefined, false ]
+    return [ this, x => x, false ]
   }
 
   stitchBehavior(other) {

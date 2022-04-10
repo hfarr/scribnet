@@ -376,6 +376,11 @@ class MixedContext extends Context {
     return Section.from.bind(this)(...sections.map(sec => sec instanceof Segment ? Context.from(sec) : sec))
   }
 
+  empty() {
+    return this.subPieces.every(s => s.empty())
+  }
+
+
   snipStop() {
     return false;
   }
@@ -491,12 +496,13 @@ class ListItemContext extends MixedContext {
   }
 
   stitchBehavior(other) {
-    if (other instanceof Context) {
+    if (!(other instanceof ListItemContext)) {
       if (this.subPieces.length > 0) {
-        this.splice(-1, 1, ...this.subPieces.at(-1).stitch(other))
+        [ this.splice(-1, 1, ...this.subPieces.at(-1).stitch(other)) ]
       }
       return [ this.addSubSections(other) ]
     }
+    return Section.prototype.stitchBehavior.bind(this)(other)
   }
 
   snipStop() {
