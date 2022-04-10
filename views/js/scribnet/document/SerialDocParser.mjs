@@ -36,14 +36,11 @@ export default class SerialDocParser {
   parseContext(obj) {
 
     let childParser = this.parseSegment.bind(this)
-    let constructor = Context
-    if (['ol','ul','li'].includes(obj.blockTag)) {
+    if (['ol','ul','li'].includes(obj.blockTag)) {  // "MixedContext"
       childParser = this.parseContext.bind(this)
-      constructor = MixedContext
     }
 
-    const result = Object.create(constructor.prototype, Object.getOwnPropertyDescriptors(obj))
-    result.subPieces = [...result.subPieces.map(childParser)]
+    const result = Context.createContext(obj.blockTag, ...obj.subPieces.map(childParser))
     return result
   }
 
