@@ -240,6 +240,13 @@ class Context extends Section {
     return super.stitchBehavior(other)
   }
 
+  listMix(other) {
+    if (this instanceof ListContext && other instanceof ListContext) {
+      return this.mix(other)
+    }
+    return [ this, other ]
+  }
+
   // ---------------------------
   //  Context Specific functions
 

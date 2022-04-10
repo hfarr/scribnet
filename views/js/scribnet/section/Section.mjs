@@ -818,11 +818,12 @@ class Section {
 
     const [ ml, mr=undefined ] = this.subPieces[secIdx].sectionSplit(offset, favorRight)
 
-    if (mr === undefined) {
+    if (ml === undefined || mr === undefined) {
+      const mid = ml ?? mr 
       if (favorRight) {
-        return left.length > 0 ? [ this.copyFrom( ...left ), this.copyFrom( ml, ...right) ] : [ this.copyFrom( ml, ...right )]
+        return left.length > 0 ? [ this.copyFrom( ...left ), this.copyFrom( mid, ...right) ] : [ undefined, this.copyFrom( mid, ...right )]
       } else {
-        return right.length > 0 ? [ this.copyFrom( ...left, ml ), this.copyFrom( ...right) ] : [ this.copyFrom( ...left, ml ) ]
+        return right.length > 0 ? [ this.copyFrom( ...left, mid ), this.copyFrom( ...right) ] : [ this.copyFrom( ...left, mid ), undefined ]
       }
     }
 
@@ -853,32 +854,7 @@ class Section {
 
   stitchMap(visitor, sb=0, eb=this.boundariesLength - 1) {
     const [ l, m, r ] = this.sectionTriSplit(sb, eb)
-    const midResult = m.accept(visitor)
-
-    if (midResult instanceof Array) {
-      let [ ml, ...rest ] = midResult
-      let result = ml
-      if (l !== undefined) result = l.merge(result)
-
-      ([ ml, ...rest ] = rest)
-      while ( ml !== undefined ) {
-        result = result.merge(ml)
-      }
-
-      if (r !== undefined) result = result.merge(r)
-
-      return result
-    }
-
-
-    let result = midResult
-    if (l !== undefined)  {
-      result = l.merge(result)
-    }
-    if (r !== undefined)  {
-      result = result.merge(r)
-    }
-    return result
+    return [ l, m.accept(visitor), r ]
   }
 
 

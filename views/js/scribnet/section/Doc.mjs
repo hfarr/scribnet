@@ -151,12 +151,27 @@ class Doc extends Section {
     return this.contextSplit(boundary)
   }
 
+
+  visitThenListMix(visitor, startBoundary, endBoundary) {
+    let [ l, ...rest ] = this.stitchMap(visitor, startBoundary, endBoundary).flat()
+    
+    let result = l ?? this.copyFrom()
+    let next
+    while ( rest.length > 0 ) {
+      ([ next, ...rest ] = rest)
+      result = result.listMix(next)
+    }
+
+    return result
+
+  }
+
   enterTab(startBoundary, endBoundary) {
-    return this.stitchMap(new TabIncreaseVisitor(), startBoundary, endBoundary)
+    return this.visitThenListMix(new TabIncreaseVisitor(), startBoundary, endBoundary)
   }
 
   enterShiftTab(startBoundary, endBoundary) {
-    return this.stitchMap(new TabDecreaseVisitor(), startBoundary, endBoundary)
+    return this.visitThenListMix(new TabDecreaseVisitor(), startBoundary, endBoundary)
   }
 
   contextSplit(boundary) {
@@ -199,6 +214,25 @@ class Doc extends Section {
     //    call it "Squeeze". Love our non-commutative binary operator friends (join could be considered a non commutative binary operation).
     //    and... what do we get when we apply a binary operation over a range of elements...? that's right, reduction! a fold! functors! er.. foldables!
 
+  }
+
+  listMix(other) {
+
+    if (other === undefined) {
+      return this
+    }
+    if (!other instanceof Doc) {
+      return this.addSubSections(other)
+    }
+  
+    const ml = this.subPieces.at(-1)
+    const mr = other.subPieces.at(0)
+
+    if (ml !== undefined && mr !== undefined) {
+      return this.splice(-1,1, ...ml.listMix(mr), ...other.subPieces.slice(1))
+    }
+
+    return this.addSubSections(...other.subPieces)
   }
 
   // --------
