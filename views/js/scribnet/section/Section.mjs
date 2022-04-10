@@ -812,6 +812,11 @@ class Section {
   }
 
   sectionSplit(boundary, favorRight=false) {
+
+    if (this.subPieces.length === 0) {
+      return favorRight ? [ undefined, this ] : [ this, undefined ]
+    }
+
     const [ secIdx, offset ] = this._locateBoundary(boundary)
     const left = this.subPieces.slice(0, secIdx)
     const right = this.subPieces.slice(secIdx + 1)
