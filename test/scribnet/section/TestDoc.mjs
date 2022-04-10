@@ -73,6 +73,11 @@ describe('Doc', function () {
     Context.createContext('li', Segment.from(...'.D')),
   )
 
+
+  const testDocEquality = ({ actual, expected }, testNum ) => {
+    assert.strictEqual(printDoc(actual), printDoc(expected), `[Test case ${testNum}] Expect to be strictly equal`)
+  }
+
   it('is equal to its own split', function () {
     // Docs split and produce another doc, unlike most Section which split into a list of Section (or subclasses of Section)
     const result = doc.splitInterior(5)
@@ -233,6 +238,17 @@ describe('Doc', function () {
       assert(result.contexts.slice(1, 4).every(ctx => ctx.block.toLowerCase() === newBlock), 'expect Contexts covering selection to have new block tag')
       assert(result.contexts.slice(0, 1).every(ctx => ctx.block.toLowerCase() !== newBlock), 'expect Contexts before the selection to not have new block tag')
       assert(result.contexts.slice(4).every(ctx => ctx.block.toLowerCase() !== newBlock), 'expect Contexts after the selection to not have the new block tag')
+    })
+
+    it('updates in a list correctly', function () {
+      const original = parseDoc(`ul < li < h1 < 'Aaa' > > li < p < 'Bbb' > > >`)
+      
+      const testCases = [
+        { actual: original.updateBlocks('h2', 2, 3), expected: parseDoc(`ul < li < h2 < 'Aaa' > > li < p < 'Bbb' > > >`)},
+      ]
+
+      testAll(testDocEquality, testCases)
+
     })
   })
 
