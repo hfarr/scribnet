@@ -525,7 +525,6 @@ describe(`Section`, function () {
           Section.from(AtomicSection.from(...'AaA'), AtomicSection.from(...'BbB'), AtomicSection.from(), AtomicSection.from(...'CcC')),
         )
         const expectedRight = Section.from(
-          Section.from(),
           AtomicSection.from(...'DdD'),
           AtomicSection.from(...'EeE'),
           Section.from(AtomicSection.from()),
