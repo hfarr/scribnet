@@ -428,7 +428,8 @@ class _EditDocument {
     const lb = this._startBoundary
     const rb = this._endBoundary
     const newDoc = this.copy()
-    newDoc.document = this.document.indent(amount, lb, rb)
+    // newDoc.document = this.document.indent(amount, lb, rb)
+    newDoc.document = this.document.enterTab(lb, rb)
     newDoc.notifySelectListeners()  // TODO gotta do away with this pattern... or update it... something.
     return newDoc
   }
