@@ -5,6 +5,10 @@ import Segment from "./Segment.mjs"
 import Context from "./Context.mjs"
 import { Gap, isBlock } from "./Context.mjs"
 
+// Not sure if I'm keen on this specific pattern. Or, this specific implementation
+// of the pattern, this use. I want better functional tooling.
+// One example, the use of a switch statement. Pattern matching lite.
+// Could also use methods but this is a simple way to work in default actions.
 class TabIncreaseVisitor {
 
   visit(section) {
@@ -30,6 +34,32 @@ class TabDecreaseVisitor {
         return section
       default: 
         return section.copyFrom(...section.subPieces.map(sec => sec.accept(this)).flat())
+    }
+  }
+}
+class ListCreateVisitor {
+  static newUnordered() {
+    const visitor = new this()
+    visitor.listTag = 'ul'
+    return visitor
+  }
+  static newOrdered() {
+    const visitor = new this()
+    visitor.listTag = 'ol'
+    return visitor
+  }
+  visit(section) {
+    switch(section.constructor.name) {
+      case 'MixedContext':
+      case 'Context': {
+        let indents = section.indentation
+        let result = Context.createContext(this.listTag, Context.createContext('li', section.updateIndentation(0)))
+        while (indents-- > 0) result = result.increaseIndent()
+        return result
+      }
+      case 'ListContext': 
+      default: 
+        return section.copyFrom(...section.subPieces.map(sec => sec.accept(this)))
     }
   }
 }
@@ -172,6 +202,16 @@ class Doc extends Section {
 
   enterShiftTab(startBoundary, endBoundary) {
     return this.visitThenListMix(new TabDecreaseVisitor(), startBoundary, endBoundary)
+  }
+
+  createList(ordered, startBoundary, endBoundary) {
+
+    // const [ l, m, r ] = this.sectionTriSplit(startBoundary, endBoundary)
+
+    const visitor = ordered ? ListCreateVisitor.newOrdered() : ListCreateVisitor.newUnordered()
+    return this.visitThenListMix(visitor, startBoundary, endBoundary)
+
+
   }
 
   contextSplit(boundary) {

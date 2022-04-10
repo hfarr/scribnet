@@ -317,6 +317,12 @@ class Context extends Section {
 
   }
 
+  updateIndentation(newIndentation) {
+    const result = this.copy()
+    result.indentation = newIndentation
+    return result
+  }
+
   set block(tag) {
     if (BLOCKS.includes(tag.toLowerCase())) this.blockTag = tag.toLowerCase()
   }
