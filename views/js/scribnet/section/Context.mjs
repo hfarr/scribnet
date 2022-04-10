@@ -505,7 +505,7 @@ class ListItemContext extends MixedContext {
   stitchBehavior(other) {
     if (!(other instanceof ListItemContext)) {
       if (this.subPieces.length > 0) {
-        [ this.splice(-1, 1, ...this.subPieces.at(-1).stitch(other)) ]
+        return [ this.splice(-1, 1, ...this.subPieces.at(-1).stitch(other)) ]
       }
       return [ this.addSubSections(other) ]
     }
