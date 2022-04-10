@@ -315,7 +315,9 @@ describe('Doc', function () {
         { args: [0, 2], original: parseDoc(`ul < li < p<'A'> > li < p< > > >`), expected: parseDoc(`ul < li<ul< li < p<'A'> > li < p< > > >> >`) },  // no segment to the 'p'
       ]
 
-      const testOne = ( { original, args, expected }, testNum ) => assert.strictEqual(printDoc(original.enterTab(...args)), printDoc(expected), `[Test case ${testNum}] Expected strict equality`)
+      const testOne = ( { original, args, expected }, testNum ) => {
+        assert.strictEqual(printDoc(original.enterTab(...args)), printDoc(expected), `[Test case ${testNum}] Expected strict equality`)
+      }
 
       testAll(testOne, testCases)
     })
