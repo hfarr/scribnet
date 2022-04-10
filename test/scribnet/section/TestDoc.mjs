@@ -307,6 +307,26 @@ describe('Doc', function () {
     describe('enterShiftTab', function () {
 
     })
+
+    it('allows tabbing when cursor is straddling a context gap', function () {
+      const original = parseDoc(`
+      ul <
+        li < p<'A'> >
+        li < p<'B'> >
+      >
+      `)
+      const expected = parseDoc(`
+      ul <  li<ul<
+        li < p<'A'> >
+        li < p<'B'> >
+        
+      >> >
+      `)
+
+      const actual = original.enterTab(0,2)
+
+      assert.strictEqual(printDoc(actual), printDoc(expected))
+    })
   })
 
   describe('contextBreak', function () {
