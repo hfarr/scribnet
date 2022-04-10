@@ -687,6 +687,17 @@ describe('Doc', function () {
       testAll(testDeleteBoundary, testCases)
     })
 
+    it('merges segments when a boundary between a list and succeeding segment is deleted', function () {
+      const original = parseDoc(`ul < li < h1<'A'> > > h2<'B'>`)
+      const testCases = [
+        { input: { boundaries: [ 1, 2 ], doc: original }, expected: `ul < li < h1<'AB'> > >` },
+      ]
+
+      testDeleteBoundary(testCases[0], 0)
+
+      testAll(testDeleteBoundary, testCases)
+    })
+
     it('subsumes uls into earlier "list item" if would otherwise be first child of parent list item', function () {
       // TODO gotten good at naming these yet?
       // lets take a visual example. Consider the component above. we cut (8,11). Note that this takes out the 
