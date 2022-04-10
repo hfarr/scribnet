@@ -115,9 +115,16 @@ class HTMLRenderer extends Renderer {
     if (context.length === 0 && !['ul','ol','li'].includes(blockTag)) result += "<br>"
 
     switch(blockTag) {
-      case 'li': if (hideMarker(context)) attributes['class'] = 'hideMarker'
-      case 'ol':
-      case 'ul': if (context.length === 0) result += "<br>"
+      case 'li': {
+        if (hideMarker(context)) {
+          attributes['class'] = 'hideMarker'
+        } 
+        // else if (context.length === 0) {
+        //   result += "<br>"
+        // }
+      }
+      // case 'ol':
+      // case 'ul': 
     }
 
     if (context.subPieces.every(sec => sec instanceof Segment)) {
