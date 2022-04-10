@@ -237,8 +237,12 @@ export class Editor {
     this.pushNewDoc(this.currentDocument.setBlockTag(tag))
   }
 
-  indentBlock(amount) {
-    this.pushNewDoc(this.currentDocument.indentBlock(amount))
+  enterTab() {
+    this.pushNewDoc(this.currentDocument.enterTab())
+  }
+
+  enterShiftTab() {
+    this.pushNewDoc(this.currentDocument.enterShiftTab())
   }
 
   // -- Text insertion & deletion

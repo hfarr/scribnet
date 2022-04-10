@@ -156,8 +156,8 @@ class EditorComponent extends HTMLElement {
       'ctrl-KeyI': () => { this.editor.toggleItalic(); this.render() },
       'ctrl-KeyH': () => { this.editor.setBlockTag('h2'); this.render() },
       'ctrl-KeyP': () => { this.editor.setBlockTag('p'); this.render() },
-      'Tab': () => { this.editor.indentBlock(1); this.render() },
-      'shift-Tab': () => { this.editor.indentBlock(-1); this.render() },
+      'Tab': () => { this.editor.enterTab(); this.render() },
+      'shift-Tab': () => { this.editor.enterShiftTab(); this.render() },
     }
 
     const actionsKeyUp = {
@@ -165,8 +165,8 @@ class EditorComponent extends HTMLElement {
     }
 
     const actionsKeyHeldDown = {
-      'Tab': () => { this.editor.indentBlock(1); this.render() },
-      'shift-Tab': () => { this.editor.indentBlock(-1); this.render() },
+      'Tab': () => { this.editor.enterTab(); this.render() },
+      'shift-Tab': () => { this.editor.enterShiftTab(); this.render() },
     }
 
     const isNavKey = (() => {
