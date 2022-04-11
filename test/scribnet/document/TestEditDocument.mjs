@@ -1,5 +1,8 @@
 'use strict'
 import assert from 'assert';
+
+import { parseDoc, printDoc, testAll } from '../../helpers.mjs';
+
 const PATH = "/home/henry/dev/scribnet/views"
 
 const { default: EditDocument, expose: { } } = await import(`${PATH}/js/scribnet/document/EditDocument.mjs`)
@@ -173,6 +176,22 @@ describe('EditDocument', function () {
 
   describe('delete', function () {
     it('deletes correctly', function () {
+
+      const testCases = [
+        {
+          func: x => { x.select(22); return x.delete() },
+          original: `h1<'A List'>ul<li<p<'A'>>li<p<'B'>ul<li<ul<li<p<'bA'>>>>li<p<'bB'>>>>li<p<'C'>>>p<'whoa'>p<'there'>`,
+          expected: `h1<'A List'>ul<li<p<'A'>>li<p<'B'>ul<li<ul<li<p<'bA'>>>>li<p<'bB'>>>>li<p<'C'>>>p<'who'>p<'there'>`,
+        }
+      ]
+
+      const testOne = ({ func, original, expected }, testCaseNum) => {
+        const actual = printDoc(func(EditDocument.fromDocSection(parseDoc(original))).document)
+        const expectedStr = printDoc(parseDoc(expected))
+        assert.strictEqual(actual, expectedStr, `[Test case ${testCaseNum}] Expect strict equality`)
+      }
+
+      testAll(testOne, testCases)
 
     })
 
