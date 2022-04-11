@@ -3,6 +3,7 @@
 import assert from 'assert'
 
 import { DocParser, DocPrinter } from '../views/js/parser/DocParser.mjs'
+import { parseDoc, printDoc, parseContext, printContext } from '../views/js/parser/Wrappers.mjs'
 
 // assertion primitives
 export function testEq({ actual, expected }, testCaseNum) {
@@ -32,11 +33,6 @@ export function testEqualAll(testCases) {
 }
 
 
-const parseDoc = string => (new DocParser(string)).parse()
-const printDoc = doc => (new DocPrinter(doc)).print()
-
-const parseContext = string => (new DocParser(string)).context()
-const printContext = ctx => (new DocPrinter(ctx)).print()  // something about the interface here. heh. TODO DocPrinter doesn't really use the param passed to its constructor. OO is not particularly conducive to PrintyPrinting imo
 
 function rpad(pad, string) {
 
