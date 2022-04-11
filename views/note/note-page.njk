@@ -56,6 +56,11 @@ permalink: "note/{{ noteItem.name | slug }}/"
 
   let hfeditor;
   let renderer;
+
+
+  let printDoc, parseDoc, printDocCompact;
+  import('/js/parser/Wrappers.mjs').then(m => ({ printDoc, parseDoc, printDocCompact } = m))
+
   // const resourceName = window.location.pathname.match(/[^\/]*$/)[0] // grabs the string in the url past the last forward slash
   const resourceName = "{{ noteItem.name }}"
   const slugName = "{{ noteItem.name | slug }}"
