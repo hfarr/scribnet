@@ -180,6 +180,29 @@ describe('Doc', function () {
       assert(result.contexts[2].segments.some(seg => seg.hasTag), "expect result to have 'tag1' tag")
 
     })
+
+    it('deletes within a Context correctly', function () {
+
+      const testCases = [
+        { 
+          func: x => x.deleteBoundary(9,10),
+          original: `ul < li < p <'Aaa'> > li < p <'Bbb'> > > p < 'Ccc' > p < 'Ddd' >`, 
+          expected: `ul < li < p <'Aaa'> > li < p <'Bbb'> > > p < 'Cc' > p < 'Ddd' >`
+        },
+        {
+          func: x => x.deleteBoundary(22,23),
+          original: `h1<'A List'>ul<li<p<'A'>>li<p<'B'>ul<li<ul<li<p<'bA'>>>>li<p<'bB'>>>>li<p<'C'>>>p<'whoa'>p<'there'>`,
+          expected: `h1<'A List'>ul<li<p<'A'>>li<p<'B'>ul<li<ul<li<p<'bA'>>>>li<p<'bB'>>>>li<p<'C'>>>p<'who'>p<'there'>`,
+        }
+      ]
+      const testOne = ({ original, expected, func }, testCaseNum) => {
+        const actual = printDoc(func(parseDoc(original)))
+        assert.strictEqual(actual, printDoc(parseDoc(expected)), `[Test case ${testCaseNum}] Expect strict equality`)
+      }
+
+      testAll(testOne, testCases)
+
+    })
   })
 
   describe('insert', function () {
