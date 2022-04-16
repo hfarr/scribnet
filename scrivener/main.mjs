@@ -36,6 +36,7 @@ const makeStatic = staticLocation(SITE_ROOT)
 // const staticApp = staticLocation('')
 const mainRouter = express.Router()
 const mainApp = express()
+mainApp.use(express.json({limit: '50mb'}))
 mainApp.use(mainRouter)
 
 const staticAll = makeStatic(NOTES_ROOT)
