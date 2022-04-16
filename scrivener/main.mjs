@@ -17,8 +17,8 @@ import Dataccess from './datasystem/Dataccess.mjs'
 import session from './session.mjs'
 
 const PATH = '/'
-const BIND_IP = '127.0.0.1'
-const BIND_PORT = 3000
+const BIND_IP = process.env.BIND_IP ?? '127.0.0.1'
+const BIND_PORT = process.env.BIND_PORT ?? '3000'
 const DIR_ROOT = process.env.PWD
 
 const ADMIN_SECRET = process.env.ADMIN_SECRET

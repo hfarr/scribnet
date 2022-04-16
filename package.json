@@ -4,6 +4,7 @@
   "description": "Yet Another Notes App",
   "main": "./app/main.mjs",
   "scripts": {
+    "start": "node scrivener/main.mjs",
     "build": "npx @11ty/eleventy",
     "build-static": "DEV_STATIC_ONLY=true npx @11ty/eleventy",
     "clean": "rm -r ./site/* && touch views/index.njk",
