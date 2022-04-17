@@ -1,0 +1,181 @@
+---
+layout: note
+---
+
+<!-- TODO some kinda. HTML client side templating? That's an ambitious project. Suited, maybe, for a web component. -->
+<!-- TODO set paths to just '.', or otherwise adopt a consistent url approach -->
+<a id="edit-button" href="/app/edit/NOTE_SLUG">Edit</a>
+<a id="view-button" href="/app/note/NOTE_SLUG">View</a>
+<a id="db-button" href="/app/note/NOTE_SLUG" ping="http://localhost:3000/api/db-reload/">Reset page</a>
+
+<br>
+<div id="content" style="white-space: pre-wrap;"></div>
+
+<script>
+
+  let hfeditor;
+  let renderer;
+
+  let printDoc, parseDoc, printDocCompact;
+  import('/js/parser/Wrappers.mjs').then(m => ({ printDoc, parseDoc, printDocCompact } = m))
+
+  // Grabs the last piece of the path
+  const resourceName = /(?<name>[^\/]*)(?:\/)?$/.exec(window.location.pathname).groups.name
+  // const resourceName = window.location.pathname.match(/[^\/]*$/)[0] // grabs the string in the url past the last forward slash
+  // const resourceName = "{{ noteItem.name }}"
+  const slugName = resourceName.toLocaleLowerCase().replace(' ', '-') // again TODO this isn't safe or consistent. We need both. For alpha though- ship it.
+
+  const contentWrapper = document.querySelector("#content")
+  const editButton = document.querySelector("#edit-button")
+  const viewButton = document.querySelector("#view-button")
+  const dbButton = document.querySelector("#db-button")
+
+  function updateHref(anchor, newHref) {
+    const oldHref = anchor.getAttribute('href') ?? '.'
+    anchor.setAttribute('href', oldHref.replace('NOTE_SLUG', slugName))
+  }
+  [editButton, viewButton, dbButton].forEach(updateHref)
+
+
+  const contentMap = new Map()
+  contentMap.set(contentWrapper, { serial: null } )
+
+  const saveNote = async data => {
+    return gqlQuery(`mutation { updateNote(name: "${resourceName}", input: { data: ${JSON.stringify(JSON.stringify(data))} }) { name } } `)
+  }
+
+  const loadNote = async () => {
+    return gqlQuery(`{ getNote(name: "${resourceName}") { data } }`)
+      .then(res => JSON.parse(res.getNote.data))
+  }
+
+  const applyState = () => {
+    const { currentState = "viewing" } = window.history.state ?? {}
+    viewButton.removeAttribute("style")
+    editButton.removeAttribute("style")
+    switch(currentState) {
+      case "editing": {
+        editButton.setAttribute("style", "display: none;")
+        editingState()  
+        break
+      }
+      case "viewing": {
+        viewButton.setAttribute("style", "display: none;")
+        viewingState();
+        break
+      }
+      default: {
+      }
+    }
+  }
+
+  function editingState() {
+
+    const editor = document.createElement("editor-hf")
+    editor.setAttribute("style", "white-space: pre-wrap;")  // auto part of editor? :S. use that shadow dom?
+
+    if (contentMap.get(contentWrapper).serial === undefined) {
+      // If we don't have serial data to load, just append the nodes - the editor will parse the DOM.
+      // TODO be more intentional with our code. if we're intending to parse DOM nodes rather than serial data, we should be intentional about that.
+      editor.append(...contentWrapper.childNodes)
+      contentWrapper.after(editor)
+    } else {
+      contentWrapper.after(editor)
+      editor.editor.loadDoc(contentMap.get(contentWrapper).serial)
+    }
+
+    contentWrapper.parentNode.removeChild(contentWrapper)
+
+    import('/js/scribnet/document/renderer/index.mjs').then(m => {
+      const { HTMLRenderer } = m;
+      const htmlRenderer = new HTMLRenderer()
+      editor.defaultRenderer = htmlRenderer
+      editor.render()
+      // htmlRenderer.render(editor.editor.currentDocument)
+
+      editor.editor.currentDocument.addSelectListener(editDoc => {
+        // yeah it's still /too much/ to submit updates eagerly, owing to the fact that 
+        // some triggers of this command don't even update content (it's a "select" listener).
+        // Naming is wrong too really it should just be "addListener" because it listens for
+        // nearly all state changes of an EditDocument.
+        const serial = JSON.stringify(editDoc.document)
+        const data={ content: htmlRenderer.toHTML(editDoc.document), serial: serial }
+        contentMap.set(contentWrapper, { serial: serial })
+        return saveNote(data)
+      })
+
+      renderer = new HTMLRenderer()
+    })
+
+    hfeditor = editor.editor
+    hfdocument = hfeditor.currentDocument
+
+  }
+  function viewingState() {
+
+    const editor = document.querySelector("editor-hf")
+    if (editor !== null) {
+      while (contentWrapper.firstChild) {
+        contentWrapper.removeChild(contentWrapper.firstChild)
+      }
+      contentWrapper.append(...editor.childNodes)
+      editor.after(contentWrapper)
+      editor.parentNode.removeChild(editor)  // unnecessary, but eh.
+    } 
+  }
+
+  const transitionState = (newState, url) => {
+    window.history.pushState({ currentState: newState }, undefined, url )
+    applyState()
+  }
+
+  window.onpopstate = (event) => {
+    console.log("State (pop event)", event.state)
+    applyState()
+  }
+
+  // setState - pushes context for a state
+  // engageState - set page to display current state
+
+  function engageEditMode() {
+
+    // TODO: Handle onpopstate to elegantly "reset" the page to the '/note/'
+    // TODO for dynamic content add ways to directly access the edit pages, or other 'actions' if I want to expose them
+    // window.history.pushState({ currentState: "editing" }, undefined, `/app/edit/${slugName}`)
+    window.history.pushState({ currentState: "editing" }, undefined)
+    // window.history.pushState({ count: ((window.history.state?.count ?? 0) + 1) }, undefined, `/edit/${slugName}`)
+    applyState()
+  }
+  function engageViewMode() {
+    
+    // window.history.pushState({ currentState: "viewing" }, undefined, `/app/note/${slugName}`)
+    window.history.pushState({ currentState: "viewing" }, undefined)
+    applyState()
+  }
+
+  editButton.addEventListener("click", (evt) => { 
+    evt.preventDefault(); 
+    engageEditMode(); 
+  })
+  viewButton.addEventListener("click", (evt) => {
+    evt.preventDefault()
+    engageViewMode();
+  })
+  // dbButton.addEventListener("click", (evt) => {
+  //   evt.preventDefault()
+  // })
+
+
+  // first time load
+  import('/js/dynamic/fetcher.mjs').then(async () => {
+    loadNote()
+      .then(note => { contentWrapper.innerHTML = note.content; return note } )
+      .then(note => contentMap.set(contentWrapper, { serial: note.serial } ) )
+      .catch(err => console.log('could not load note:',err))
+    // console.log(resourceName)
+    // this.... upsetting. Maybe an indication we don't need JS on every page. If we have to load some modules before others.
+    await import('/js/index.mjs')
+    applyState()
+  })
+
+</script>

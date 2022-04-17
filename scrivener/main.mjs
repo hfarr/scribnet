@@ -122,8 +122,12 @@ mainRouter.get('/login', (req, res) => {
   of a kind.
 */
 mainRouter.use(staticAll)
-// mainApp.use(staticAppLocation(''))
-
+// mainRouter.get('/note/:notename', async (req, res) => {  // Maybe- this conflicts with established routing. so for now I will use /app to distinguish dynamic pages.
+mainRouter.get('/app/note/:notename', async (req, res) => {
+  // TODO this is for alpha, where everythinig is dynamic. SPA like. For full production... I want a mix of static/dynamic.
+  console.log(`Dynamically serving ${req.params.notename}`)
+  res.sendFile(path.join(SITE_ROOT, 'dynamic', 'note', 'index.html'))
+})
 
 // I don't know, at the moment, the appropriate level of abstraction to handle params- like, if a router would fit the model better
 // mainRouter.param('notename')

@@ -1,0 +1,53 @@
+---
+layout: note
+title: All notes
+---
+
+<h1>Notes</h1>
+
+<ul>
+</ul>
+
+<!-- Sets gqlQuery on globalThis object. Avaialable in the script. -->
+<script src="/js/dynamic/fetcher.mjs" type="module"></script>
+<script>
+
+
+  const notesList = document.querySelector('ul')
+  // function shouldDynamicallyFetch() {
+  //   // Should fetch if no notes were loaded
+  //   return notesList.childElementCount === 0
+  // }
+
+  function noteURLSlug(name) {
+    // Warning! This is not a safe slug function
+    // TODO replace with a safe one that matches the slugs from eleventy
+    return name.toLocaleLowerCase().replaceAll(' ', '-')
+  }
+
+  function appendNote(note) {
+    const listItem = document.createElement('li')
+    const link = document.createElement('a')
+    
+    link.innerText = note.name
+    link.setAttribute('href', `/app/note/${noteURLSlug(note.name)}`)
+    listItem.appendChild(link)
+    notesList.appendChild(listItem)
+  }
+
+  function fetchNotes() {
+    return gqlQuery(`{ notes { data } }`)
+      .then(rb => rb.notes)
+      .then(notesData => notesData.map(n => JSON.parse(n.data)))
+      .catch(err => { console.log(err); return [] })
+
+  }
+
+  import('/js/dynamic/fetcher.mjs').then(() => {
+    fetchNotes().then(notes => notes.forEach(appendNote))
+    // if (shouldDynamicallyFetch()) {
+    //   fetchNotes().then(notes => notes.forEach(appendNote))
+    // }
+  })
+
+</script>
