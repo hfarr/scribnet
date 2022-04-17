@@ -15,6 +15,7 @@ import RouteNoteController from './notes/NoteController.mjs'
 import Authenticator from './scopes/Access.mjs'
 import Dataccess from './datasystem/Dataccess.mjs'
 import session from './session.mjs'
+import { Login, User } from './users/User.mjs'
 
 const PATH = '/'
 const BIND_IP = process.env.BIND_IP ?? '127.0.0.1'
@@ -273,10 +274,61 @@ mainRouter.use('/api',
   },
 )
 
-import gqlObj from './resources.mjs'
+// mainRouter.use('/api', session)
+
+import gqlObj, { dataccessLogins } from './resources.mjs'
 console.log(`DEVELOPMENT: ${process.env.DEVELOPMENT}`)
 const gqlArgs = { ...gqlObj, graphiql: process.env.DEVELOPMENT === 'true' }
+mainRouter.use('/api/graphql', (req, res, next) => { req.hello = 'there'; next()})
 mainRouter.use('/api/graphql', graphqlHTTP(gqlArgs))
+
+mainRouter.get('/ping', async (req, res) => {
+  
+  const response = { message: 'pong' }
+  if (!req.session.views) {
+
+    req.session.views = 0
+  }
+
+  if (req.session.user) {
+    response.message = `pong, ${req.session.user.username}`
+  }
+  response.message = response.message + ` ${++req.session.views}`
+
+  res.status(200)
+  res.send(response.message)
+})
+
+mainRouter.post('/api/login', async (req, res) => {
+
+  if (req.session.user === undefined) {
+
+    const { username, password } = req.body
+
+    const login = await dataccessLogins.get(Login, username)
+
+    if (!login.checkPassword(password)) {
+      res.status(401)
+      res.send( { message: "Failed to login." } ) // TODO we need like an interface or something for responses like this. Just a. Way to coordinate these APIs
+      return
+    }
+
+    // req.session.user = await dataccessLogins.get(User, username)
+    req.session.user = { username }
+
+    res.status(200)
+    res.send( { message: "Login succeeded." } )
+
+
+  } else {
+
+    res.status(200)
+    res.send( { message : "Already logged in." } )
+
+  }
+})
+
+// TODO way to revoke a login
 
 const devOnly = express.Router()
 mainRouter.use('/api', devOnly)

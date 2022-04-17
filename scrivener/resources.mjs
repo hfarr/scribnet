@@ -5,6 +5,7 @@ import { graphql, buildSchema, execute } from 'graphql'
 
 import Dataccess from "./datasystem/Dataccess.mjs"
 import Note from './notes/Note.mjs'
+import { Login, User } from './users/User.mjs'
 
 class Scope {
 }
@@ -213,6 +214,16 @@ const aggregate = new Aggregate(dataccess)
 unstruct.of(Note, "name", String)
 aggregate.of(Note, 'notes', unstruct.getter(Note))
 
+// unstruct.of(Login, "username", String)
+// aggregate.of(User, 'users', unstruct.getter(Note))
+
+/// LOGINS
+const LOGIN_FILE = `${DATA_FOLDER}/logins`
+const dataccessLogins = await Dataccess.initFromFile(LOGIN_FILE)
+
+dataccessLogins.registerWithIndex(Login, "username", String)
+dataccessLogins.registerWithIndex(User, "username", String)
+
 const sc = new SchemaConstructor()
 sc.set(unstruct.list)
   .set(aggregate.list)
@@ -239,20 +250,18 @@ const schema = buildSchema(schemaStr)
 
 function authenticatePreStep(execArgs) {
 
-  if (process.env.DEVELOPMENT === 'true') {
-    // console.log('GQL Execuction args:', execArgs)
-    // console.log('Authenticated user:', execArgs.contextValue.user)
-
-    const isAdmin = execArgs.contextValue.user?.admin ?? false
-    // console.log("Is admin request:", isAdmin)
-    // if (isAdmin) console.log("Admin request")
+  // bring user up one level
+  if ('user' in execArgs.contextValue.session) {
+    console.log(execArgs.contextValue.session.user.username)
+    execArgs.contextValue.user = execArgs.contextValue.session.user
   }
-
-  execArgs.contextValue = { session: execArgs.contextValue.session }
+    // execArgs.contextValue.user = execArgs.contextValue.session.user
 
   return execute(execArgs)
 }
 
 const graphqlHTTPOptions = { schema: schema, rootValue: root, customExecuteFn: authenticatePreStep }
+
+export { dataccess, dataccessLogins }
 
 export default graphqlHTTPOptions
