@@ -32,6 +32,19 @@ export default class Datable {
 
   }
 
+  static newIndexFunction() {
+    let nextID = 0
+    return () => {
+      return nextID++
+    }
+  }
+
+  static databilize(constructor, indexFunc=Datable.newIndexFunction()) {
+
+    const newProto = (class extends Datable { get newID() { return indexFunc() }})
+    Object.setPrototypeOf(constructor.prototype, newProto)
+  }
+
   // Not likely much point to this since we don't actually.. have a Datable class! we can't reference it from the
   // instances properly since reading the 'constructor' property will return the client class.
   // if we're in a deserialization context it is client responsibility to check the data they're reading is what
@@ -65,11 +78,17 @@ export default class Datable {
 
     const data = {}
     for (const name of Object.getOwnPropertyNames(this)) {
-      if (isDatable(this[name]))
+      const field = this[name]
+      if (isDatable(field)) {
         data[name] = 'placeholder'  // maybe store references on the meta data
-      else
-        data[name] = this[name]
-
+        continue
+      }
+      // could attach like. Custom serde to each constructor we support, maybe, through a map. Hm. switch for now.
+      switch(field.constructor) {
+        case Buffer: data[name] = { type: 'Buffer', data: [ ...field ] }; break;
+        default:
+          data[name] = this[name]
+      }
     }
 
     // TODO include metadata? is Datable responsible for its metadata?
@@ -103,8 +122,19 @@ export default class Datable {
     // may need to use getPropertyDescriptors in case of privacy or summat
     for (const name of Object.getOwnPropertyNames(this))
       delete this[name]
-    for (const name in data)
-      this[name] = data[name]
+    for (const name in data) {
+
+      const field = data[name]
+      if (typeof(field) === 'object') {
+        switch (field.type) {
+          case 'Buffer': this[name] = Buffer.from(field.data); break;
+          case 'object':
+          default: this[name] = field
+        }
+      }
+      
+      this[name] = field
+    }
 
     // return obj
   }
