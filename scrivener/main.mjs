@@ -122,6 +122,13 @@ mainRouter.get('/login', (req, res) => {
   think should be intuitive. To yield an informal framework
   of a kind.
 */
+mainRouter.get('/dynamic/*', (req, res) => {
+  // TODO better error pages, rather than /nothing/
+  // This route forbids accessing the dynamic route. This route holds pages which are rendered by 11ty but meant as client rendered templates, essentially.
+  //  thus, visiting without context any such page directly is at best useless, or at worst a potential security issue
+  res.status(403)
+  res.end()
+})
 mainRouter.use(staticAll)
 // mainRouter.get('/note/:notename', async (req, res) => {  // Maybe- this conflicts with established routing. so for now I will use /app to distinguish dynamic pages.
 mainRouter.get('/app/note/:notename', async (req, res) => {
