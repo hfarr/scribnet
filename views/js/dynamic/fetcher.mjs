@@ -10,7 +10,7 @@ function query(url, requestBody) {
   }
 
   return fetch(url, options)
-    .then(res => res.json())
+    .then(async res => ({ code: res.status, body: await res.json() }) )
 }
 
 function gqlQuery(content, variables) {
@@ -19,7 +19,7 @@ function gqlQuery(content, variables) {
     variables: variables ?? null
   }
   return query('/api/graphql', requestBody)
-    .then(body => body.data)
+    .then(res => res.body.data)
 }
 
 globalThis.query = query

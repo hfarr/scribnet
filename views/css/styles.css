@@ -16,6 +16,7 @@
   --dark-hue-main: #DCDCDC;
   /* --dark-hue-submit: #009900; */
   --dark-hue-submit: #3ba55d;
+  --dark-hue-submit-hover: #2b954d;
 
   /* --bg-main: var(--color-lightish);
   --bg-secondary: var(--color-mid); */
@@ -27,6 +28,7 @@
   --bg-secondary: var(--dark-bg-secondary);
   --hue-main: var(--dark-hue-main);
   --color-submit: var(--dark-hue-submit);
+  --color-submit-hover: var(--dark-hue-submit-hover);
 
   /* Need design scheme lingo, and easy way to update (javascript!)*/
   /* Primarys and accents and derived and all sorts */
@@ -213,7 +215,7 @@ form {
   font-size: var(--s3);
 }
 
-form input {
+form input, form button {
   /* color: #000; */
   background-color: var(--bg-secondary);
 
@@ -222,8 +224,12 @@ form input {
   font-size: inherit;
 }
 
-form input[type=submit] {
+[type=submit], input[type=button] {
   background-color: var(--color-submit);
+}
+
+[type=submit]:hover {
+  background-color: var(--color-submit-hover);
 }
 
 /* .box.invert {

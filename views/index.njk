@@ -5,7 +5,8 @@ layout: root.njk
 <cover-l centered=".middle">
   <!-- <div>h</div> -->
   <div class="middle">
-    <form action="/api/login" method="post" class="box invert" >
+    <!-- <form action="/api/login" target="self" method="POST" class="box invert" > -->
+    <form name="login" class="box invert" >
       <stack-l >
         <stack-l space="var(--s-5)">
           <label for="username">Username</label>
@@ -15,9 +16,35 @@ layout: root.njk
           <label >Password</label>
           <input type="password" name="password">
         </stack-l>
-        <input type="submit" value="Login">
+        <!-- <input type="submit" value="Login"> -->
+        <button type="submit" value="Login">Login</button>
       </stack-l>
     </form>
   </div>
   <!-- <div>h</div> -->
 </cover-l>
+
+<script type="module" src="/js/dynamic/fetcher.mjs"></script>
+<script>
+  function submitLogin() {
+    // const form = 
+    const inputs = document.forms["login"].querySelectorAll('input')
+    const [ username, password, ...rest ] = [...inputs].map(inp => inp.value)
+
+    const requestBody = { username, password }
+
+    query('/api/login', requestBody)
+      .then(resp => resp.code === 200 ? resp.body : Promise.reject(resp.body) )
+      .then(body => { console.log(body.message) } )
+      .catch(body => { console.log("Error:", body.message) } )
+  }
+
+  // listening to submit event let's us prevent the browser navigation and implicitly supports both clicking the submit button and hitting the enter key
+  document.forms["login"].addEventListener('submit', (evt) => {
+    evt.preventDefault()
+    submitLogin()
+  })
+
+  // const loginButton = document.forms[0].querySelector('[type=submit]')
+  // loginButton.addEventListener('click', submitLogin)
+</script>
