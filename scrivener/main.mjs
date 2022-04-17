@@ -350,6 +350,18 @@ mainRouter.post('/api/login', async (req, res) => {
 
   }
 })
+mainRouter.post('/api/login/check', async (req, res) => { // I mean, really this is a GET, but I don't really want the parameters encoded in the url or whatnot
+  const response = {
+    loggedIn: false
+  }
+  if (req.session.user !== undefined) {
+    response.loggedIn = true
+    response.username = req.session.user.username
+  }
+
+  res.status(200)
+  res.send( response )
+})
 
 // TODO way to revoke a login
 

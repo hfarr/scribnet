@@ -24,7 +24,7 @@ layout: root.njk
   <!-- <div>h</div> -->
 </cover-l>
 
-<script type="module" src="/js/dynamic/fetcher.mjs"></script>
+<script type="module" id="dyn-fetcher" src="/js/dynamic/fetcher.mjs"></script>
 <script>
   function submitLogin() {
     // const form = 
@@ -44,6 +44,24 @@ layout: root.njk
       } )
       .catch(body => { console.log("Error:", body.message) } )
   }
+
+  // TODO Run this when the page is navigated to as if by "back" button. Or reached any way that doesn't execute the inline script since it's just loading whatever the browser remembers about this page.
+  function checkLogin() {
+    query('/api/login/check', {})
+      .then(resp => resp.body)
+      .then(({ loggedIn }) => {
+        console.log("User is logged in: ", loggedIn)
+        if (loggedIn) {
+          // not using any redirect here? hm. Maybe send to App, which could then, maybe, recover some client state? SPA like or. something.
+          window.location = '/app/notes'
+        }
+      })
+  }
+
+  // better way to 'wait' for import?
+  document.querySelector('#dyn-fetcher').addEventListener('load', () => {
+    checkLogin()
+  })
 
   // listening to submit event let's us prevent the browser navigation and implicitly supports both clicking the submit button and hitting the enter key
   document.forms["login"].addEventListener('submit', (evt) => {
