@@ -41,8 +41,8 @@ export default class Datable {
 
   static databilize(constructor, indexFunc=Datable.newIndexFunction()) {
 
-    const newProto = (class extends Datable { get newID() { return indexFunc() }})
-    Object.setPrototypeOf(constructor.prototype, newProto)
+    const newClass = class extends Datable { get newID() { return indexFunc() }}
+    Object.setPrototypeOf(constructor.prototype, newClass.prototype)
   }
 
   // Not likely much point to this since we don't actually.. have a Datable class! we can't reference it from the
@@ -131,9 +131,9 @@ export default class Datable {
           case 'object':
           default: this[name] = field
         }
+      } else {
+        this[name] = field
       }
-      
-      this[name] = field
     }
 
     // return obj

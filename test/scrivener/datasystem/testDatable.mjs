@@ -17,13 +17,13 @@ describe('Datable', function() {
       const original = new SomeDatable('Hi', Buffer.from('hey'))
 
       const serialized = original.serialize()
-      const temp = Object.create(SomeDatable.prototype)
-      const actual = temp.deserialize(serialized)
+      const actual = Object.create(SomeDatable.prototype)
+      actual.deserialize(serialized)  // not fond of this interface
 
       const expected = original
 
-      assert.strictEqual(expected.a, actual.a)
-      assert.strictEqual(expected.b, actual.b)
+      assert.deepStrictEqual(actual.a, expected.a)
+      assert.deepStrictEqual(actual.b, expected.b)
       assert.strictEqual(actual.a.constructor, String)
       assert.strictEqual(actual.b.constructor, Buffer)
 
