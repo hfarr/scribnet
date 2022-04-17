@@ -1,5 +1,5 @@
 
-
+// sigh, this is also gql. the 'request body' formatting right here.
 function query(url, content, variables) {
   const requestBody = {
     query: content,
