@@ -12,8 +12,8 @@
   --hue-cream-darkish: #b0efc0; /* can't land what I'm going for */
   --hue-cream: #b0ffd0;
 
-  --bg-main: #202020;
-  --bg-secondary: #181818;
+  /* --bg-main: #202020;
+  --bg-secondary: #181818; */
   --hue-main: #DCDCDC;
 
   background-color: var(--bg-secondary);

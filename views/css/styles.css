@@ -11,8 +11,13 @@
   --color-light:#fafafa;
   --color-mid:grey;
 
-  --bg-main: var(--color-lightish);
-  --bg-secondary: var(--color-mid);
+  --dark-bg-main: #202020;
+  --dark-bg-secondary: #181818;
+
+  /* --bg-main: var(--color-lightish);
+  --bg-secondary: var(--color-mid); */
+  --bg-main: var(--dark-bg-main);
+  --bg-secondary: var(--dark-bg-secondary);
 
   --hue-main: var(--color-dark);
 
