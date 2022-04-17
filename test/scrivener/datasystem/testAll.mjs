@@ -1,12 +1,13 @@
+
 'use strict';
 
 import assert from 'assert';
 import fs from 'fs/promises';
 
-const PATH = "../../../scrivener/Datable.mjs"
-import Datable, { isDatable } from '../../scrivener/datasystem/Datable.mjs';
-import Dataccess from "../../scrivener/datasystem/Dataccess.mjs"
-import Database from "../../scrivener/datasystem/Database.mjs"
+// const PATH = "../../../scrivener/Datable.mjs"
+import Datable, { isDatable } from '../../../scrivener/datasystem/Datable.mjs';
+import Dataccess from "../../../scrivener/datasystem/Dataccess.mjs"
+import Database from "../../../scrivener/datasystem/Database.mjs"
 
 const baseDirectory = 'data-folder'
 const testFilePath = `${baseDirectory}/testdbfile`
