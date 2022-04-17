@@ -40,7 +40,9 @@
   --hue-cream-dark: #c44f00;
   --hue-cream-light: #ff964e;
   --hue-accent: #b0dfff; */
-  --ratio:1.2;
+  --ratio:1.4;
+  /* --ratio-min: 1.2; 6/5 */
+  /* --ratio-max: 1.4; 7/5 */
   --s-5:calc(var(--s0)/var(--ratio)/var(--ratio)/var(--ratio)/var(--ratio)/var(--ratio));
   --s-4:calc(var(--s0)/var(--ratio)/var(--ratio)/var(--ratio)/var(--ratio));
   --s-3:calc(var(--s0)/var(--ratio)/var(--ratio)/var(--ratio));
@@ -48,11 +50,28 @@
   --s-1:calc(var(--s0)/var(--ratio));
   --s0:1rem;
   /* --s0:1rem + 0.33vw; */
-  --s1:calc(var(--s0)*var(--ratio));
+ --s1:calc(var(--s0)*var(--ratio));
   --s2:calc(var(--s0)*var(--ratio)*var(--ratio));
   --s3:calc(var(--s0)*var(--ratio)*var(--ratio)*var(--ratio));
   --s4:calc(var(--s0)*var(--ratio)*var(--ratio)*var(--ratio)*var(--ratio));
   --s5:calc(var(--s0)*var(--ratio)*var(--ratio)*var(--ratio)*var(--ratio)*var(--ratio));
+
+  /* Fluid typography revisited */
+  /* Min ratio: 5/4 */
+  /* max ratio: 7/5 */
+  /* Taken from every-layout, I'd like to reverse engineer the equation for the scaling equations */
+  /* --s-5:clamp(0.33rem,0.39rem + -0.29vw,0.18rem);
+  --s-4:clamp(0.41rem,0.47rem + -0.31vw,0.25rem);
+  --s-3:clamp(0.51rem,0.57rem + -0.31vw,0.35rem);
+  --s-2:clamp(0.64rem,0.69rem + -0.27vw,0.5rem);
+  --s-1:clamp(0.8rem,0.84rem + -0.18vw,0.71rem);
+  --s0:clamp(1rem,1rem + 0vw,1rem);
+  --s1:clamp(1.25rem,1.19rem + 0.32vw,1.41rem);
+  --s2:clamp(1.56rem,1.39rem + 0.85vw,2rem);
+  --s3:clamp(1.95rem,1.61rem + 1.7vw,2.83rem);
+  --s4:clamp(2.44rem,1.83rem + 3.04vw,4rem);
+  --s5:clamp(3.05rem,2.04rem + 5.07vw,5.65rem); */
+
   --measure:65ch;
   --line-height:var(--ratio);
   --line-height-small:calc(0.8*var(--ratio));
@@ -62,7 +81,7 @@
   line-height:var(--ratio);
   /* scaling size. I like it but maybe not for now? */
   /* font-size:calc(.333vw + 1em); */ /* the em changes... it'll recalculate even for inehrited right? so <p><div><p>0.25rem</p></div></p> if font-size=0.5em? I forgot how these work precisely */
-  font-size: 1rem;
+  font-size: var(--s0);
   font-family:var(--font-plain);
   /* background-color:var(--color-lightish); */
   /* color:var(--color-dark); */
@@ -122,7 +141,7 @@ stack-l, sidebar-l, editor-hf {
 /* Semantic element styling */
 
 /* Gosh maybe I should leave it up to the note? *fret* */
-p {
+/* p {
   font-size: var(--s0);
 }
 h1 {
@@ -133,12 +152,24 @@ h2 {
 }
 h3 {
   font-size: var(--s1);
-}
+} */
 li {
   /* TODO maybe... make Configurable */
   margin-left: 1em;
 }
 
+p, li {
+  font-size: var(--s2);
+}
+h1 {
+  font-size: var(--s5);
+}
+h2 {
+  font-size: var(--s4);
+}
+h3 {
+  font-size: var(--s3);
+}
 
 /* Component layout styling */
 box-l {
@@ -210,7 +241,7 @@ sidebar-l > * {
 form {
   box-sizing: content-box;
   margin-inline: auto;
-  max-inline-size: 33vw;
+  max-inline-size: 30ch;
 
   font-size: var(--s3);
 }

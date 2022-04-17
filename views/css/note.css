@@ -16,6 +16,12 @@
   --bg-secondary: #181818; */
   --hue-main: #DCDCDC;
 
+
+  /* --s0: 1rem + 0.3vw; */
+
+  /* Setting this here to modularly update the "ch" unit. TODO revisit to properly create a fluid typography. */
+  font-size: var(--s2);
+
   /* background-color: var(--bg-secondary); */
   /* color: var(--hue-main); /* See, I was hoping I would just need to over-ride hue-main. But the colors are inheriting from * which got color based on the --hue-main in :root. */
 
