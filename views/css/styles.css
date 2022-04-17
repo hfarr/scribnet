@@ -215,6 +215,10 @@ form {
   font-size: var(--s3);
 }
 
+label {
+  color: var(--color-mid)
+}
+
 form input, form button {
   /* color: #000; */
   background-color: var(--bg-secondary);
