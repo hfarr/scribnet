@@ -5,31 +5,18 @@ import { randomUUID } from 'crypto'
 import session from 'express-session'
 
 // see https://github.com/expressjs/session for configuring session
-
-class User {
-
-  constructor() {
-
-    this.sessions = []
-  }
-
-  get activeSessions() {
-    return this.sessions
-  }
-
-  createSession() {
-
-  }
-}
-
 // TODO define login part of app here?
 
 const sess = {
   secret: process.env.SESSION_SECRET,
+  cookie: { maxAge: 24*60*60*1000 }
 }
 if (process.env.NODE_ENV !== 'development') {
   console.log('TODO integrate with a proper session store')
   sess.store = undefined
+} else {
+  // TODO to enable this we need to set trust proxy, since scrivener is behind a proxy
+  // sess.cookie.secure = true
 }
 
 const sessionObj = session(sess)
