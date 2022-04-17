@@ -129,6 +129,14 @@ mainRouter.get('/dynamic/*', (req, res) => {
   res.status(403)
   res.end()
 })
+mainRouter.use('/app', (req, res, next) => {
+  if (!('user' in req.session)) {
+    res.status('401').end()
+    return
+  }
+  next()
+})
+
 mainRouter.use(staticAll)
 // mainRouter.get('/note/:notename', async (req, res) => {  // Maybe- this conflicts with established routing. so for now I will use /app to distinguish dynamic pages.
 mainRouter.get('/app/note/:notename', async (req, res) => {
