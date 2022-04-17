@@ -16,8 +16,8 @@
   --bg-secondary: #181818; */
   --hue-main: #DCDCDC;
 
-  background-color: var(--bg-secondary);
-  color: var(--hue-main); /* See, I was hoping I would just need to over-ride hue-main. But the colors are inheriting from * which got color based on the --hue-main in :root. */
+  /* background-color: var(--bg-secondary); */
+  /* color: var(--hue-main); /* See, I was hoping I would just need to over-ride hue-main. But the colors are inheriting from * which got color based on the --hue-main in :root. */
 
 }
 

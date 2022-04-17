@@ -13,13 +13,20 @@
 
   --dark-bg-main: #202020;
   --dark-bg-secondary: #181818;
+  --dark-hue-main: #DCDCDC;
+  /* --dark-hue-submit: #009900; */
+  --dark-hue-submit: #3ba55d;
 
   /* --bg-main: var(--color-lightish);
   --bg-secondary: var(--color-mid); */
+  /* --hue-main: var(--color-dark); */
+
+
+
   --bg-main: var(--dark-bg-main);
   --bg-secondary: var(--dark-bg-secondary);
-
-  --hue-main: var(--color-dark);
+  --hue-main: var(--dark-hue-main);
+  --color-submit: var(--dark-hue-submit);
 
   /* Need design scheme lingo, and easy way to update (javascript!)*/
   /* Primarys and accents and derived and all sorts */
@@ -38,6 +45,7 @@
   --s-2:calc(var(--s0)/var(--ratio)/var(--ratio));
   --s-1:calc(var(--s0)/var(--ratio));
   --s0:1rem;
+  /* --s0:1rem + 0.33vw; */
   --s1:calc(var(--s0)*var(--ratio));
   --s2:calc(var(--s0)*var(--ratio)*var(--ratio));
   --s3:calc(var(--s0)*var(--ratio)*var(--ratio)*var(--ratio));
@@ -131,6 +139,14 @@ li {
 
 
 /* Component layout styling */
+box-l {
+  display: block;
+  padding: var(--s1);
+  border-width: var(--border-thin);
+  /* ↓ For high contrast mode */
+  outline: var(--border-thin) solid transparent;
+  outline-offset: calc(var(--border-thin) * -1);
+}
 
 center-l {
   display: block;
@@ -153,6 +169,10 @@ stack-l {
   justify-content: flex-start;
 }
 
+.stack-exception {
+  --space: var(--s-5);
+}
+
 stack-l > * + * {
   margin-top: var(--s1);
 }
@@ -173,3 +193,40 @@ sidebar-l {
 sidebar-l > * {
   flex-grow: 1;
 }
+
+
+.box {
+  padding: var(--s1);
+  border: var(--border-thin) solid;
+  /* --color-light: #fff; */
+  /* --color-dark: #000; */
+  /* color: var(--color-dark); */
+  /* background-color: var(--color-light); */
+  /* background-color: var(--bg-secondary); */
+}
+
+form {
+  box-sizing: content-box;
+  margin-inline: auto;
+  max-inline-size: 33vw;
+
+  font-size: var(--s3);
+}
+
+form input {
+  /* color: #000; */
+  background-color: var(--bg-secondary);
+
+  padding: var(--s-4);
+
+  font-size: inherit;
+}
+
+form input[type=submit] {
+  background-color: var(--color-submit);
+}
+
+/* .box.invert {
+  color: var(--color-light);
+  background-color: var(--color-dark);
+} */
