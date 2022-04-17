@@ -122,7 +122,7 @@ export default class Dataccess {
       return undefined
     }
     const index = this.indices[constructorFunc.name].idxMap
-    const id = index.get(indexKey)
+    const id = index.get(indexKey, 0)
     if (id === undefined) return undefined
 
     // As a note: if data are recent, we may want to instead check a cache.
@@ -136,6 +136,15 @@ export default class Dataccess {
     const data = await this.db.loadByID(id)
 
     return this.fromPacked(data)
+  }
+
+  async has(constructorFunc, indexKey) {
+    if (!(constructorFunc.name in this.indices)){
+      return false
+    }
+    const index = this.indices[constructorFunc.name].idxMap
+    const id = index.get(indexKey, 0)
+    return id !== undefined
   }
 
   /*-------------------------------------------------

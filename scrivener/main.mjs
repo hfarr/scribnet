@@ -305,9 +305,16 @@ mainRouter.post('/api/login', async (req, res) => {
 
     const { username, password } = req.body
 
-    const login = await dataccessLogins.get(Login, username)
+    // in order to pad against a timing attacks we always fetch a user from the DB.
+    // otherwise if the attacker supplies a fake username vs a real username they'll be able to determine if
+    //    one of the accounts exists at all based on how quickly the server rejects the response
+    const loginExists = await dataccessLogins.has(Login, username)
+    const userToCheck = loginExists ? username : 'nulluser'
+    const pwToCheck = loginExists ? password : 'wrongpw'
 
-    if (!login.checkPassword(password)) {
+    const login = await dataccessLogins.get(Login, userToCheck)
+
+    if (!login.checkPassword(pwToCheck)) {
       res.status(401)
       res.send( { message: "Failed to login." } ) // TODO we need like an interface or something for responses like this. Just a. Way to coordinate these APIs
       return
