@@ -306,6 +306,7 @@ mainRouter.get('/ping', async (req, res) => {
   res.send(response.message)
 })
 
+// TODO separate handler logic (the controller code so to speak) outside the establishing of routes?
 mainRouter.post('/api/login', async (req, res) => {
 
   if (req.session.user === undefined) {
@@ -331,13 +332,13 @@ mainRouter.post('/api/login', async (req, res) => {
     req.session.user = { username }
 
     res.status(200)
-    res.send( { message: "Login succeeded." } )
+    res.send( { message: "Login succeeded.", redirect: '/app/notes' } )
 
 
   } else {
 
     res.status(200)
-    res.send( { message : "Already logged in." } )
+    res.send( { message : "Already logged in.", redirect: '/app/notes' } )
 
   }
 })

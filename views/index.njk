@@ -35,7 +35,13 @@ layout: root.njk
 
     query('/api/login', requestBody)
       .then(resp => resp.code === 200 ? resp.body : Promise.reject(resp.body) )
-      .then(body => { console.log(body.message) } )
+      .then(body => { 
+        console.log(body.message) 
+        // TODO this force redirect seems to stifle the "save password" dialogue :/
+        //  perhaps- we let the form do the target/redirect or whatever, so that it works with browser semantics, 
+        //  but we still do this interruption to handle the actual login logic
+        window.location = body.redirect
+      } )
       .catch(body => { console.log("Error:", body.message) } )
   }
 
