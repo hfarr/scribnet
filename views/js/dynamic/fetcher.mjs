@@ -1,10 +1,5 @@
 
-// sigh, this is also gql. the 'request body' formatting right here.
-function query(url, content, variables) {
-  const requestBody = {
-    query: content,
-    variables: variables ?? null
-  }
+function query(url, requestBody) {
   const options = {
     method: 'POST',
     headers: {
@@ -15,11 +10,15 @@ function query(url, content, variables) {
   }
 
   return fetch(url, options)
+    .then(res => res.json())
 }
 
 function gqlQuery(content, variables) {
-  return query('/api/graphql', content, variables)
-    .then(res => res.json())
+  const requestBody = {
+    query: content,
+    variables: variables ?? null
+  }
+  return query('/api/graphql', requestBody)
     .then(body => body.data)
 }
 
