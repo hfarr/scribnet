@@ -6,7 +6,7 @@ services:
     build: 
       context: .
       target: "prod"
-    image: "scribnet:0.0.1"
+    image: "scribnet:${VERSION:-latest}"
     env_file:
       - ".env"
     environment:
