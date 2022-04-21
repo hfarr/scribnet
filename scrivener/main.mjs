@@ -17,6 +17,8 @@ import Dataccess from './datasystem/Dataccess.mjs'
 import session from './session.mjs'
 import { Login, User } from './users/User.mjs'
 
+import LoginController from './controllers/Login.mjs'
+
 const PATH = '/'
 const BIND_IP = process.env.BIND_IP ?? '127.0.0.1'
 const BIND_PORT = process.env.BIND_PORT ?? '3000'
@@ -39,6 +41,8 @@ const mainRouter = express.Router()
 const mainApp = express()
 mainApp.use(express.json({limit: '50mb'}))
 mainApp.use(mainRouter)
+
+const loginApp = LoginController()
 
 const staticAll = makeStatic(NOTES_ROOT)
 
@@ -291,7 +295,7 @@ mainRouter.use('/api',
 
 // mainRouter.use('/api', session)
 
-import gqlObj, { dataccessLogins } from './resources.mjs'
+import gqlObj from './resources.mjs'
 console.log(`DEVELOPMENT: ${process.env.DEVELOPMENT}`)
 const gqlArgs = { ...gqlObj, graphiql: process.env.DEVELOPMENT === 'true' }
 mainRouter.use('/api/graphql', (req, res, next) => { req.hello = 'there'; next()})
@@ -314,56 +318,10 @@ mainRouter.get('/ping', async (req, res) => {
   res.send(response.message)
 })
 
-// TODO separate handler logic (the controller code so to speak) outside the establishing of routes?
-mainRouter.post('/api/login', async (req, res) => {
-
-  if (req.session.user === undefined) {
-
-    const { username, password } = req.body
-
-    // in order to pad against a timing attacks we always fetch a user from the DB.
-    // otherwise if the attacker supplies a fake username vs a real username they'll be able to determine if
-    //    one of the accounts exists at all based on how quickly the server rejects the response
-    const loginExists = await dataccessLogins.has(Login, username)
-    const userToCheck = loginExists ? username : 'nulluser'
-    const pwToCheck = loginExists ? password : 'wrongpw'
-
-    const login = await dataccessLogins.get(Login, userToCheck)
-
-    if (!login.checkPassword(pwToCheck)) {
-      res.status(401)
-      res.send( { message: "Failed to login." } ) // TODO we need like an interface or something for responses like this. Just a. Way to coordinate these APIs
-      return
-    }
-
-    // req.session.user = await dataccessLogins.get(User, username)
-    req.session.user = { username }
-
-    res.status(200)
-    res.send( { message: "Login succeeded.", redirect: '/app/notes' } )
-
-
-  } else {
-
-    res.status(200)
-    res.send( { message : "Already logged in.", redirect: '/app/notes' } )
-
-  }
-})
-mainRouter.post('/api/login/check', async (req, res) => { // I mean, really this is a GET, but I don't really want the parameters encoded in the url or whatnot
-  const response = {
-    loggedIn: false
-  }
-  if (req.session.user !== undefined) {
-    response.loggedIn = true
-    response.username = req.session.user.username
-  }
-
-  res.status(200)
-  res.send( response )
-})
+mainRouter.use('/api/login', loginApp)
 
 // TODO way to revoke a login
+//  .... or to delete any data
 
 const devOnly = express.Router()
 mainRouter.use('/api', devOnly)

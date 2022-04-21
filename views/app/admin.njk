@@ -1,0 +1,54 @@
+---
+layout: root
+---
+
+<center-l>
+  <div style="margin-top: 10ch;">
+
+      <!-- <button id="loginTokenCreate">Create login token</button>
+      <button id="loginTokens">List login tokens</button> -->
+  <stack-l space="var(--s1)">
+
+    <stack-l>
+
+      <div><button id="loginTokenCreate">Create login token</button></div>
+      <div><button id="loginTokens">List login tokens</button></div>
+      <!-- hmm... the case for open API... continues? or other API utility -->
+      <!-- <button id="loginTokenCreate">Create login token</button>
+      <button id="loginTokens">List login tokens</button> -->
+    </stack-l>
+    <div>
+      <pre id="result" style="overflow-x: auto;">
+
+      </pre>
+    </div>
+  </stack-l>
+  </div>
+</center-l>
+
+<script type="module" id="dyn-fetcher" src="/js/dynamic/fetcher.mjs"></script>
+<script>
+  function onClick(selector, handler) {
+    document.querySelector(selector).addEventListener('click', handler)
+  }
+  function queryOnClick(selector, route, method) {
+    if (method === undefined )
+      method = 'GET'
+
+    const querier = {
+      'GET': queryGet,
+      'POST': query
+    }[method]
+
+    onClick(selector, () => {
+      querier(route)
+        .then(resp => document.querySelector('#result').innerHTML = JSON.stringify(resp.body))
+    })
+  }
+
+  document.querySelector('#dyn-fetcher').addEventListener('load', () => {
+    queryOnClick('#loginTokenCreate', '/api/login/signup/token/create', 'POST')
+    queryOnClick('#loginTokens', '/api/login/signup/tokens')
+  })
+
+</script>

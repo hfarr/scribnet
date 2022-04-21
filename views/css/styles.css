@@ -30,6 +30,9 @@
   --color-submit: var(--dark-hue-submit);
   --color-submit-hover: var(--dark-hue-submit-hover);
 
+  --color-button: var(--dark-hue-submit);
+  --color-button-hover: var(--dark-hue-submit-hover);
+
   /* Need design scheme lingo, and easy way to update (javascript!)*/
   /* Primarys and accents and derived and all sorts */
   --hue-cream: #ffd0b0;
@@ -170,6 +173,19 @@ h2 {
 h3 {
   font-size: var(--s3);
 }
+
+/* Branding styles */
+button {
+  padding: var(--s-4);
+  font-weight: bold;
+  /* display: inline; */
+
+  background-color: var(--color-button);
+}
+button:hover {
+  background-color: var(--color-button-hover);
+}
+
 
 /* Component layout styling */
 box-l {

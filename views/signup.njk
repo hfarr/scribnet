@@ -1,0 +1,127 @@
+---
+layout: root.njk
+---
+
+<cover-l centered=".middle">
+  <!-- <div>h</div> -->
+  <div class="middle">
+    <!-- <form action="/api/login" target="self" method="POST" class="box invert" > -->
+    <form name="signup" class="box invert" >
+      <stack-l >
+        <stack-l space="var(--s-5)">
+          <label for="username">Signup key</label>
+          <input type="text" name="signupkey">
+        </stack-l >
+        <stack-l space="var(--s-5)">
+          <label for="username">Username</label>
+          <input type="text" name="username">
+        </stack-l >
+        <stack-l space="var(--s-5)">
+          <label >Password</label>
+          <input type="password" name="password">
+        </stack-l>
+        <stack-l space="var(--s-5)">
+          <label >Confirm password</label>
+          <input type="password" name="passwordconfirm">
+        </stack-l>
+        <!-- <input type="submit" value="Login"> -->
+        <button type="submit" value="Login">Login</button>
+      </stack-l>
+    </form>
+    <center-l>
+      <div class="warning"></div>
+    </center-l>
+  </div>
+  <!-- <div>h</div> -->
+</cover-l>
+
+<script type="module" id="dyn-fetcher" src="/js/dynamic/fetcher.mjs"></script>
+<script>
+  function validate() {
+    // should maybe even query the sign up token too. But. oh well.
+
+    [...document.querySelector('.warning').children].forEach(c => c.remove())
+
+    const inputs = document.forms["signup"].querySelectorAll('input')
+    const fields = {};
+    [...inputs].forEach(inp => fields[inp.name] = inp.value)
+    const { password, passwordconfirm } = fields
+
+    // need to use a better form validator
+    const requirements = [
+      [(pw, _) => pw.length > 0, "Password cannot be blank" ],
+      [(_, pwc) => pwc.length > 0, "Please confirm password"],
+      [(pw, pwc) => pw === pwc, "Passwords don't match"],
+    ]
+
+    let good = true
+    for (const [func, errorMessage] of requirements) {
+      const result = func(password, passwordconfirm)
+      good &= result
+
+      if (!result) {
+        const warning = document.createElement('p')
+        warning.innerText = errorMessage
+        document.querySelector('.warning').appendChild(warning)
+      }
+    }
+
+    return good
+  }
+
+  function createLogin() {
+
+    const goodToGo = validate()
+    if (!goodToGo)
+      return
+
+    const inputs = document.forms["signup"].querySelectorAll('input')
+    const fields = {};
+    [...inputs].forEach(inp => fields[inp.name] = inp.value)
+    const { username, password, signupkey } = fields
+
+    const requestBody = { username, password, signupkey }
+    query('/api/login/signup', requestBody)
+      .then(resp => resp.code >= 200 && resp.code < 300 ? resp.body : Promise.reject(resp.body) )
+      .then(body => { 
+        console.log(body.message) 
+        window.location = body.redirect
+      } )
+      .catch(body => { console.log("Error:", body.message) } )
+  }
+
+  function queryParams() {
+    const queryString = window.location.search
+    const grabParams = /(?<key>[\w\d_-]+)=(?<value>[\w\d_-]+)/g
+
+    const params = {};
+    [...queryString.matchAll(grabParams)]
+      .map(res => res.groups)
+      .forEach(res => params[res.key] = res.value)
+
+    return params
+  }
+
+  // better way to 'wait' for import?
+  document.querySelector('#dyn-fetcher').addEventListener('load', () => {
+    const params = queryParams()
+    if ('signupkey' in params) {
+      const inp  =document.querySelector('input[name=signupkey]')
+      inp.value = params.signupkey
+      inp.disabled = true
+    }
+  })
+  document.forms["signup"].addEventListener('submit', (evt) => {
+    evt.preventDefault()
+    createLogin()
+  })
+
+  // listening to submit event let's us prevent the browser navigation and implicitly supports both clicking the submit button and hitting the enter key
+  // document.forms["login"].addEventListener('submit', (evt) => {
+  //   evt.preventDefault()
+  //   submitLogin()
+  // })
+
+  // const loginButton = document.forms[0].querySelector('[type=submit]')
+  // loginButton.addEventListener('click', submitLogin)
+</script>

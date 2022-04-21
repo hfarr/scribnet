@@ -219,10 +219,6 @@ aggregate.of(Note, 'notes', unstruct.getter(Note))
 
 /// LOGINS
 const LOGIN_FILE = `${DATA_FOLDER}/logins`
-const dataccessLogins = await Dataccess.initFromFile(LOGIN_FILE)
-
-dataccessLogins.registerWithIndex(Login, "username", String)
-dataccessLogins.registerWithIndex(User, "username", String)
 
 const sc = new SchemaConstructor()
 sc.set(unstruct.list)
@@ -262,6 +258,6 @@ function authenticatePreStep(execArgs) {
 
 const graphqlHTTPOptions = { schema: schema, rootValue: root, customExecuteFn: authenticatePreStep }
 
-export { dataccess, dataccessLogins }
+export { dataccess }
 
 export default graphqlHTTPOptions
