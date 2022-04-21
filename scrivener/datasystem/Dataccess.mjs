@@ -204,7 +204,7 @@ export default class Dataccess {
     const instance = Object.create(constructorFunc.prototype, Object.getOwnPropertyDescriptors(data))
     const { [datable]: { id } } = instance
 
-    this.indices[constructorFunc.name].set(instance, id)
+    // this.indices[constructorFunc.name].set(instance, id)
 
     // Here's an awkward thought- we update the index before we save the new data
     // someone tries to fetch this, it loads bunk.
@@ -219,6 +219,9 @@ export default class Dataccess {
   // Data management functions
   async saveInstance(data) {
     // TODO check if it is a Datable
+    if (this.indices[data.constructor.name] !== undefined) {
+      this.indices[data.constructor.name].set(data, data[datable].id)
+    }
     return this.db.save(data.serialize())
   }
 
