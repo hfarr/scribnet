@@ -18,6 +18,30 @@ const isDatable = obj => {
   return datable in obj
 }
 
+function bufferSerialize(buf, encoding='base64') {
+
+  let encoded
+  switch(encoding) {
+    case 'base64':  encoded = buf.base64Slice(); break
+    case 'bytearray': encoded = [...buf]; break
+    default: 
+      throw Error('Not a supported encoding')
+  }
+
+  return { type: 'Buffer', data: encoded, encoding }
+}
+function bufferDeserialize(serial) {
+  let buf
+  switch(serial.encoding) {
+    case 'base64': buf = Buffer.from(serial.data, 'base64'); break
+    case 'bytearray': buf = Buffer.from(serial.data); break
+    default:
+      throw Error(`Failed to deserialize: Unsupported encoding '${serial.encoding}'`)
+  }
+
+  return buf
+}
+
 // maybe being 'datable' is more like a pointer to a struct in C
 // id is the value of the pointer referencing the memory location
 // in whichever scheme. In a program that's your program memory,
@@ -85,7 +109,7 @@ export default class Datable {
       }
       // could attach like. Custom serde to each constructor we support, maybe, through a map. Hm. switch for now.
       switch(field.constructor) {
-        case Buffer: data[name] = { type: 'Buffer', data: [ ...field ] }; break;
+        case Buffer: data[name] = bufferSerialize(field); break;
         default:
           data[name] = this[name]
       }
@@ -127,7 +151,7 @@ export default class Datable {
       const field = data[name]
       if (typeof(field) === 'object') {
         switch (field.type) {
-          case 'Buffer': this[name] = Buffer.from(field.data); break;
+          case 'Buffer': this[name] = bufferDeserialize(field); break;
           case 'object':
           default: this[name] = field
         }
