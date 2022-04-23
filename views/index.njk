@@ -53,7 +53,8 @@ layout: root.njk
         console.log("User is logged in: ", loggedIn)
         if (loggedIn) {
           // not using any redirect here? hm. Maybe send to App, which could then, maybe, recover some client state? SPA like or. something.
-          window.location = '/app/notes'
+          // window.location = '/app/notes'
+          // not auto-redirecting for now, in case user wants to log in as another user
         }
       })
   }

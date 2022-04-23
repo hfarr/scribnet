@@ -56,12 +56,20 @@ async function validateUsername(username) {
 loginApp.use(express.json())
 loginApp.post('/', async (req, res) => {
 
-  if (req.session.user !== undefined) {
-    res.status(200).send()
-    return
-  }
 
   const { username, password } = req.body
+
+  if (req.session.user !== undefined) {
+    // res.status(200).send()
+    // return
+    console.log("User", req.session.user.username, "attempting to log in again. Reloading session.")
+
+    // should maybe do code here? or we await the session reload, by wrapping in a promise?
+    req.session.reload(err => {
+      if (err !== undefined) 
+        console.log("Session destroy err: ",err)
+    })
+  }
 
   if (username === undefined || password === undefined) {
     res.status(401).send( { message: "Failed to login" } )
