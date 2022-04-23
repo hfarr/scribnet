@@ -13,7 +13,12 @@ const COMMENT = 'Comment'
 
 class DocParser extends Parser {
 
-  static tokenREs = [ /(?<Tag>\w+)/, /(?<LAngle><)/, /(?<RAngle>>)/, /'(?<SegText>.*?)'/, /\s+/, /(?<Comment>#.*)(\n|$)/ ] 
+  // Pretty sure the comment token must come at the end FYI
+  static tokenREs = [ 
+    /(?<Tag>\w+)/, /(?<LAngle><)/, /(?<RAngle>>)/, /'(?<SegText>.*?)'/, 
+    /(?<Comma>,)/, /(?<LParen>\()/, /(?<RParen>\))/,
+    /\s+/, /(?<Comment>#.*)(\n|$)/ 
+  ] 
 
   otherInit() {
     this.tokens = this.tokens.filter(tok => tok.type !== COMMENT)
@@ -59,7 +64,7 @@ class DocParser extends Parser {
     while (!this.check('RAngle') && !this.isAtEnd()) {
       if (this.check('Tag')) {
         sections.push(this.context())
-      } else if (this.check('SegText')) {
+      } else if (this.check('SegText') || this.check('LParen')) {
         sections.push(this.segment())
       } else {
 
@@ -72,11 +77,32 @@ class DocParser extends Parser {
     return Context.createContext(tok.lexeme, ...sections)
   }
 
+  segTags() {
+    this.consume('LParen', 'Expect "("')
+
+    const tags = []
+
+    while (!this.check('RParen') && !this.isAtEnd()) {
+
+      tags.push(this.consume('Tag', 'Expect tag in segment tags').lexeme)
+
+      if (!this.check('RParen')) {
+        this.consume('Comma', "Expect ',' between Segment Tags")
+      }
+    }
+    this.consume('RParen', 'Expect ")"')
+    return tags
+  }
+
   segment() {
+
+    let tags = []
+    if (this.check('LParen'))
+      tags = this.segTags()
 
     const segText = this.consume('SegText')
     // need to expand the language to enable inline tags
-    return Segment.createSegment([], segText.lexeme)
+    return Segment.createSegment(tags, segText.lexeme)
   }
 }
 
