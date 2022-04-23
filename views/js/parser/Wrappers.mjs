@@ -1,4 +1,5 @@
-import { DocParser, DocPrinter } from "./DocParser.mjs";
+import DocParser from "./DocParser.mjs";
+import DocPrinter from "./DocPrinter.mjs";
 
 
 const parseDoc = string => (new DocParser(string)).parse()
@@ -14,5 +15,19 @@ const convertCompact = docPrint => docPrint.replaceAll(/\s*(<|>)\s*/g,'$1').repl
 const injectNewLines = compact => compact.replaceAll(/(ul|li)/, '\n$1')
 
 const printDocCompact = doc => convertCompact(printDoc(doc))
+
+
+// -----
+
+// const sample = "h1 < 'A List' > ul < li<p<'A'>> li<p<'B'>ul< li<p<'aB'>> li<p<'bB'>> >> li<p<'C'>>> "
+
+// const docParser = new DocParser(sample)
+// const doc = docParser.parse()
+// const docPrinter = new DocPrinter(doc)
+
+// console.debug('testing')
+// console.debug(doc.toString())
+// console.debug(docPrinter.print())
+
 
 export { parseDoc, printDoc, printDocCompact, parseContext, printContext }

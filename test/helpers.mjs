@@ -2,7 +2,8 @@
 
 import assert from 'assert'
 
-import { DocParser, DocPrinter } from '../views/js/parser/DocParser.mjs'
+import DocParser from '../views/js/parser/DocParser.mjs'
+import DocPrinter from '../views/js/parser/DocPrinter.mjs'
 import { parseDoc, printDoc, parseContext, printContext } from '../views/js/parser/Wrappers.mjs'
 
 // assertion primitives
