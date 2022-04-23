@@ -4,21 +4,25 @@ RUN mkdir /app
 
 WORKDIR /app
 ADD ./package.json ./package-lock.json ./.eleventy.js ./
-RUN npm install
+RUN npm install --production=false
 
 FROM base AS static
 
 WORKDIR /app
 
-RUN mkdir data-folder
 ADD ./views ./views/
-ADD ./scrivener ./scrivener/
-
+ENV IGNORE_FILES true
 RUN npm run build-static
+
 
 FROM node:16.13.2-slim as prod
 
-COPY --from=static /app /app
+COPY --from=static /app/site /app/site
+ADD ./scrivener /app/scrivener/
+
 WORKDIR /app
+ADD ./package.json ./package-lock.json ./
+RUN mkdir data-folder
+RUN npm install --production=true
 
 ENTRYPOINT [ "npm", "run", "start" ]
