@@ -3,4 +3,4 @@ version: '3.9'
 services:
   scribnet:
     env_file:
-      - ".env.prod"
+      - "prod.env"
