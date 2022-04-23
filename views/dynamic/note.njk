@@ -6,7 +6,7 @@ layout: note
 <!-- TODO set paths to just '.', or otherwise adopt a consistent url approach -->
 <a id="edit-button" href="/app/edit/NOTE_SLUG">Edit</a>
 <a id="view-button" href="/app/note/NOTE_SLUG">View</a>
-<a id="db-button" href="/app/note/NOTE_SLUG" ping="http://localhost:3000/api/db-reload/">Reset page</a>
+<a id="db-button" href="/app/note/NOTE_SLUG" ping="http://localhost:3000/api/db-reload/" {% if (app.env.ENVIRONMENT !== "dev") %}style="display: none;"{% endif %}>Reset page</a>
 
 <br>
 <div id="content" style="white-space: pre-wrap;"></div>
