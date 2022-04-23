@@ -46,6 +46,20 @@ describe('DocParser', function () {
       assert(actual.structureEq(expected), "Expect structure of Sections to be the same")
 
     })
+
+    it('parses tagged segments', function () {
+      const sample = "p(strong, em)<'Strong and emphasized'> p <'Regular'>"
+      const actual = (new DocParser(sample)).parse()
+
+      const expected = Doc.from(
+        Context.createContext('p', Segment.createSegment(['strong', 'em'], 'Strong and emphasized')),
+        Context.createContext('p', Segment.createSegment([], 'Regular')),
+      )
+
+      assert(actual.eq(expected), "Expected atoms to be the same")
+      assert(actual.structureEq(expected), "Expect structure of Sections to be the same")
+
+    })
   })
 })
 
