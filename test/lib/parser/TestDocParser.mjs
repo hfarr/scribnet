@@ -6,8 +6,7 @@ const PATH = "/home/henry/dev/scribnet/views"
 
 const { Segment, Context, Doc } = await import(`${PATH}/js/scribnet/section/index.mjs`)
 
-import DocParser from '../../../views/js/parser/DocParser.mjs'
-import { printDoc } from '../../helpers.mjs'
+import { DocParser } from '../../../views/js/parser/index.mjs'
 
 // const sample = "h1 < 'A List' > ul < li<p<'A'>> li<p<'B'>ul< li<p<'aB'>> li<p<'bB'>> >> li<p<'C'>>> "
 
