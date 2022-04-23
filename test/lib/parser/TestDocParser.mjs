@@ -18,8 +18,6 @@ describe('DocParser', function () {
 
 
   describe('parse', function () {
-
-
   
     // TODO too generic of a test name, nail down specific features
     it('parses contexts and simple (untagged) segments', function() {
@@ -67,6 +65,10 @@ describe('DocParser', function () {
       assert(!actual.selectionHasTag('strong', 4, 5), "Expect to not have 'strong' tag")
       assert(!actual.selectionHasTag('em', 4, 5), "Expect to not have 'em' tag")
 
+    })
+
+    it('fails for improper formats', function () {
+      // TODO sad-path tests
     })
   })
 })
