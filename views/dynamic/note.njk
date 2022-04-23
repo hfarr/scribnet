@@ -20,7 +20,7 @@ layout: note
   import('/js/parser/Wrappers.mjs').then(m => ({ printDoc, parseDoc, printDocCompact } = m))
 
   // Grabs the last piece of the path
-  const resourceName = /(?<name>[^\/]*)(?:\/)?$/.exec(window.location.pathname).groups.name
+  const resourceName = /(?<name>[^\/]*)(?:\/)?$/.exec(window.location.pathname).groups.name.replaceAll('%20', ' ')
   // const resourceName = window.location.pathname.match(/[^\/]*$/)[0] // grabs the string in the url past the last forward slash
   // const resourceName = "{{ noteItem.name }}"
   const slugName = resourceName.toLocaleLowerCase().replace(' ', '-') // again TODO this isn't safe or consistent. We need both. For alpha though- ship it.
@@ -32,7 +32,8 @@ layout: note
 
   function updateHref(anchor, newHref) {
     const oldHref = anchor.getAttribute('href') ?? '.'
-    anchor.setAttribute('href', oldHref.replace('NOTE_SLUG', slugName))
+    // anchor.setAttribute('href', oldHref.replace('NOTE_SLUG', slugName))
+    anchor.setAttribute('href', oldHref.replace('NOTE_SLUG', resourceName))
   }
   [editButton, viewButton, dbButton].forEach(updateHref)
 

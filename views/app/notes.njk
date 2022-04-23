@@ -22,7 +22,9 @@ title: All notes
   function noteURLSlug(name) {
     // Warning! This is not a safe slug function
     // TODO replace with a safe one that matches the slugs from eleventy
-    return name.toLocaleLowerCase().replaceAll(' ', '-')
+    // return name.toLocaleLowerCase().replaceAll(' ', '-')
+    // Look, for now... we'd need to pass more data, such as "original note name" or something to the page. Maybe store a map of slugs to notes. Need to watch out for collisions though.
+    return name
   }
 
   function appendNote(note) {
