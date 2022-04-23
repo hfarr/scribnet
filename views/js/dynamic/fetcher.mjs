@@ -36,6 +36,9 @@ function gqlQuery(content, variables) {
     .then(res => res.body.data)
 }
 
+
+// TODO add query for mutation?
+
 globalThis.query = query
 globalThis.queryGet = queryGet
 globalThis.gqlQuery = gqlQuery
