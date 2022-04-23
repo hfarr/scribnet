@@ -94,7 +94,7 @@ export default class Database {
     return fs.open(this.filename, 'a+')
       .then(f => fileHandle = f)
       .then(_ => fileHandle.readFile({ encoding: 'utf8', flag: 'a+' }))
-      .then(s => this.loadDBFromString(s))
+      .then(s => this.loadDBFromString(s.trim()))
       .then(_ => fileHandle.close())
   }
 
