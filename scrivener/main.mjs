@@ -21,6 +21,7 @@ const SITE_ROOT = path.resolve('site')
 // const NOTES_ROOT = 'note'
 const NOTES_ROOT = ''
 const EDIT_ROOT = 'edit'
+const DATA_FOLDER = "data-folder"
 
 const makeStatic = staticLocation(SITE_ROOT)
 // const staticApp = staticLocation('')
