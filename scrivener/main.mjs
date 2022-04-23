@@ -34,9 +34,17 @@ const staticApp = makeStatic(NOTES_ROOT)
 
 //////
 mainRouter.use(session)
-mainRouter.use(staticApp)
 mainRouter.use('/api/login', loginApp)
 /////
+
+
+const requireLogin = (req,res,next) => {
+  if (!('user' in req.session)) {
+    res.status('401').end()
+    return
+  }
+  next()
+}
 
 
 /* 
@@ -56,13 +64,11 @@ mainRouter.get('/dynamic/*', (req, res) => {
   res.status(403)
   res.end()
 })
-mainRouter.use('/app', (req, res, next) => {
-  if (!('user' in req.session)) {
-    res.status('401').end()
-    return
-  }
-  next()
-})
+mainRouter.use('/app', requireLogin)
+
+if (process.env.DEVELOPMENT !== 'true') {
+  mainRouter.use('/api', requireLogin)
+}
 
 // mainRouter.get('/note/:notename', async (req, res) => {  // Maybe- this conflicts with established routing. so for now I will use /app to distinguish dynamic pages.
 mainRouter.get('/app/note/:notename', async (req, res) => {
@@ -88,6 +94,12 @@ mainRouter.get('/edit/:notename', async (req, res) => {
   res.sendFile(path.join(SITE_ROOT, EDIT_ROOT, "index.html"))  // TODO site organization. Can I finagle static renderer to work? I don't want it to request based on the parameter.
 
 })
+
+
+
+//////////
+// Route attachments
+mainRouter.use(staticApp)
 
 
 /*
