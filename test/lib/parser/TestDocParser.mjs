@@ -48,16 +48,24 @@ describe('DocParser', function () {
     })
 
     it('parses tagged segments', function () {
-      const sample = "p(strong, em)<'Strong and emphasized'> p <'Regular'>"
+      const sample = "p<(strong, em)'A' 'B' > p <'C'>"
       const actual = (new DocParser(sample)).parse()
 
       const expected = Doc.from(
-        Context.createContext('p', Segment.createSegment(['strong', 'em'], 'Strong and emphasized')),
-        Context.createContext('p', Segment.createSegment([], 'Regular')),
+        Context.createContext('p', Segment.createSegment(['strong', 'em'], 'A'), Segment.createSegment([], 'B')),
+        Context.createContext('p', Segment.createSegment([], 'C')),
       )
 
       assert(actual.eq(expected), "Expected atoms to be the same")
       assert(actual.structureEq(expected), "Expect structure of Sections to be the same")
+      assert(actual.selectionEntirelyHasTag('strong', 0, 1), "Expect to have 'strong' tag")
+      assert(actual.selectionEntirelyHasTag('em', 0, 1), "Expect to have 'em' tag")
+
+      assert(!actual.selectionHasTag('strong', 2, 3), "Expect to not have 'strong' tag")
+      assert(!actual.selectionHasTag('em', 2, 3), "Expect to not have 'em' tag")
+
+      assert(!actual.selectionHasTag('strong', 4, 5), "Expect to not have 'strong' tag")
+      assert(!actual.selectionHasTag('em', 4, 5), "Expect to not have 'em' tag")
 
     })
   })
