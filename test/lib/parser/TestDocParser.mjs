@@ -102,6 +102,13 @@ describe('DocParser', function () {
 
     })
 
+    it('throws error on invalid escape sequence', function () {
+      // when I say "single" I mean in terms of a scribdoc escape. To get a single scribdoc escape ( a single \ ) we have to escape it from javascript first, hence \\
+      const sample = `p<'\\'>`
+      assert.throws(() => (new DocParser(sample)).parse(), 'Expect parsing to error on invalid escape sequence')
+
+    })
+
     it('fails for improper formats', function () {
       // TODO sad-path tests
     })
