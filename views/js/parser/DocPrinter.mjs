@@ -1,4 +1,16 @@
+import { text } from "express"
 
+
+function escapeSegText(segText) {
+  const ESCAPE = '\\'
+  const SINGLE_QUOTE = '\''
+
+  const textPieces = segText.split(ESCAPE)
+  const mappedPieces = textPieces.map(text => text.replaceAll(SINGLE_QUOTE, `\\'`))
+  const result = mappedPieces.join('\\\\')
+
+  return result
+}
 
 class DocPrinter {
   constructor(topSection) {
@@ -87,7 +99,7 @@ class DocPrinter {
   printSegment(section, depth) {
 
     const tagList = section.tags.join(', ')
-    const segText = `'${section.toString()}'`
+    const segText = `'${escapeSegText(section.toString())}'`
 
     if (tagList === '') return segText
 
