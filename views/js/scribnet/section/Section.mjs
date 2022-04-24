@@ -947,7 +947,7 @@ class Section {
   }
 
   eq(other) {
-    if (other instanceof Section) {
+    if (other instanceof Section && this.length === other.length) {
       for (let i = 0; i < this.length; i++) {
         const atomEq = this.at(i) === other.at(i)
         if (!atomEq) return false
