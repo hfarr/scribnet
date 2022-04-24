@@ -12,8 +12,8 @@ WORKDIR /app
 
 ADD ./views ./views/
 ENV IGNORE_FILES true
+ENV ENVIRONMENT prod
 RUN npm run build-static
-
 
 FROM node:16.13.2-slim as prod
 
