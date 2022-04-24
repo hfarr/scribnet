@@ -14,11 +14,29 @@ const COMMA = 'Comma'
 const EOI = 'EOI'
 const COMMENT = 'Comment'
 
+function unescapeSegtext(segText) {
+  // two escape sequences, \\ for a \ and \' for a '
+  // Notwithstanding JS escapes which would have been handled by now.
+  // When we get a string input to here we treat the escapes as Scribdoc escapes, not as JS escapes,
+  // but we must use js escapes because the escape character is the same. Confused? me too, so I'll try to simplify it.
+  const ESCAPE_ESCAPE = '\\\\'  // the escape sequence \\ in scribdoc
+  const ESCAPE_SINGLE_QUOTE = '\\\''  // the escape sequence \' in scribdoc
+
+  const textPieces = segText.split(ESCAPE_ESCAPE) // we'll handle these last, but they are priority, in a sense. If we have \\' then it will interpret it as an escaped \ at the end of the segment. but if it enocunters \\\' then that is the unescaped \'  yeah this is a bit confusing.
+  const mappedPieces = textPieces.map(text => text.replaceAll(ESCAPE_SINGLE_QUOTE, `'`))
+
+  const result = mappedPieces.join('\\')
+
+  return result
+
+}
+
 class DocParser extends Parser {
 
   // Pretty sure the comment token must come at the end FYI
   static tokenREs = [ 
-    /(?<Tag>\w+)/, /(?<LAngle><)/, /(?<RAngle>>)/, /'(?<SegText>.*?)'/, 
+    /'(?<SegText>([\\\\]*\\'|.)*?)'/, // Explanation:
+    /(?<Tag>\w+)/, /(?<LAngle><)/, /(?<RAngle>>)/, 
     /(?<Comma>,)/, /(?<LParen>\()/, /(?<RParen>\))/,
     /\s+/, /(?<Comment>#.*)(\n|$)/ 
   ] 
@@ -104,8 +122,10 @@ class DocParser extends Parser {
       tags = this.segTags()
 
     const segText = this.consume(SEG_TEXT)
+    const unescapedText = unescapeSegtext(segText.lexeme)
+
     // need to expand the language to enable inline tags
-    return Segment.createSegment(tags, segText.lexeme)
+    return Segment.createSegment(tags, unescapedText)
   }
 }
 
