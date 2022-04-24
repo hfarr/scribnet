@@ -35,7 +35,7 @@ class DocParser extends Parser {
 
   // Pretty sure the comment token must come at the end FYI
   static tokenREs = [ 
-    /'(?<SegText>([\\\\]*\\'|.)*?)'/, // Explanation:
+    /'(?<SegText>(\\\\|(?<=(?:\\\\)*)\\'|[^'\\])*)'/, // Explanation:  we exclude single backslashes and single quotes from the segtext group. Then we make an exception for specific escape sequences. Very CSS like. exceptional.
     /(?<Tag>\w+)/, /(?<LAngle><)/, /(?<RAngle>>)/, 
     /(?<Comma>,)/, /(?<LParen>\()/, /(?<RParen>\))/,
     /\s+/, /(?<Comment>#.*)(\n|$)/ 
