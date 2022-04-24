@@ -38,6 +38,13 @@ mainRouter.use(session)
 mainRouter.use('/api/login', loginApp)
 /////
 
+if (process.env.DEV_AUTO_LOGIN === 'true') {
+  mainRouter.use((req,res,next) => {
+    req.session.user = { username: "Dev" }
+    next()
+  })
+}
+
 
 const requireLogin = (req,res,next) => {
   if (!('user' in req.session)) {
@@ -65,6 +72,7 @@ mainRouter.get('/dynamic/*', (req, res) => {
   res.status(403)
   res.end()
 })
+
 mainRouter.use('/app', requireLogin)
 
 if (process.env.DEVELOPMENT !== 'true') {
