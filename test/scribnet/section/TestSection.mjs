@@ -638,6 +638,25 @@ describe(`Section`, function () {
       })
     })
 
+    describe('eq', function () {
+      it('fails sections of different lengths', function () {
+        const case1 = Section.from(Section.from( 
+          AtomicSection.from(...'A\\\'B'),
+          AtomicSection.from(...''),
+          AtomicSection.from(...'\\\\'),
+          // Segment.createSegment([], 'A\'B'),
+        ))
+        const case2 = Section.from(Section.from( 
+          AtomicSection.from(...'A\\\'B'),
+          AtomicSection.from(...'\\'),
+          AtomicSection.from(...'\\\\'),
+        ))
+
+        assert(!case1.eq(case2))
+        assert(!case2.eq(case1))
+      })
+    })
+
     describe('structureEq', function () {
 
       // const testSectionMirror = 
@@ -661,6 +680,22 @@ describe(`Section`, function () {
       })
       it('is structurally equivalent to a distinctly constructed duplicate', function () {
         assert(testSection.structureEq(testSectionMirror))
+      })
+      it('fails sections of different lengths', function () {
+        const case1 = Section.from(Section.from( 
+          AtomicSection.from(...'A\\\'B'),
+          AtomicSection.from(...''),
+          AtomicSection.from(...'\\\\'),
+          // Segment.createSegment([], 'A\'B'),
+        ))
+        const case2 = Section.from(Section.from( 
+          AtomicSection.from(...'A\\\'B'),
+          AtomicSection.from(...'\\'),
+          AtomicSection.from(...'\\\\'),
+        ))
+
+        assert(!case1.structureEq(case2))
+        assert(!case2.structureEq(case1))
       })
     })
 
