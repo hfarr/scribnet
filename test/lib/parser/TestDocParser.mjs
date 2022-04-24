@@ -67,6 +67,18 @@ describe('DocParser', function () {
 
     })
 
+    it('parses escaped single quotes', function () {
+      // In Scribdoc the escape character is a single \ 
+      // in JS \' is an escape sequence itself so we escape the backslash to get just the backslash in scribdoc. console.log to see the scribdoc version of the string.
+      const sample = `p<'A\\'B'>`
+      const actual = (new DocParser(sample)).parse()
+      const expected = Doc.from(Context.createContext('p', Segment.createSegment([], 'A\'B')))
+
+      assert(actual.eq(expected))
+      assert(actual.structureEq(expected))
+
+    })
+
     it('fails for improper formats', function () {
       // TODO sad-path tests
     })
