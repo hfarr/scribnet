@@ -6,7 +6,7 @@ const { Segment, Context, Doc } = await import(`${PATH}/js/scribnet/section/inde
 
 // Parsing is tested in the other module so I feel relatively comfortable using it to validate tests.
 // I'll note that that parser doesn't rely on the Printer so there shouldn't be a risk of circular breakage.
-import { parseDoc } from '../../helpers.mjs'
+import { parseDoc, printDocCompact } from '../../helpers.mjs'
 import { DocPrinter } from '../../../views/js/parser/index.mjs'
 
 describe('DocPrinter', function () {
@@ -49,7 +49,17 @@ Doc <
 
 
     it('prints tagged segments', function () {
-      
+      const sample = parseDoc("p<(strong, em)'A' 'B' > p <'C'>")
+      const actual = (new DocPrinter(sample)).print()
+
+      const expected = `\
+Doc <
+  p < (strong, em)'A' 'B'>
+  p < 'C'>
+>
+`
+      assert.strictEqual(actual, expected)
+
     })
   })
 })
