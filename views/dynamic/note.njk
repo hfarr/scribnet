@@ -79,7 +79,7 @@ layout: note
 
     if (contentMap.get(contentWrapper).scribdoc !== undefined) {
 
-      const scribDoc = contentMap.get(contentWrapper).scribDoc
+      const scribDoc = contentMap.get(contentWrapper).scribdoc
       const editDoc = EditDocument.fromDocSection(parseDoc(scribDoc))
       editor.editor.currentDocument = editDoc
 
@@ -112,9 +112,9 @@ layout: note
         // Naming is wrong too really it should just be "addListener" because it listens for
         // nearly all state changes of an EditDocument.
         const serial = JSON.stringify(editDoc.document)
-        const scribdoc = editDoc.toScribdoc()
+        const scribdoc = printDocCompact(editDoc.document)
         const data={ content: htmlRenderer.toHTML(editDoc.document), /*serial: serial,*/ scribdoc: scribdoc, scribdocVersion: "0.0.0" }
-        contentMap.set(contentWrapper, { serial: serial })
+        contentMap.set(contentWrapper, { serial: serial, scribdoc: scribdoc })
         return saveNote(data)
       })
 
@@ -184,7 +184,7 @@ layout: note
   import('/js/dynamic/fetcher.mjs').then(async () => {
     loadNote()
       .then(note => { contentWrapper.innerHTML = note.content; return note } )
-      .then(note => contentMap.set(contentWrapper, { serial: note.serial } ) )
+      .then(note => contentMap.set(contentWrapper, { serial: note.serial, scribdoc: note.scribdoc } ) )
       .catch(err => console.log('could not load note:',err))
     // console.log(resourceName)
     // this.... upsetting. Maybe an indication we don't need JS on every page. If we have to load some modules before others.
