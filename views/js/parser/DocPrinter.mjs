@@ -86,7 +86,12 @@ class DocPrinter {
   }
   printSegment(section, depth) {
 
-    return `'${section.toString()}'`
+    const tagList = section.tags.join(', ')
+    const segText = `'${section.toString()}'`
+
+    if (tagList === '') return segText
+
+    return `(${tagList})${segText}`
   }
 }
 
