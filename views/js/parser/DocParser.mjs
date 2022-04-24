@@ -14,7 +14,7 @@ const COMMA = 'Comma'
 const EOI = 'EOI'
 const COMMENT = 'Comment'
 
-function unescapeSegtext(segText) {
+function unescapeSegText(segText) {
   // two escape sequences, \\ for a \ and \' for a '
   // Notwithstanding JS escapes which would have been handled by now.
   // When we get a string input to here we treat the escapes as Scribdoc escapes, not as JS escapes,
@@ -122,7 +122,7 @@ class DocParser extends Parser {
       tags = this.segTags()
 
     const segText = this.consume(SEG_TEXT)
-    const unescapedText = unescapeSegtext(segText.lexeme)
+    const unescapedText = unescapeSegText(segText.lexeme)
 
     // need to expand the language to enable inline tags
     return Segment.createSegment(tags, unescapedText)
