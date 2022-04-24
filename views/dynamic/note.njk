@@ -81,6 +81,7 @@ layout: note
 
       const scribDoc = contentMap.get(contentWrapper).scribdoc
       const editDoc = EditDocument.fromDocSection(parseDoc(scribDoc))
+      contentWrapper.after(editor)
       editor.editor.currentDocument = editDoc
 
     } else if (contentMap.get(contentWrapper).serial !== undefined) {
