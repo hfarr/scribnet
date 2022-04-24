@@ -11,7 +11,7 @@ const printContext = ctx => (new DocPrinter(ctx)).print()  // something about th
 // const convertCompact = docPrint => docPrint.replaceAll(/\n/g, '').replaceAll(/\s*(<|>)\s*/g,'$1').replace(/^Doc<(.*)>$/, '$1')
 // should eliminate whitespace between quoted sections too, so that whitespace within quoted sections is preserved
 // or I write, frankly, a new pretty printer for these cases.
-const convertCompact = docPrint => docPrint.replaceAll(/\s*(<|>)\s*/g,'$1').replace(/^Doc<(.*)>$/, '$1')
+const convertCompact = docPrint => docPrint.replaceAll(/\s*(<|>|\(|\)|,)\s*/g,'$1').replace(/^Doc<(.*)>$/, '$1')
 const injectNewLines = compact => compact.replaceAll(/(ul|li)/, '\n$1')
 
 const printDocCompact = doc => convertCompact(printDoc(doc))

@@ -4,7 +4,7 @@ import assert from 'assert'
 
 import DocParser from '../views/js/parser/DocParser.mjs'
 import DocPrinter from '../views/js/parser/DocPrinter.mjs'
-import { parseDoc, printDoc, parseContext, printContext } from '../views/js/parser/Wrappers.mjs'
+import { parseDoc, printDoc, parseContext, printContext, printDocCompact } from '../views/js/parser/Wrappers.mjs'
 
 // assertion primitives
 export function testEq({ actual, expected }, testCaseNum) {
@@ -71,4 +71,4 @@ function printBoundaries(doc) {
 }
 
 
-export { DocParser, DocPrinter, parseDoc, printDoc, parseContext, printContext, printBoundaries }
+export { DocParser, DocPrinter, parseDoc, printDoc, parseContext, printContext, printBoundaries, printDocCompact }
