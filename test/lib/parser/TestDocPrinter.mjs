@@ -46,18 +46,26 @@ Doc <
       
 
     })
+
+
+    it('prints tagged segments', function () {
+      
+    })
   })
 })
 
 describe('invertibility', function () {
   it('is inverse of parsing', function () {
-      const sample = parseDoc("h1 < 'A List' > ul < li<p<'A'>> li<p<'B'>ul< li<p<'aB'>> li<p<'bB'>> >> li<p<'C'>>> ")
-      const original = (new DocPrinter(sample)).print() // x
+    // technically.. this is describing the injective property of parsing, rather than stating that printing is the inverse of parsing. Printing could be the inverse image of parsing.
+    //  Im(x) = y   =>  Im-1(y) = x, or informally, no two points in the domain map to the same point in the co domain.
+    //  also implies codomain >= domain
+    const sample = parseDoc("h1 < 'A List' > ul < li<p<'A'>> li<p<'B'>ul< li<p<'aB'>> li<p<'bB'>> >> li<p<'C'>>> ")
+    const original = (new DocPrinter(sample)).print() // x
 
-      const actual = (new DocPrinter(parseDoc(original))).print() // f^-1(f(x))
+    const actual = (new DocPrinter(parseDoc(original))).print() // f^-1(f(x))
 
-      // f^-1(f(x)) == x
-      assert.strictEqual(actual, original)
+    // f^-1(f(x)) == x
+    assert.strictEqual(actual, original)
 
   })
 })
