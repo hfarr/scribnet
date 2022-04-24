@@ -94,8 +94,10 @@ class HTMLRenderer extends Renderer {
 
 
   renderSegment(inlineSegment) {
+
+    const escaped = escapeString(inlineSegment.toString())
     
-    return wrapMany(inlineSegment.tags, inlineSegment.toString())
+    return wrapMany(inlineSegment.tags, escaped)
 
   }
 
