@@ -61,6 +61,19 @@ Doc <
       assert.strictEqual(actual, expected)
 
     })
+
+    it('prints escape sequences', function () {
+      const sample = parseDoc(`p< '\\\\' '\\'' >`)
+
+      const actual = (new DocPrinter(sample)).print()
+      const expected = `\
+Doc <
+  p < '\\\\' '\\''>
+>
+`
+
+      assert.strictEqual(actual, expected)
+    })
   })
 })
 
