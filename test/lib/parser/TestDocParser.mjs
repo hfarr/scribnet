@@ -79,6 +79,29 @@ describe('DocParser', function () {
 
     })
 
+    it('parses escaped escaped characters & escaped single quotes', function () {
+
+      // Scribdoc escape results
+      // JS             Scribdoc      actual text in segments (minus double quotes)
+      // A\\'B      =>  A\'B      =>  "A'B"
+      // A\\\\'B    =>  A\\'B     =>  "A\", "B"       // segment that ends in a single backslash
+      // A\\\\\\'B  =>  A\\\'B    =>  "A\'B"
+
+      const sample = `p<'A\\\\\\'B' '' '\\\\' '\\\\\\\\'>`
+      const actual = (new DocParser(sample)).parse()
+      const expected = Doc.from(Context.createContext('p', 
+        Segment.createSegment([], 'A\\\'B'),
+        Segment.createSegment([], ''),
+        Segment.createSegment([], '\\'),
+        Segment.createSegment([], '\\\\'),
+      ))
+
+      assert(actual.eq(expected))
+      assert(actual.structureEq(expected))
+
+
+    })
+
     it('fails for improper formats', function () {
       // TODO sad-path tests
     })
