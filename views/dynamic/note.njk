@@ -17,7 +17,9 @@ layout: note
   let renderer;
 
   let printDoc, parseDoc, printDocCompact;
+  let EditDocument;
   import('/js/parser/Wrappers.mjs').then(m => ({ printDoc, parseDoc, printDocCompact } = m))
+  import('/js/scribnet/document/EditDocument.mjs').then(m => ({ default: EditDocument } = m))
 
   // Grabs the last piece of the path
   const resourceName = /(?<name>[^\/]*)(?:\/)?$/.exec(window.location.pathname).groups.name.replaceAll('%20', ' ')
@@ -75,14 +77,24 @@ layout: note
     const editor = document.createElement("editor-hf")
     editor.setAttribute("style", "white-space: pre-wrap;")  // auto part of editor? :S. use that shadow dom?
 
-    if (contentMap.get(contentWrapper).serial === undefined) {
+    if (contentMap.get(contentWrapper).scribdoc !== undefined) {
+
+      const scribDoc = contentMap.get(contentWrapper).scribDoc
+      const editDoc = EditDocument.fromDocSection(parseDoc(scribDoc))
+      editor.editor.currentDocument = editDoc
+
+    } else if (contentMap.get(contentWrapper).serial !== undefined) {
+
+      contentWrapper.after(editor)
+      editor.editor.loadDoc(contentMap.get(contentWrapper).serial)
+
+    } else {
+
       // If we don't have serial data to load, just append the nodes - the editor will parse the DOM.
       // TODO be more intentional with our code. if we're intending to parse DOM nodes rather than serial data, we should be intentional about that.
       editor.append(...contentWrapper.childNodes)
       contentWrapper.after(editor)
-    } else {
-      contentWrapper.after(editor)
-      editor.editor.loadDoc(contentMap.get(contentWrapper).serial)
+
     }
 
     contentWrapper.parentNode.removeChild(contentWrapper)
@@ -100,7 +112,8 @@ layout: note
         // Naming is wrong too really it should just be "addListener" because it listens for
         // nearly all state changes of an EditDocument.
         const serial = JSON.stringify(editDoc.document)
-        const data={ content: htmlRenderer.toHTML(editDoc.document), serial: serial }
+        const scribdoc = editDoc.toScribdoc()
+        const data={ content: htmlRenderer.toHTML(editDoc.document), /*serial: serial,*/ scribdoc: scribdoc, scribdocVersion: "0.0.0" }
         contentMap.set(contentWrapper, { serial: serial })
         return saveNote(data)
       })

@@ -58,6 +58,11 @@ export class Editor {
     return this.docHistory.current
   }
 
+  set currentDocument(editDoc) {
+    this.pushNewDoc(editDoc)
+    this.controller.selectAction()
+  }
+
   /**
    * Normalize HTML in DOM without impacting render view
    */
@@ -96,6 +101,7 @@ export class Editor {
     // this.controller.selectAction()
   }
 
+  // @deprecated
   loadDoc(serialDoc) {
 
     this.pushNewDoc(EditDocument.fromSerializedDocSection(serialDoc))
