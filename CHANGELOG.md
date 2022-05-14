@@ -1,5 +1,20 @@
 # Changelog
 
+## Alpha 0.0.2 2022-05-14
+
+Features
+—
+
+Enhancement:
+* Login redirection
+  * Visiting an app page when you aren't logged in redirects you to login automatically
+  * Logging in after such a redirect will redirect you to the original page you tried to visit
+* Security
+  * Session cookies now have the 'secure' attribute, to reduce the change someone can swipe your session
+* Session persistence
+  * Sessions will now persist for up to one week of inactivity
+  * Visiting the app within that week resets the session (hopefully)
+
 ## Alpha 0.0.1 2022-04-24
 
 Features
