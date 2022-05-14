@@ -11,6 +11,7 @@ import { staticLocation } from './static/Static.mjs'
 import session from './session.mjs'
 
 import LoginController from './controllers/Login.mjs'
+import { loginRedirect } from './controllers/Login.mjs'
 
 const PATH = '/'
 const BIND_IP = process.env.BIND_IP ?? '127.0.0.1'
@@ -38,20 +39,13 @@ mainRouter.use(session)
 mainRouter.use('/api/login', loginApp)
 /////
 
+
+
 if (process.env.DEV_AUTO_LOGIN === 'true') {
   mainRouter.use((req,res,next) => {
     req.session.user = { username: "Dev" }
     next()
   })
-}
-
-
-const requireLogin = (req,res,next) => {
-  if (!('user' in req.session)) {
-    res.status('401').end()
-    return
-  }
-  next()
 }
 
 
@@ -73,7 +67,7 @@ mainRouter.get('/dynamic/*', (req, res) => {
   res.end()
 })
 
-mainRouter.use('/app', requireLogin)
+mainRouter.use('/app', loginRedirect('/'))
 
 if (process.env.DEVELOPMENT !== 'true') {
   mainRouter.use('/api', requireLogin)

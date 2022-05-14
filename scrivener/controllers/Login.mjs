@@ -35,6 +35,8 @@ dataccess.registerWithIndex(Login, "username", String)
 
 const validTokens = new Set()
 
+const loginSymbol = Symbol('login');
+
 async function validateUsername(username) {
   // TODO accept international usernames (basically use more inclusive unicode classes for the regex)
   const usernameRegex = /^\w(\w|\d|_|-)*$/
@@ -50,6 +52,45 @@ async function validateUsername(username) {
   }
 
   return { isValid:false, reason: "Please enter a valid username. A valid username uses only alphanumeric characters, letters, underscores, and hyphens." }
+}
+
+function setRedirect(route, session) {
+  session.loginRedirect = route;
+}
+function hasRedirect(session) {
+  return 'loginRedirect' in session
+}
+function getRedirect(session) {
+  return session.loginRedirect
+}
+
+function clearRedirect(session) {
+  delete session.loginRedirect
+}
+
+function isLoggedIn(session) {
+  return 'user' in session
+}
+
+// Maybe we create some kind of context around all of the login routes? Not at the module level, but like.
+// wrap all the handlers in a class. Simmilar to how you can just call "next" in the middleware, it would
+// be nice if we could just call "clearRedirect" without specifying the context (since the context is 
+// known already)
+
+/**
+ * Middleware to redirect to login and set up redirect after successful login
+ */
+function loginRedirect(loginRoute) {
+  return function redirectToLogin(req, res, next) {
+
+    if (isLoggedIn(req.session)) {
+      next()
+      return
+    }
+
+    setRedirect(req.originalUrl, req.session)
+    res.redirect(302, loginRoute)
+  }
 }
 
 
@@ -82,7 +123,16 @@ loginApp.post('/', async (req, res) => {
 
   // not a very "rich" user object, TODO fetch from DB as well
   req.session.user = { username: username }
-  res.status(200).send({ message: "Login succeeded.", redirect: "/app/notes"})
+
+  // TODO no magic values, the default route should be established by clients of Login
+  let redirectRoute = "/app/notes"
+
+  if (hasRedirect(req.session)) {
+    redirectRoute = getRedirect(req.session);
+    clearRedirect(req.session);
+  }
+
+  res.status(200).send({ message: "Login succeeded.", redirect: redirectRoute})
 
 })
 
@@ -157,8 +207,16 @@ loginApp.get('/signup/tokens', (req, res) => {
 })
 
 
+loginApp.on('mount', (parent) => {
+
+  console.log("MOUNTED")
+})
+
+
 // this is for resources.mjs, my friend
 export { dataccess as dataccessLogins }
+
+export { loginRedirect }
 
 export default function LoginController() {
   return loginApp
