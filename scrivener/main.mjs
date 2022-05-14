@@ -28,6 +28,11 @@ const makeStatic = staticLocation(SITE_ROOT)
 // const staticApp = staticLocation('')
 const mainRouter = express.Router()
 const mainApp = express()
+
+if (process.end.NODE_ENV !== 'development') {
+  mainApp.set('trust proxy', 1);
+}
+
 mainApp.use(express.json({limit: '50mb'}))
 mainApp.use(mainRouter)
 

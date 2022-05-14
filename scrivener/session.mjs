@@ -13,7 +13,7 @@ const sess = {
 }
 if (process.env.NODE_ENV !== 'development') {
   console.log('TODO integrate with a proper session store')
-  sess.store = undefined
+  sess.cookie.secure = true
 } else {
   // TODO to enable this we need to set trust proxy, since scrivener is behind a proxy
   // sess.cookie.secure = true
