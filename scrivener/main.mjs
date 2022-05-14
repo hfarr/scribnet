@@ -53,6 +53,13 @@ if (process.env.DEV_AUTO_LOGIN === 'true') {
   })
 }
 
+const requireLogin = (req,res,next) => {
+  if (!('user' in req.session)) {
+    res.status('401').end()
+    return
+  }
+  next()
+}
 
 /* 
   Moving forward, will have to think about routing the app
