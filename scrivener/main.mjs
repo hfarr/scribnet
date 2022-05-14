@@ -29,7 +29,7 @@ const makeStatic = staticLocation(SITE_ROOT)
 const mainRouter = express.Router()
 const mainApp = express()
 
-if (process.end.NODE_ENV !== 'development') {
+if (process.env.NODE_ENV !== 'development') {
   mainApp.set('trust proxy', 1);
 }
 
