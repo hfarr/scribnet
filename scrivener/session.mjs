@@ -9,7 +9,7 @@ import session from 'express-session'
 
 const sess = {
   resave: false,  // it's okay to be false if the store implements the touch method, which we want
-  saveUnitialized: false, // note some laws require user permission before saving a session. When false, no cookie is set unless a change is made to the session
+  saveUninitialized: false, // note some laws require user permission before saving a session. When false, no cookie is set unless a change is made to the session
   secret: process.env.SESSION_SECRET,
   cookie: { maxAge: 24*60*60*1000 }
 }
