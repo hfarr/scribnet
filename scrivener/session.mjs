@@ -11,7 +11,10 @@ const sess = {
   resave: false,  // it's okay to be false if the store implements the touch method, which we want
   saveUninitialized: false, // note some laws require user permission before saving a session. When false, no cookie is set unless a change is made to the session
   secret: process.env.SESSION_SECRET,
-  cookie: { maxAge: 24*60*60*1000 }
+  cookie: { 
+    rolling: true,            // accessing the app within the session window will reset the session
+    maxAge: 7*24*60*60*1000   // one week
+  }
 }
 if (process.env.NODE_ENV !== 'development') {
   console.log('TODO integrate with a proper session store')
