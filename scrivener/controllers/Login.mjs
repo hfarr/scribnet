@@ -34,6 +34,7 @@ dataccess.registerWithIndex(Login, "username", String)
 
 
 const validTokens = new Set()
+const resetTokens = {}
 
 const loginSymbol = Symbol('login');
 
@@ -145,6 +146,36 @@ loginApp.post('/check', async (req, res) => {
   res.status(200).send( { loggedIn: false } )
 })
 
+loginApp.post('/reset', async (req, res) => {
+  const { password, resetkey: token } = req.body
+
+  // TODO Token system - same token can be used for signup as for reset? hmm. Right now they are broad, too broad.
+  if (token === undefined || !(token in resetTokens)) {
+    res.status(401).send({ message: "Invalid reset token", redirect: "/" })
+    return
+  }
+  
+  if (password === undefined && password.length === 0) {
+
+    res.status(401).send({ message: "Please enter a password" })
+    return
+  }
+
+  // TODO this is brittle, we need to capture the logic behind an interface
+  const username = resetTokens[token]
+
+  resetTokens.delete(token)
+
+  // const login = Login.newLogin(username, password)
+  const login = dataccess.get(Login, username);
+  if (login !== undefined) {
+
+    login.password = password
+    dataccess.saveInstance(login)
+  }
+
+})
+
 loginApp.post('/signup', async (req, res) => {
 
   const { username, password, signupkey: token } = req.body
@@ -191,6 +222,26 @@ loginApp.post('/signup/token/create', (req, res) => {
 
   res.status(200).send( { token: token } )
 
+})
+loginApp.post('/reset/token/create', (req, res) => {
+
+  if (req.session.user === undefined) {
+    res.status(401).send({})
+    return
+  }
+
+  // golly we might want to check the user exists first
+  const forUsername = req.body['username'];
+
+  if (forUsername === undefined) {
+    res.status(400).send( { message: 'Must specify username for which to generate password reset token' } )
+    return
+  }
+
+  const token = crypto.randomUUID()
+  resetTokens[token] = forUsername
+
+  res.status(200).send( { token: token } )
 })
 loginApp.get('/signup/tokens', (req, res) => {
 

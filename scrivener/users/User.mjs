@@ -18,6 +18,11 @@ class Login {
     this.hash = hash
   }
 
+  // constructor(username, password) {
+  //   this.username = username
+  //   this.password = password
+  // }
+
   static newLogin(username, password) {
     const hash = crypto.createHash('sha256')
     const salt = crypto.randomBytes(32)
@@ -27,6 +32,23 @@ class Login {
     const hashed = hash.digest()
 
     return new Login(username, salt, hashed)
+  }
+
+  set password(password) {
+    if (this.username === null) {
+      return
+    }
+
+    const hash = crypto.createHash('sha256')
+    const salt = crypto.randomBytes(32)
+
+    hash.update(password)
+    hash.update(salt)
+    const hashed = hash.digest()
+
+    this.salt = salt;
+    this.hash = hashed;
+
   }
 
   checkPassword(password) {
