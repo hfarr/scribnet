@@ -164,10 +164,10 @@ loginApp.post('/reset', async (req, res) => {
   // TODO this is brittle, we need to capture the logic behind an interface
   const username = resetTokens[token]
 
-  resetTokens.delete(token)
+  delete resetTokens[token]
 
   // const login = Login.newLogin(username, password)
-  const login = dataccess.get(Login, username);
+  const login = await dataccess.get(Login, username);
   if (login !== undefined) {
 
     login.password = password
