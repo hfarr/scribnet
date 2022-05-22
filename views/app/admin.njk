@@ -13,6 +13,7 @@ layout: root
 
       <div><button id="loginTokenCreate">Create login token</button></div>
       <div><button id="loginTokens">List login tokens</button></div>
+      <div><button id="loginResetTokenCreate">Create login reset token</button><input style="color: black;" name="username"></div>
       <!-- hmm... the case for open API... continues? or other API utility -->
       <!-- <button id="loginTokenCreate">Create login token</button>
       <button id="loginTokens">List login tokens</button> -->
@@ -28,8 +29,18 @@ layout: root
 
 <script type="module" id="dyn-fetcher" src="/js/dynamic/fetcher.mjs"></script>
 <script>
-  function onClick(selector, handler) {
-    document.querySelector(selector).addEventListener('click', handler)
+  function onClick(element, handler) {
+    element.addEventListener('click', handler)
+  }
+  function getFields(element) {
+    const fields = {}
+    element.parentElement.querySelectorAll('input').forEach(input => {
+      if (input.name !== undefined) {
+        // this is fine for text fields but may require ~finesses~ for others
+        fields[input.name] = input.value
+      }
+    });
+    return fields;
   }
   function queryOnClick(selector, route, method) {
     if (method === undefined )
@@ -40,8 +51,11 @@ layout: root
       'POST': query
     }[method]
 
-    onClick(selector, () => {
-      querier(route)
+    const element = document.querySelector(selector)
+
+    onClick(element, () => {
+      const reqBody = getFields(element)
+      querier(route, reqBody)
         .then(resp => document.querySelector('#result').innerHTML = JSON.stringify(resp.body))
     })
   }
@@ -49,6 +63,7 @@ layout: root
   document.querySelector('#dyn-fetcher').addEventListener('load', () => {
     queryOnClick('#loginTokenCreate', '/api/login/signup/token/create', 'POST')
     queryOnClick('#loginTokens', '/api/login/signup/tokens')
+    queryOnClick('#loginResetTokenCreate', '/api/login/reset/token/create', 'POST')
   })
 
 </script>

@@ -1,0 +1,119 @@
+---
+layout: root.njk
+---
+
+<cover-l centered=".middle">
+  <div class="middle">
+    <h2>Password reset</h2>
+    <!-- Indicate who PW reset is for? -->
+    <form name="reset" class="box invert" >
+      <stack-l >
+        <stack-l space="var(--s-5)">
+          <label for="username">Reset key</label>
+          <input type="text" name="resetkey">
+        </stack-l >
+        <stack-l space="var(--s-5)">
+          <label >Password</label>
+          <input type="password" name="password">
+        </stack-l>
+        <stack-l space="var(--s-5)">
+          <label >Confirm password</label>
+          <input type="password" name="passwordconfirm">
+        </stack-l>
+        <!-- <input type="submit" value="Login"> -->
+        <button type="submit" value="Login">Reset</button>
+      </stack-l>
+    </form>
+    <center-l>
+      <div class="warning"></div>
+    </center-l>
+  </div>
+  <!-- <div>h</div> -->
+</cover-l>
+
+<script type="module" id="dyn-fetcher" src="/js/dynamic/fetcher.mjs"></script>
+<script>
+  function validate() {
+    // should maybe even query the sign up token too. But. oh well.
+
+    [...document.querySelector('.warning').children].forEach(c => c.remove())
+
+    const inputs = document.forms["reset"].querySelectorAll('input')
+    const fields = {};
+    [...inputs].forEach(inp => fields[inp.name] = inp.value)
+    const { password, passwordconfirm } = fields
+
+    // need to use a better form validator
+    const requirements = [
+      [(pw, _) => pw.length > 0, "Password cannot be blank" ],
+      [(_, pwc) => pwc.length > 0, "Please confirm password"],
+      [(pw, pwc) => pw === pwc, "Passwords don't match"],
+    ]
+
+    let good = true
+    for (const [func, errorMessage] of requirements) {
+      const result = func(password, passwordconfirm)
+      good &= result
+
+      if (!result) {
+        const warning = document.createElement('p')
+        warning.innerText = errorMessage
+        document.querySelector('.warning').appendChild(warning)
+      }
+    }
+
+    return good
+  }
+
+  function submitFormAsJSON(form, route) {
+
+    const inputs = form.querySelectorAll('input')
+    const requestBody = {};
+    [...inputs].forEach(inp => requestBody[inp.name] = inp.value)
+
+    query(route, requestBody)
+      .then(resp => resp.code >= 200 && resp.code < 300 ? resp.body : Promise.reject(resp.body) )
+      .then(body => { 
+        console.log(body.message)
+        if ('redirect' in body) 
+          window.location = body.redirect
+      } )
+      .catch(body => { console.warn("Error:", body.message) } )
+  }
+
+  function queryParams() {
+    const queryString = window.location.search
+    const grabParams = /(?<key>[\w\d_-]+)=(?<value>[\w\d_-]+)/g
+
+    const params = {};
+    [...queryString.matchAll(grabParams)]
+      .map(res => res.groups)
+      .forEach(res => params[res.key] = res.value)
+
+    return params
+  }
+
+  // better way to 'wait' for import?
+  document.querySelector('#dyn-fetcher').addEventListener('load', () => {
+    const params = queryParams()
+    if ('resetkey' in params) {
+      const inp  =document.querySelector('input[name=resetkey]')
+      inp.value = params.resetkey
+      inp.disabled = true
+    }
+  })
+  const resetForm = document.forms["reset"]
+  resetForm.addEventListener('submit', (evt) => {
+    evt.preventDefault()
+    submitFormAsJSON(resetForm, '/api/login/reset')
+  })
+
+  // listening to submit event let's us prevent the browser navigation and implicitly supports both clicking the submit button and hitting the enter key
+  // document.forms["login"].addEventListener('submit', (evt) => {
+  //   evt.preventDefault()
+  //   submitLogin()
+  // })
+
+  // const loginButton = document.forms[0].querySelector('[type=submit]')
+  // loginButton.addEventListener('click', submitLogin)
+</script>
